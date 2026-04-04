@@ -1151,6 +1151,37 @@
   'use strict';
 
   // ═══════════════════════════════════════════════════════════════
+  //  API CONFIG
+  // ═══════════════════════════════════════════════════════════════
+  var API_BASE = 'https://cleanfix-api.thetrolli.com/webhook';
+
+  /**
+   * POST data to the n8n API for server-side persistence (GitHub commit).
+   * Returns a promise. Never throws — errors are shown as toasts.
+   */
+  function apiSave(endpoint, payload) {
+    return fetch(API_BASE + '/' + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    })
+    .then(function (data) {
+      if (data && data.error) throw new Error(data.error);
+      toast('Server-Sync erfolgreich.', 'success');
+      return data;
+    })
+    .catch(function (err) {
+      console.error('[apiSave] ' + endpoint + ':', err);
+      toast('Server-Sync fehlgeschlagen: ' + err.message, 'error');
+      return null;
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   //  UTILS
   // ═══════════════════════════════════════════════════════════════
   function esc(s) {
@@ -1522,6 +1553,7 @@
       if (saveSchedule(schedule)) {
         toast('Monatsangebot gespeichert.');
         renderScheduleList();
+        apiSave('save-schedule', { schedule: schedule });
       }
     });
 
@@ -1550,6 +1582,7 @@
       if (saveSchedule(schedule)) {
         toast('Promo-Banner gespeichert.');
         renderScheduleList();
+        apiSave('save-schedule', { schedule: schedule });
       }
     });
 
@@ -1727,6 +1760,7 @@
         saveSchedule(updated);
         renderScheduleList();
         toast('Eintrag gelöscht.');
+        apiSave('save-schedule', { schedule: updated });
       });
     });
   }
@@ -1829,6 +1863,7 @@
       saveSchedule(schedule);
       renderScheduleList();
       toast('Eintrag aktualisiert.');
+      apiSave('save-schedule', { schedule: schedule });
     });
   }
 
@@ -1898,6 +1933,7 @@
             formEl.style.display = 'none';
             renderScheduleList();
             toast('Neuer Eintrag gespeichert.');
+            apiSave('save-schedule', { schedule: schedule });
           });
           nfFields.querySelector('.ef-cancel-btn').addEventListener('click', function () {
             formEl.style.display = 'none';
@@ -2061,6 +2097,7 @@
       if (collectAndSaveDeals()) {
         renderScheduleList();
         toast('Sonderangebote gespeichert.');
+        apiSave('save-schedule', { schedule: getSchedule() });
       }
     });
 
@@ -2074,6 +2111,7 @@
       renderDealsEditor();
       renderScheduleList();
       toast('Sonderangebote zurückgesetzt.');
+      apiSave('save-schedule', { schedule: schedule });
     });
   }
 
@@ -2105,7 +2143,14 @@
       var ok = lsSet('cleanfix-preise-reinigung', priceData.reinigung) &&
                lsSet('cleanfix-preise-buegeln',   priceData.buegeln)   &&
                lsSet('cleanfix-preise-waesche',   priceData.waesche);
-      if (ok) toast('Preise gespeichert.');
+      if (ok) {
+        toast('Preise gespeichert.');
+        apiSave('save-preise', {
+          reinigung: priceData.reinigung,
+          buegeln:   priceData.buegeln,
+          waesche:   priceData.waesche
+        });
+      }
     });
 
     document.getElementById('btn-reset-preise').addEventListener('click', function () {
@@ -2118,6 +2163,11 @@
       renderPriceGroups('buegeln');
       renderPriceGroups('waesche');
       toast('Preise zurückgesetzt.');
+      apiSave('save-preise', {
+        reinigung: priceData.reinigung,
+        buegeln:   priceData.buegeln,
+        waesche:   priceData.waesche
+      });
     });
   }
 

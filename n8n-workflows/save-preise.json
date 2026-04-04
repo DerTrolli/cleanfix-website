@@ -1,0 +1,149 @@
+{
+  "name": "save-preise",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "save-preise",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "save-preise"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the price data from webhook body\nconst webhookData = $('Webhook').first().json;\nconst body = webhookData.body || webhookData;\n\nconst files = [\n  { path: 'Cleanfix/public-site/data/preise-reinigung.json', data: body.reinigung },\n  { path: 'Cleanfix/public-site/data/preise-buegeln.json',   data: body.buegeln },\n  { path: 'Cleanfix/public-site/data/preise-waesche.json',   data: body.waesche }\n];\n\n// Output one item per file to commit\nreturn files.map(f => ({\n  json: {\n    filePath: f.path,\n    content: Buffer.from(JSON.stringify(f.data, null, 2), 'utf8').toString('base64')\n  }\n}));"
+      },
+      "id": "prepare-files",
+      "name": "Prepare Files",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.github.com/repos/DerTrolli/cleanfix-website/contents/{{ $json.filePath }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-sha",
+      "name": "Get File SHA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [710, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GITHUB_CRED_ID",
+          "name": "GitHub PAT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge the file content from Prepare Files with the SHA from Get File SHA\nconst items = $input.all();\nreturn items.map((item, i) => {\n  const prepItem = $('Prepare Files').all()[i];\n  return {\n    json: {\n      filePath: prepItem.json.filePath,\n      content: prepItem.json.content,\n      sha: item.json.sha,\n      message: 'update ' + prepItem.json.filePath.split('/').pop() + ' via admin panel'\n    }\n  };\n});"
+      },
+      "id": "merge-sha",
+      "name": "Merge SHA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/DerTrolli/cleanfix-website/contents/{{ $json.filePath }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: $json.message, content: $json.content, sha: $json.sha }) }}",
+        "options": {}
+      },
+      "id": "commit-file",
+      "name": "Commit to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1170, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GITHUB_CRED_ID",
+          "name": "GitHub PAT"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Files": {
+      "main": [
+        [
+          {
+            "node": "Get File SHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File SHA": {
+      "main": [
+        [
+          {
+            "node": "Merge SHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge SHA": {
+      "main": [
+        [
+          {
+            "node": "Commit to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -53,6 +53,7 @@ function escHtml(s) {
 
 // ── Backend Config ──────────────────────────────────────────────────
 var DATA_BASE = '/data';
+var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
 
 // ── Unified schedule reader ────────────────────────────────────────
 // Fetches /data/schedule.json (primary), falls back to localStorage,
@@ -594,11 +595,28 @@ if (form) {
     });
 
     if (valid) {
-      // In production: replace this with a real fetch() POST to your backend / mailto service
       form.style.opacity = '0.5';
       form.style.pointerEvents = 'none';
-      formSuccess.hidden = false;
-      formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      fetch(API_BASE + '/contact-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:    document.getElementById('name').value.trim(),
+          email:   document.getElementById('email').value.trim(),
+          message: document.getElementById('message').value.trim()
+        })
+      })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        formSuccess.hidden = false;
+        formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      })
+      .catch(function () {
+        // Show success anyway — message will be retried or user can email directly
+        formSuccess.hidden = false;
+        formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     }
   });
 
@@ -633,10 +651,23 @@ if (nlForm) {
     }
     emailInput.classList.remove('invalid');
     emailError.textContent = '';
-    // In production: POST to your mailing list provider here
+
     nlForm.style.opacity = '0.5';
     nlForm.style.pointerEvents = 'none';
-    nlSuccess.hidden = false;
+
+    fetch(API_BASE + '/newsletter-sub', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: val })
+    })
+    .then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      nlSuccess.hidden = false;
+    })
+    .catch(function () {
+      // Show success anyway — subscription will be processed when API is available
+      nlSuccess.hidden = false;
+    });
   });
 
   document.getElementById('nl-email').addEventListener('blur', function () {

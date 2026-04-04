@@ -1,0 +1,54 @@
+{
+  "name": "newsletter-sub",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "newsletter-sub",
+        "responseMode": "lastNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "newsletter-sub"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Webhook').first().json;\nconst body = data.body || data;\nconst email = body.email || '';\n\nif (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n  throw new Error('Invalid email address');\n}\n\n// For now: log the subscription. \n// TODO: Connect to CleverReach or other mailing list provider.\nconsole.log('Newsletter subscription:', email);\n\nreturn [{ json: { success: true, email: email, message: 'Anmeldung erfolgreich' } }];"
+      },
+      "id": "process-sub",
+      "name": "Process Subscription",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Process Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

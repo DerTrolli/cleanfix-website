@@ -1,0 +1,108 @@
+{
+  "name": "contact-form",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "contact-form",
+        "responseMode": "lastNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "contact-form"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Webhook').first().json;\nconst body = data.body || data;\n\nconst name    = body.name    || 'Unbekannt';\nconst email   = body.email   || '';\nconst message = body.message || '';\n\nconst now = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });\n\nconst subject = 'Kontaktanfrage von ' + name + ' – cleanfix-mg.de';\nconst text = 'Neue Kontaktanfrage über die Website\\n\\n' +\n  'Name:    ' + name + '\\n' +\n  'E-Mail:  ' + email + '\\n' +\n  'Datum:   ' + now + '\\n\\n' +\n  'Nachricht:\\n' + message;\n\nreturn [{ json: { to: 'info@cleanfix-mg.de', subject, text, replyTo: email } }];"
+      },
+      "id": "format-email",
+      "name": "Format Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@cleanfix-mg.de",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "text": "={{ $json.text }}",
+        "options": {
+          "replyTo": "={{ $json.replyTo }}"
+        }
+      },
+      "id": "send-email",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [710, 300],
+      "credentials": {
+        "smtp": {
+          "id": "SMTP_CRED_ID",
+          "name": "Cleanfix SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: true, message: 'Nachricht gesendet' } }];"
+      },
+      "id": "response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
