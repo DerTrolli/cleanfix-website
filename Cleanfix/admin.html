@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cleanfix – Management Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <!-- Link main stylesheet for CSS tokens + preview rendering -->
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── ADMIN CHROME ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--neutral-100);
+      color: var(--neutral-900);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ──────────────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--neutral-100);
+    }
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+    .login-logo {
+      height: 52px;
+      width: auto;
+      margin-bottom: 8px;
+    }
+    .login-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--neutral-600);
+      margin-bottom: 32px;
+      letter-spacing: 0.02em;
+    }
+    .login-label {
+      display: block;
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--neutral-700);
+      margin-bottom: 8px;
+    }
+    .login-input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-family: var(--font);
+      border: 2px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      background: var(--white);
+      color: var(--neutral-900);
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 16px;
+    }
+    .login-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(8,48,221,0.1); }
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: var(--font);
+      background: var(--gradient);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .login-btn:active { transform: translateY(0); }
+    .login-error {
+      margin-top: 14px;
+      font-size: 0.88rem;
+      color: #dc2626;
+      display: none;
+    }
+    .login-error.visible { display: block; }
+
+    /* ── ADMIN APP LAYOUT ──────────────────────────────────────── */
+    #admin-app { display: none; min-height: 100vh; }
+    #admin-app.visible { display: block; }
+
+    .admin-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--neutral-200);
+      box-shadow: var(--shadow-sm);
+    }
+    .admin-header-inner {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .admin-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .admin-header-logo {
+      height: 36px;
+      width: auto;
+    }
+    .admin-header-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--neutral-600);
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .admin-header-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--neutral-200);
+    }
+    .admin-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--blue);
+      background: var(--blue-light);
+      border: 1.5px solid var(--blue-mid);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .admin-btn-outline:hover {
+      background: var(--blue-mid);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .admin-btn-danger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--neutral-600);
+      background: var(--white);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .admin-btn-danger:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+    /* ── ADMIN LAYOUT BODY ─────────────────────────────────────── */
+    .admin-body {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── SIDEBAR NAV ───────────────────────────────────────────── */
+    .admin-sidebar {
+      position: sticky;
+      top: 88px;
+      background: var(--white);
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .admin-sidebar-title {
+      padding: 14px 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--neutral-400);
+      border-bottom: 1px solid var(--neutral-200);
+    }
+    .admin-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      font-family: var(--font);
+      color: var(--neutral-600);
+      background: transparent;
+      border: none;
+      border-left: 3px solid transparent;
+      text-align: left;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), border-color var(--transition);
+    }
+    .admin-nav-item:hover {
+      background: var(--neutral-100);
+      color: var(--neutral-900);
+    }
+    .admin-nav-item.active {
+      background: var(--blue-light);
+      color: var(--blue);
+      font-weight: 700;
+      border-left-color: var(--blue);
+    }
+    .admin-nav-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ── ADMIN SECTIONS ────────────────────────────────────────── */
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    .admin-section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--neutral-900);
+      margin-bottom: 6px;
+    }
+    .admin-section-desc {
+      font-size: 0.92rem;
+      color: var(--neutral-600);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* ── CARDS ─────────────────────────────────────────────────── */
+    .admin-card {
+      background: var(--white);
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .admin-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--neutral-900);
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--neutral-200);
+    }
+
+    /* ── FORM FIELDS ───────────────────────────────────────────── */
+    .admin-field {
+      margin-bottom: 18px;
+    }
+    .admin-field:last-child { margin-bottom: 0; }
+    .admin-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--neutral-700);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .admin-input,
+    .admin-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-family: var(--font);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--neutral-900);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .admin-input:focus,
+    .admin-textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(8,48,221,0.08);
+    }
+    .admin-textarea { resize: vertical; min-height: 80px; line-height: 1.55; }
+    .admin-hint {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.78rem;
+      color: var(--neutral-400);
+    }
+    .admin-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .admin-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+    .admin-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      cursor: pointer;
+    }
+    .admin-checkbox-row input[type=checkbox] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+    .admin-checkbox-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--neutral-700);
+    }
+
+    /* ── ACTION BUTTONS ────────────────────────────────────────── */
+    .admin-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--neutral-200);
+    }
+    .btn-save {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 22px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      font-family: var(--font);
+      background: var(--gradient);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: opacity var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: 0 4px 14px rgba(8,48,221,0.25);
+    }
+    .btn-save:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(8,48,221,0.35); }
+    .btn-save:active { transform: translateY(0); }
+    .btn-reset {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 20px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--neutral-600);
+      background: var(--white);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .btn-reset:hover { background: var(--neutral-100); color: var(--neutral-900); }
+    .btn-add {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--blue);
+      background: var(--blue-light);
+      border: 1.5px solid var(--blue-mid);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .btn-add:hover { background: var(--blue-mid); box-shadow: var(--shadow-sm); }
+    .btn-delete {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: #dc2626;
+      background: #fee2e2;
+      border: 1.5px solid #fca5a5;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .btn-delete:hover { background: #fecaca; }
+
+    /* ── DEAL EDITOR ───────────────────────────────────────────── */
+    .deal-editor-card {
+      background: var(--white);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .deal-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .deal-editor-num {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--neutral-400);
+    }
+
+    /* ── PRICE EDITOR ──────────────────────────────────────────── */
+    .price-sub-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .price-sub-tab {
+      padding: 8px 18px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: var(--font);
+      border-radius: 100px;
+      border: 2px solid var(--neutral-200);
+      background: var(--white);
+      color: var(--neutral-600);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .price-sub-tab:hover { border-color: var(--blue); color: var(--blue); }
+    .price-sub-tab.active {
+      background: var(--gradient);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(8,48,221,0.25);
+    }
+    .price-sub-panel { display: none; }
+    .price-sub-panel.active { display: block; }
+    .price-group-editor {
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .price-group-header-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--neutral-100);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--neutral-200);
+    }
+    .price-group-label-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--neutral-400);
+      flex-shrink: 0;
+    }
+    .price-group-input {
+      flex: 1;
+      padding: 5px 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: var(--font);
+      border: 1.5px solid transparent;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--neutral-700);
+      outline: none;
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .price-group-input:focus {
+      border-color: var(--blue);
+      background: var(--white);
+    }
+    .price-row-editor {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--neutral-100);
+    }
+    .price-row-editor:last-child { border-bottom: none; }
+    .price-row-artikel {
+      flex: 1;
+      padding: 6px 10px;
+      font-size: 0.88rem;
+      font-family: var(--font);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--neutral-900);
+      outline: none;
+    }
+    .price-row-artikel:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(8,48,221,0.08); }
+    .price-row-preis {
+      width: 110px;
+      flex-shrink: 0;
+      padding: 6px 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: var(--font);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--blue);
+      outline: none;
+      text-align: right;
+    }
+    .price-row-preis:focus { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(8,48,221,0.08); }
+    .price-row-delete {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: var(--neutral-400);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+      font-family: var(--font);
+    }
+    .price-row-delete:hover { background: #fee2e2; color: #dc2626; }
+    .price-group-footer {
+      padding: 8px 14px;
+      background: var(--neutral-100);
+      border-top: 1px solid var(--neutral-200);
+    }
+    .btn-add-row {
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--blue);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .btn-add-row:hover { text-decoration: underline; }
+
+    /* ── PREVIEW BOXES ─────────────────────────────────────────── */
+    .preview-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--neutral-400);
+      margin-bottom: 10px;
+    }
+    .preview-box {
+      background: var(--neutral-100);
+      border: 1px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      overflow: hidden;
+    }
+    /* Scale down preview elements */
+    .preview-box .monatsangebot-card {
+      margin-bottom: 0;
+      font-size: 0.82em;
+    }
+    .preview-box .promo-banner {
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── TOAST ─────────────────────────────────────────────────── */
+    .admin-toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 9999;
+      background: var(--neutral-900);
+      color: var(--white);
+      padding: 13px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-toast.visible { opacity: 1; transform: translateY(0); }
+    .admin-toast--success { background: #166534; }
+    .admin-toast--error   { background: #991b1b; }
+
+    /* ── EXPORT/IMPORT ─────────────────────────────────────────── */
+    .data-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ── AKTIONEN 2-COL GRID ────────────────────────────────────── */
+    .aktionen-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 0;
+    }
+    @media (max-width: 900px) { .aktionen-grid { grid-template-columns: 1fr; } }
+
+    /* ── SCHEDULE DATE ROW ──────────────────────────────────────── */
+    .schedule-dates-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--neutral-200);
+    }
+    .sched-hint {
+      font-size: 0.74rem;
+      font-weight: 400;
+      color: var(--neutral-400);
+    }
+
+    /* ── STATUS CHIPS ───────────────────────────────────────────── */
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .status-chip--permanent { background: var(--neutral-100); color: var(--neutral-500); border: 1px solid var(--neutral-200); }
+    .status-chip--active    { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .status-chip--scheduled { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
+    .status-chip--expired   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+    /* ── TYPE BADGES ────────────────────────────────────────────── */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .type-badge--ma     { background: #ede9fe; color: #5b21b6; border: 1px solid #c4b5fd; }
+    .type-badge--banner { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+    .type-badge--deal   { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+    /* ── SCHEDULE LIST ──────────────────────────────────────────── */
+    .sched-entry {
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .sched-entry:last-child { margin-bottom: 0; }
+    .sched-entry--active { border-color: #86efac; }
+    .sched-entry-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--white);
+      flex-wrap: wrap;
+    }
+    .sched-entry-summary {
+      flex: 1;
+      min-width: 0;
+    }
+    .sched-entry-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--neutral-900);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sched-entry-dates {
+      font-size: 0.78rem;
+      color: var(--neutral-500);
+      margin-top: 2px;
+    }
+    .sched-entry-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .sched-edit-form {
+      padding: 16px;
+      background: var(--neutral-100);
+      border-top: 1px solid var(--neutral-200);
+    }
+    .sched-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--neutral-400);
+      font-size: 0.9rem;
+    }
+    .sched-empty strong { display: block; font-size: 1rem; color: var(--neutral-600); margin-bottom: 6px; }
+
+    /* ── EMOJI PICKER ───────────────────────────────────────────── */
+    .emoji-picker-wrap { position: relative; display: inline-block; }
+    .emoji-picker-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 500;
+      width: 320px;
+      background: var(--white);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .emoji-picker-panel.open { display: block; }
+    .emoji-search-input {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      font-family: var(--font);
+      border: none;
+      border-bottom: 1px solid var(--neutral-200);
+      background: var(--neutral-100);
+      color: var(--neutral-900);
+      outline: none;
+    }
+    .emoji-search-input::placeholder { color: var(--neutral-400); }
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 2px;
+      padding: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .emoji-btn {
+      font-size: 1.35rem;
+      padding: 6px 4px;
+      border: none;
+      background: transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1;
+      transition: background var(--transition);
+    }
+    .emoji-btn:hover { background: var(--neutral-100); }
+    .emoji-no-results {
+      padding: 20px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--neutral-400);
+    }
+
+    /* ── MOBILE ────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .admin-body {
+        grid-template-columns: 1fr;
+        padding: 16px;
+        gap: 16px;
+      }
+      .admin-sidebar {
+        position: static;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        border-radius: var(--radius-md);
+      }
+      .admin-sidebar-title { display: none; }
+      .admin-nav-item {
+        flex-shrink: 0;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 16px;
+        white-space: nowrap;
+      }
+      .admin-nav-item.active {
+        border-left-color: transparent;
+        border-bottom-color: var(--blue);
+      }
+      .admin-row { grid-template-columns: 1fr; }
+      .admin-row-3 { grid-template-columns: 1fr; }
+      .price-row-editor { flex-wrap: wrap; }
+      .price-row-artikel { min-width: 0; }
+    }
+
+    /* Dark mode admin header */
+    [data-theme="dark"] .admin-header {
+      background: rgba(17,19,24,0.95);
+      border-bottom-color: var(--neutral-200);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <img src="Logo-Cleanfix Transparent.png" alt="Cleanfix" class="login-logo" />
+    <p class="login-title">Management Panel</p>
+    <label class="login-label" for="admin-password">Passwort</label>
+    <input type="password" id="admin-password" class="login-input" placeholder="Passwort eingeben" autocomplete="current-password" />
+    <button class="login-btn" id="login-btn">Anmelden</button>
+    <p class="login-error" id="login-error">Falsches Passwort. Bitte erneut versuchen.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ADMIN APP
+═══════════════════════════════════════════════ -->
+<div id="admin-app">
+
+  <!-- Header -->
+  <header class="admin-header">
+    <div class="admin-header-inner">
+      <div class="admin-header-left">
+        <img src="Logo-Cleanfix Transparent.png" alt="Cleanfix" class="admin-header-logo" />
+        <div class="admin-header-divider"></div>
+        <span class="admin-header-title">Management Panel</span>
+      </div>
+      <div class="admin-header-right">
+        <a href="index.html" target="_blank" class="admin-btn-outline">🌐 Website ansehen</a>
+        <button class="admin-btn-danger" id="logout-btn">Abmelden</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <div class="admin-body">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-title">Navigation</div>
+      <button class="admin-nav-item active" data-section="aktionen">
+        <span class="admin-nav-icon">📣</span> Aktionen &amp; Banner
+      </button>
+      <button class="admin-nav-item" data-section="zeitplan">
+        <span class="admin-nav-icon">🗓️</span> Zeitplan
+      </button>
+      <button class="admin-nav-item" data-section="deals">
+        <span class="admin-nav-icon">🏷️</span> Sonderangebote
+      </button>
+      <button class="admin-nav-item" data-section="preise">
+        <span class="admin-nav-icon">💶</span> Preise
+      </button>
+      <button class="admin-nav-item" data-section="daten">
+        <span class="admin-nav-icon">💾</span> Daten
+      </button>
+    </aside>
+
+    <!-- Main content -->
+    <main>
+
+      <!-- ── MONATSANGEBOT ─────────────────────────────────── -->
+      <!-- ── AKTIONEN & BANNER (combined) ─────────────────── -->
+      <!-- ── AKTIONEN & BANNER ─────────────────────────────── -->
+      <section class="admin-section active" id="section-aktionen">
+        <h1 class="admin-section-title">Aktionen &amp; Banner</h1>
+        <p class="admin-section-desc">Monatsangebot und Promo-Banner auf einen Blick — bearbeiten, Zeitraum festlegen und direkt vergleichen.</p>
+
+        <!-- Top row: both forms side by side -->
+        <div class="aktionen-grid">
+
+          <!-- Monatsangebot form -->
+          <div class="admin-card" style="margin-bottom:0;">
+            <div class="admin-card-title">📅 Monatsangebot</div>
+            <div class="admin-field">
+              <label class="admin-label" for="ma-monat">Monat</label>
+              <input type="text" id="ma-monat" class="admin-input" placeholder="z. B. März" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="ma-titel">Titel</label>
+              <input type="text" id="ma-titel" class="admin-input" placeholder="z. B. 10 % auf unseren Hemdenservice" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label" for="ma-text">Beschreibungstext</label>
+              <textarea id="ma-text" class="admin-textarea" rows="3" placeholder="Kurze Beschreibung des Angebots…"></textarea>
+            </div>
+            <div class="admin-row">
+              <div class="admin-field">
+                <label class="admin-label" for="ma-angebot">Rabatt (z. B. 10%)</label>
+                <input type="text" id="ma-angebot" class="admin-input" placeholder="10%" />
+              </div>
+              <div class="admin-field">
+                <label class="admin-label" for="ma-auf">Gilt für</label>
+                <input type="text" id="ma-auf" class="admin-input" placeholder="z. B. Hemdenservice" />
+              </div>
+            </div>
+            <!-- Schedule dates -->
+            <div class="schedule-dates-row">
+              <div class="admin-field" style="margin-bottom:0;">
+                <label class="admin-label">Gültig von <span class="sched-hint">(leer = sofort &amp; dauerhaft)</span></label>
+                <input type="date" id="ma-start" class="admin-input" />
+              </div>
+              <div class="admin-field" style="margin-bottom:0;">
+                <label class="admin-label">Gültig bis <span class="sched-hint">(leer = kein Ablaufdatum)</span></label>
+                <input type="date" id="ma-end" class="admin-input" />
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-save" id="btn-save-ma">💾 Als neuen Eintrag speichern</button>
+              <button class="btn-reset" id="btn-load-ma-current">↺ Aktuellen laden</button>
+            </div>
+          </div>
+
+          <!-- Banner form -->
+          <div class="admin-card" style="margin-bottom:0;">
+            <div class="admin-card-title">📣 Promo-Banner</div>
+            <div class="admin-field">
+              <label class="admin-label">Icon (Emoji)</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="text" id="banner-icon" class="admin-input" placeholder="✨" style="width:72px;flex-shrink:0;font-size:1.35rem;text-align:center;" />
+                <div class="emoji-picker-wrap">
+                  <button class="btn-add" id="banner-emoji-btn" type="button" style="padding:9px 14px;white-space:nowrap;" title="Emoji auswählen">😊 ▾</button>
+                  <div class="emoji-picker-panel" id="banner-emoji-panel">
+                    <input class="emoji-search-input" id="banner-emoji-search" placeholder="🔍 Emoji suchen…" autocomplete="off" />
+                    <div class="emoji-grid" id="banner-emoji-grid"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-field">
+              <label class="admin-label">Titel <span style="font-weight:400;color:var(--neutral-400);">(immer fett)</span></label>
+              <input type="text" id="banner-title" class="admin-input" placeholder="Februar-Aktion:" />
+            </div>
+            <div class="admin-field">
+              <label class="admin-label">Beschreibungstext</label>
+              <input type="text" id="banner-desc" class="admin-input" placeholder="10 % Rabatt auf den Hemdservice – jetzt sparen!" />
+            </div>
+            <!-- Schedule dates -->
+            <div class="schedule-dates-row">
+              <div class="admin-field" style="margin-bottom:0;">
+                <label class="admin-label">Gültig von <span class="sched-hint">(leer = sofort &amp; dauerhaft)</span></label>
+                <input type="date" id="banner-start" class="admin-input" />
+              </div>
+              <div class="admin-field" style="margin-bottom:0;">
+                <label class="admin-label">Gültig bis <span class="sched-hint">(leer = kein Ablaufdatum)</span></label>
+                <input type="date" id="banner-end" class="admin-input" />
+              </div>
+            </div>
+            <div class="admin-actions">
+              <button class="btn-save" id="btn-save-banner">💾 Als neuen Eintrag speichern</button>
+              <button class="btn-reset" id="btn-load-banner-current">↺ Aktuellen laden</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom row: both previews side by side -->
+        <div class="aktionen-grid" style="margin-top:20px;">
+          <div>
+            <p class="preview-label">Vorschau – Monatsangebot</p>
+            <div class="preview-box">
+              <div class="monatsangebot-card" style="pointer-events:none;">
+                <div class="monatsangebot-tag">Monatsangebot</div>
+                <div class="monatsangebot-inner">
+                  <div class="monatsangebot-left">
+                    <div class="monatsangebot-month" id="prev-ma-monat"></div>
+                    <div class="monatsangebot-headline" id="prev-ma-titel"></div>
+                    <p class="monatsangebot-body" id="prev-ma-text"></p>
+                  </div>
+                  <div class="monatsangebot-right" aria-hidden="true">
+                    <div class="monatsangebot-discount" id="prev-ma-angebot"></div>
+                    <div class="monatsangebot-service" id="prev-ma-auf"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="preview-label">Vorschau – Promo-Banner</p>
+            <div class="preview-box" style="padding:8px;">
+              <div class="promo-banner" style="border-radius:var(--radius-sm);">
+                <div class="container promo-inner" style="max-width:100%;padding:0 16px;">
+                  <span class="promo-icon" id="prev-banner-icon" aria-hidden="true">✨</span>
+                  <p id="prev-banner-text"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ZEITPLAN ──────────────────────────────────────── -->
+      <section class="admin-section" id="section-zeitplan">
+        <h1 class="admin-section-title">Zeitplan</h1>
+        <p class="admin-section-desc">Alle gespeicherten Aktionen im Überblick. Geplante Einträge werden automatisch zur richtigen Zeit auf der Website aktiviert.</p>
+
+        <div class="admin-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--neutral-200);">
+            <span class="admin-card-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">Alle Einträge</span>
+            <button class="btn-add" id="btn-new-schedule-entry" type="button">＋ Neuer Eintrag</button>
+          </div>
+          <!-- New entry creation form (hidden by default) -->
+          <div id="schedule-new-form" style="display:none;"></div>
+          <!-- Schedule list -->
+          <div id="schedule-list"></div>
+        </div>
+      </section>
+
+      <!-- ── SONDERANGEBOTE ────────────────────────────────── -->
+      <section class="admin-section" id="section-deals">
+        <h1 class="admin-section-title">Sonderangebote</h1>
+        <p class="admin-section-desc">Angebotskarten auf der Website. Dauerhafte Angebote leer lassen bei den Datumsfeldern. Zeitlich begrenzte Aktionen erhalten Start- und Enddatum.</p>
+
+        <div class="admin-card">
+          <div class="admin-card-title">Angebote</div>
+          <div id="deals-editor"></div>
+          <div style="margin-top:14px;">
+            <button class="btn-add" id="btn-add-deal">＋ Angebot hinzufügen</button>
+          </div>
+          <div class="admin-actions">
+            <button class="btn-save" id="btn-save-deals">💾 Alle speichern</button>
+            <button class="btn-reset" id="btn-reset-deals">↺ Zurücksetzen</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── PREISE ────────────────────────────────────────── -->
+      <section class="admin-section" id="section-preise">
+        <h1 class="admin-section-title">Preislisten</h1>
+        <p class="admin-section-desc">Alle Preistabellen bearbeiten. Gruppen und Zeilen können hinzugefügt, bearbeitet oder gelöscht werden.</p>
+
+        <div class="admin-card">
+          <div class="admin-card-title">Preistabellen</div>
+          <div class="price-sub-tabs">
+            <button class="price-sub-tab active" data-price-tab="reinigung">Reinigung</button>
+            <button class="price-sub-tab" data-price-tab="buegeln">Nur Bügeln</button>
+            <button class="price-sub-tab" data-price-tab="waesche">Wäsche &amp; Mangeln</button>
+          </div>
+
+          <div class="price-sub-panel active" id="price-panel-reinigung">
+            <div id="groups-reinigung"></div>
+            <div style="margin-top:10px;">
+              <button class="btn-add" onclick="addGroup('reinigung')">＋ Gruppe hinzufügen</button>
+            </div>
+          </div>
+          <div class="price-sub-panel" id="price-panel-buegeln">
+            <div id="groups-buegeln"></div>
+            <div style="margin-top:10px;">
+              <button class="btn-add" onclick="addGroup('buegeln')">＋ Gruppe hinzufügen</button>
+            </div>
+          </div>
+          <div class="price-sub-panel" id="price-panel-waesche">
+            <div id="groups-waesche"></div>
+            <div style="margin-top:10px;">
+              <button class="btn-add" onclick="addGroup('waesche')">＋ Gruppe hinzufügen</button>
+            </div>
+          </div>
+
+          <div class="admin-actions">
+            <button class="btn-save" id="btn-save-preise">💾 Preise speichern</button>
+            <button class="btn-reset" id="btn-reset-preise">↺ Zurücksetzen</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── DATEN ─────────────────────────────────────────── -->
+      <section class="admin-section" id="section-daten">
+        <h1 class="admin-section-title">Daten &amp; Export</h1>
+        <p class="admin-section-desc">Alle Änderungen werden im Browser-Cache (localStorage) gespeichert. Exportieren Sie die Daten, um sie auf einem anderen Gerät zu verwenden.</p>
+
+        <div class="admin-card">
+          <div class="admin-card-title">Export / Import</div>
+          <p style="font-size:0.9rem;color:var(--neutral-600);margin-bottom:20px;line-height:1.65;">
+            Da die Daten lokal gespeichert werden, sind sie gerätespezifisch. Mit dem Export können Sie alle Einstellungen als JSON-Datei sichern und auf einem anderen Gerät importieren.
+          </p>
+          <div class="data-tools">
+            <button class="btn-save" id="btn-export">⬇ Daten exportieren</button>
+            <label class="btn-add" style="cursor:pointer;">
+              ⬆ Daten importieren
+              <input type="file" id="import-file" accept=".json" style="display:none;" />
+            </label>
+          </div>
+        </div>
+
+        <div class="admin-card" style="margin-top:0;">
+          <div class="admin-card-title">Cache leeren</div>
+          <p style="font-size:0.9rem;color:var(--neutral-600);margin-bottom:20px;line-height:1.65;">
+            Setzt alle gespeicherten Änderungen zurück. Die Website zeigt dann wieder die Standard-Inhalte aus dem Code. Diese Aktion kann nicht rückgängig gemacht werden.
+          </p>
+          <button class="btn-delete" id="btn-clear-all" style="padding:10px 20px;font-size:0.9rem;">🗑 Alle gespeicherten Daten löschen</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPT
+═══════════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  // ═══════════════════════════════════════════════════════════════
+  //  UTILS
+  // ═══════════════════════════════════════════════════════════════
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function generateId() {
+    return Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
+  }
+  var TODAY = new Date().toISOString().slice(0, 10);
+  function entryStatus(e) {
+    var s = e.startDate || '', en = e.endDate || '';
+    if (!s && !en) return 'permanent';
+    if (s && TODAY < s)  return 'scheduled';
+    if (en && TODAY > en) return 'expired';
+    return 'active';
+  }
+
+  // ── PASSWORD ───────────────────────────────────────────────────
+  const PASS_HASH = 'fa635e3ca4aaed9001b0f2c6cd1b52cd8fec1254e0e2ac998064a577afb99f92';
+  const PASS_PLAIN = 'cleanfix2026';
+
+  async function hashPassword(pw) {
+    if (!crypto || !crypto.subtle) return null;
+    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  const loginScreen = document.getElementById('login-screen');
+  const adminApp    = document.getElementById('admin-app');
+  const loginBtn    = document.getElementById('login-btn');
+  const pwInput     = document.getElementById('admin-password');
+  const loginError  = document.getElementById('login-error');
+
+  function showApp() {
+    loginScreen.style.display = 'none';
+    adminApp.classList.add('visible');
+    initAdmin();
+  }
+
+  // Store a fingerprint of the password hash so that changing PASS_HASH
+  // automatically invalidates any existing session on next page load.
+  var PASS_FINGERPRINT = PASS_HASH.slice(0, 12);
+
+  function checkAuth() {
+    return sessionStorage.getItem('cleanfix-admin-auth') === 'ok' &&
+           sessionStorage.getItem('cleanfix-admin-fp') === PASS_FINGERPRINT;
+  }
+
+  if (checkAuth()) { showApp(); }
+
+  loginBtn.addEventListener('click', async function () {
+    const pw = pwInput.value;
+    let ok = false;
+    try {
+      const hash = await hashPassword(pw);
+      ok = hash === PASS_HASH;
+    } catch (e) {}
+    // Fallback to plain comparison
+    if (!ok) ok = (pw === PASS_PLAIN);
+    if (ok) {
+      sessionStorage.setItem('cleanfix-admin-auth', 'ok');
+      sessionStorage.setItem('cleanfix-admin-fp', PASS_FINGERPRINT);
+      loginError.classList.remove('visible');
+      showApp();
+    } else {
+      loginError.classList.add('visible');
+      pwInput.value = '';
+      pwInput.focus();
+    }
+  });
+
+  pwInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') loginBtn.click();
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', function () {
+    sessionStorage.removeItem('cleanfix-admin-auth');
+    location.reload();
+  });
+
+  // ── TOAST ──────────────────────────────────────────────────────
+  function toast(msg, type) {
+    type = type || 'success';
+    const t = document.createElement('div');
+    t.className = 'admin-toast admin-toast--' + type;
+    t.setAttribute('role', 'status');
+    t.innerHTML = (type === 'success' ? '✓ ' : '✕ ') + msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.classList.add('visible'); }, 10);
+    setTimeout(function () {
+      t.classList.remove('visible');
+      setTimeout(function () { t.remove(); }, 300);
+    }, 3200);
+  }
+
+  // ── SECTION NAV ────────────────────────────────────────────────
+  function initNav() {
+    document.querySelectorAll('.admin-nav-item').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const sec = btn.getAttribute('data-section');
+        document.querySelectorAll('.admin-nav-item').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.admin-section').forEach(function (s) { s.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('section-' + sec).classList.add('active');
+      });
+    });
+  }
+
+  // ── LS HELPERS ─────────────────────────────────────────────────
+  var SCHEDULE_KEY = 'cleanfix-schedule';
+  function lsGet(key) {
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+    catch (e) { return null; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+    catch (e) { toast('Speichern fehlgeschlagen (Speicher voll?)', 'error'); return false; }
+  }
+  function lsDel(key) {
+    try { localStorage.removeItem(key); } catch (e) {}
+  }
+  function getSchedule() {
+    var s = lsGet(SCHEDULE_KEY);
+    return Array.isArray(s) ? s : [];
+  }
+  function saveSchedule(arr) {
+    return lsSet(SCHEDULE_KEY, arr);
+  }
+  function getActiveByType(type) {
+    return getSchedule().filter(function (e) {
+      if (e.type !== type) return false;
+      var st = entryStatus(e);
+      return st === 'permanent' || st === 'active';
+    });
+  }
+  // Returns the best active entry for a single-value type (MA or banner)
+  function getBestActive(type) {
+    var entries = getActiveByType(type);
+    if (!entries.length) return null;
+    // Dated entries beat permanent; among equal, last saved (highest array index) wins
+    entries.sort(function (a, b) {
+      var aD = (a.startDate || a.endDate) ? 1 : 0;
+      var bD = (b.startDate || b.endDate) ? 1 : 0;
+      return aD - bD;
+    });
+    return entries[entries.length - 1];
+  }
+
+  // ── DEFAULTS ───────────────────────────────────────────────────
+  const DEFAULTS = {
+    monatsangebot: {
+      monat:   'Februar',
+      titel:   '10 % auf unseren Hemdenservice',
+      text:    'Im Februar sparen Sie 10 % auf den gesamten Hemdservice – das gilt auch für unsere Bonuskarten! Perfekt für alle, die regelmäßig auf einen frischen, perfekt gebügelten Auftritt setzen.',
+      angebot: '10%',
+      auf:     'Hemdenservice'
+    },
+    banner: { icon: '✨', title: 'Februar-Aktion:', desc: '10 % Rabatt auf den Hemdservice – jetzt sparen!' },
+    deals: [
+      { badge: 'Jeden Donnerstag', icon: '👖', title: '„Hose runter"', price: '4,99 €', priceUnit: '', desc: 'Hosen donnerstags zum Aktionspreis – einfach vorbeikommen und sparen.', highlight: true },
+      { badge: 'Ab 3 Stück', icon: '👖', title: 'Mengenrabatt Hosen', price: '8,00 €', priceUnit: '/ Stück', desc: 'Ab 3 Hosen zahlen Sie nur 8,00 € pro Stück – gilt dauerhaft, kein Mindestumsatz.', highlight: false }
+    ],
+    preiseReinigung: { groups: [
+      { label: 'Hemden & Blusen', rows: [
+        { artikel: 'Hemd / Hemdbluse (maschinell)', preis: '3,75 €' },
+        { artikel: 'T-Shirt / Polo', preis: '3,75 €' },
+        { artikel: 'Seiden- / Leinenhemd', preis: '6,50 €' },
+        { artikel: 'Bluse (handbügelt)', preis: '5,90 €' }
+      ]},
+      { label: 'Oberbekleidung', rows: [
+        { artikel: 'Hose', preis: '8,90 €' },
+        { artikel: 'Rock', preis: '8,90 €' },
+        { artikel: 'Faltenrock', preis: '10,90 €' },
+        { artikel: 'Anzug (2-teilig)', preis: '22,80 €' },
+        { artikel: 'Kostüm (2-teilig)', preis: '22,80 €' },
+        { artikel: 'Weste (Anzug)', preis: '6,50 €' },
+        { artikel: 'Sakko / Blazer / Schützensakko', preis: '13,90 €' },
+        { artikel: 'Kleid', preis: 'ab 14,90 €' },
+        { artikel: 'Pullover', preis: '6,50 €' },
+        { artikel: 'Krawatte (inkl. Lotus-Effekt)', preis: '6,90 €' }
+      ]},
+      { label: 'Jacken & Mäntel', rows: [
+        { artikel: 'Jacke', preis: '19,90 €' },
+        { artikel: 'Weste (Outdoor)', preis: '12,90 €' },
+        { artikel: 'Mantel', preis: '21,90 €' },
+        { artikel: 'Arbeitsjacke', preis: '8,90 €' },
+        { artikel: 'Overall', preis: '18,90 €' },
+        { artikel: 'Daunen- / Klimatex- / Wellensteyn-Jacke (inkl. Lotus-Effekt)', preis: '28,90 €' },
+        { artikel: 'Daunen- / Klimatex- / Wellensteyn-Weste (inkl. Lotus-Effekt)', preis: '19,90 €' },
+        { artikel: 'Daunen- / Klimatex- / Wellensteyn-Mantel (inkl. Lotus-Effekt)', preis: '31,90 €' }
+      ]},
+      { label: 'Sonstiges', rows: [
+        { artikel: 'Kittel', preis: '5,90 €' },
+        { artikel: 'Schürze', preis: '3,90 €' },
+        { artikel: 'Bademantel', preis: '9,90 €' },
+        { artikel: 'Deko (pro kg)', preis: '13,50 €' },
+        { artikel: 'Imprägnierung (in Verb. mit Reinigung)', preis: '5,90 €' }
+      ]},
+      { label: 'Betten & Decken', rows: [
+        { artikel: 'Daunenbett 135×200 cm', preis: '29,90 €' },
+        { artikel: 'Daunenbett Übergröße 2×2 m', preis: '34,90 €' },
+        { artikel: 'Daunenkissen', preis: '14,90 €' },
+        { artikel: 'Bett 135×200 cm', preis: '21,90 €' },
+        { artikel: 'Bett Übergröße 2×2 m', preis: '25,90 €' },
+        { artikel: 'Kissen', preis: '10,90 €' },
+        { artikel: 'Wolldecke (normal)', preis: '12,90 €' },
+        { artikel: 'Wolldecke (dick)', preis: '21,90 €' },
+        { artikel: 'Tagesdecke', preis: 'ab 27,90 €' },
+        { artikel: 'Wasserbettauflage', preis: '24,90 €' }
+      ]},
+      { label: 'Besondere Anlässe', rows: [
+        { artikel: 'Brautkleid', preis: 'ab 130,00 €' }
+      ]}
+    ]},
+    preiseBuegeln: { groups: [
+      { label: '', rows: [
+        { artikel: 'Hemd / Hemdbluse (maschinell)', preis: '3,45 €' },
+        { artikel: 'T-Shirt / Polo', preis: '3,45 €' },
+        { artikel: 'Bluse (handbügelt)', preis: '4,90 €' },
+        { artikel: 'Hose / Rock', preis: '5,90 €' },
+        { artikel: 'Faltenrock', preis: '8,50 €' },
+        { artikel: 'Kleid', preis: 'ab 9,90 €' },
+        { artikel: 'Sakko', preis: '9,50 €' },
+        { artikel: 'Jacke', preis: '11,90 €' },
+        { artikel: 'Mantel', preis: '13,90 €' },
+        { artikel: 'Krawatte', preis: '4,50 €' }
+      ]}
+    ]},
+    preiseWaesche: { groups: [
+      { label: 'Tischdecken', rows: [
+        { artikel: 'Tischdecke normal', preis: '7,50 €', preis2: '4,00 €' },
+        { artikel: 'Mitteldecke', preis: '4,50 €', preis2: '2,50 €' },
+        { artikel: 'Tischdecke Übergröße (ab 2,50 m)', preis: '9,50 €', preis2: '6,90 €' },
+        { artikel: 'Tischdecke rund / oval / mit Spitze', preis: '9,90 €', preis2: '7,50 €' },
+        { artikel: 'Tafeltuch (ab 4 m)', preis: '12,50 €', preis2: '9,90 €' }
+      ]},
+      { label: 'Bettwäsche', rows: [
+        { artikel: 'Bettbezug 135×200 cm', preis: '6,50 €', preis2: '3,90 €' },
+        { artikel: 'Bettbezug Übergröße', preis: '8,50 €', preis2: '6,80 €' },
+        { artikel: 'Kopfkissenbezug', preis: '3,80 €', preis2: '2,50 €' }
+      ]},
+      { label: 'Sonstiges', rows: [
+        { artikel: 'Serviette / Küchenhandtuch', preis: '2,40 €', preis2: '1,20 €' },
+        { artikel: 'Kiloware (ab 10 kg)', preis: '9,50 €', preis2: '—' },
+        { artikel: 'Stärken', preis: 'inkl.', preis2: '0,80 €' }
+      ]}
+    ]}
+  };
+
+  // ═══════════════════════════════════════════════════════════════
+  //  AKTIONEN — Monatsangebot + Banner forms
+  // ═══════════════════════════════════════════════════════════════
+
+  // ── Form field helpers ──────────────────────────────────────────────────
+  function getMaFields() {
+    return {
+      monat:   document.getElementById('ma-monat').value.trim(),
+      titel:   document.getElementById('ma-titel').value.trim(),
+      text:    document.getElementById('ma-text').value.trim(),
+      angebot: document.getElementById('ma-angebot').value.trim(),
+      auf:     document.getElementById('ma-auf').value.trim()
+    };
+  }
+  function setMaFields(d) {
+    document.getElementById('ma-monat').value   = d.monat   || '';
+    document.getElementById('ma-titel').value   = d.titel   || '';
+    document.getElementById('ma-text').value    = d.text    || '';
+    document.getElementById('ma-angebot').value = d.angebot || '';
+    document.getElementById('ma-auf').value     = d.auf     || '';
+    document.getElementById('ma-start').value   = d._startDate || '';
+    document.getElementById('ma-end').value     = d._endDate   || '';
+    updateMAPreview();
+  }
+  function getBannerFields() {
+    return {
+      icon:  document.getElementById('banner-icon').value.trim(),
+      title: document.getElementById('banner-title').value.trim(),
+      desc:  document.getElementById('banner-desc').value.trim()
+    };
+  }
+  function setBannerFields(d) {
+    document.getElementById('banner-icon').value    = d.icon  || '';
+    document.getElementById('banner-title').value   = d.title || '';
+    document.getElementById('banner-desc').value    = d.desc  || '';
+    document.getElementById('banner-start').value   = d._startDate || '';
+    document.getElementById('banner-end').value     = d._endDate   || '';
+    updateBannerPreview();
+  }
+
+  // ── Previews ───────────────────────────────────────────────────────────────
+  function updateMAPreview() {
+    var v = getMaFields();
+    var el;
+    el = document.getElementById('prev-ma-monat');   if (el) el.textContent = v.monat;
+    el = document.getElementById('prev-ma-titel');   if (el) el.textContent = v.titel;
+    el = document.getElementById('prev-ma-text');    if (el) el.textContent = v.text;
+    el = document.getElementById('prev-ma-angebot'); if (el) el.textContent = v.angebot ? '−' + v.angebot : '';
+    el = document.getElementById('prev-ma-auf');     if (el) el.textContent = v.auf;
+  }
+  function updateBannerPreview() {
+    var icon  = (document.getElementById('banner-icon').value  || '').trim();
+    var title = (document.getElementById('banner-title').value || '').trim();
+    var desc  = (document.getElementById('banner-desc').value  || '').trim();
+    var prevIcon = document.getElementById('prev-banner-icon');
+    if (prevIcon) prevIcon.textContent = icon || '✨';
+    var prevText = document.getElementById('prev-banner-text');
+    if (prevText) {
+      var html = '';
+      if (title) html += '<strong>' + esc(title) + '</strong>';
+      if (title && desc) html += ' ';
+      if (desc)  html += esc(desc);
+      prevText.innerHTML = html;
+    }
+  }
+
+  // ── initAktionen ──────────────────────────────────────────────────────────────
+  function initAktionen() {
+    // Load current best active MA into form
+    var bestMA = getBestActive('monatsangebot');
+    if (bestMA) {
+      var d = Object.assign({}, bestMA.data, { _startDate: bestMA.startDate, _endDate: bestMA.endDate });
+      setMaFields(d);
+    } else {
+      setMaFields(DEFAULTS.monatsangebot);
+    }
+
+    // Load current best active Banner into form
+    var bestBanner = getBestActive('banner');
+    if (bestBanner) {
+      var bd = Object.assign({}, bestBanner.data, { _startDate: bestBanner.startDate, _endDate: bestBanner.endDate });
+      setBannerFields(bd);
+    } else {
+      setBannerFields(DEFAULTS.banner);
+    }
+
+    // Live preview on typing
+    ['ma-monat','ma-titel','ma-text','ma-angebot','ma-auf'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateMAPreview);
+    });
+    ['banner-icon','banner-title','banner-desc'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', updateBannerPreview);
+    });
+
+    // Banner emoji picker
+    initEmojiPicker('banner-emoji-btn','banner-emoji-panel','banner-emoji-search','banner-emoji-grid',
+      function (emoji) {
+        document.getElementById('banner-icon').value = emoji;
+        updateBannerPreview();
+      }
+    );
+
+    // Save MA → new schedule entry
+    document.getElementById('btn-save-ma').addEventListener('click', function () {
+      var fields = getMaFields();
+      if (!fields.monat || !fields.titel) { toast('Monat und Titel sind Pflichtfelder.', 'error'); return; }
+      var entry = {
+        id:        generateId(),
+        type:      'monatsangebot',
+        startDate: document.getElementById('ma-start').value || '',
+        endDate:   document.getElementById('ma-end').value   || '',
+        data:      fields
+      };
+      var schedule = getSchedule();
+      schedule.push(entry);
+      if (saveSchedule(schedule)) {
+        toast('Monatsangebot gespeichert.');
+        renderScheduleList();
+      }
+    });
+
+    // Load current active MA into form
+    document.getElementById('btn-load-ma-current').addEventListener('click', function () {
+      var best = getBestActive('monatsangebot');
+      if (!best) { toast('Kein aktives Monatsangebot vorhanden.', 'error'); return; }
+      var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
+      setMaFields(d);
+      toast('Aktuelles Monatsangebot geladen.');
+    });
+
+    // Save Banner → new schedule entry
+    document.getElementById('btn-save-banner').addEventListener('click', function () {
+      var fields = getBannerFields();
+      if (!fields.title && !fields.desc) { toast('Bitte Titel oder Beschreibungstext eingeben.', 'error'); return; }
+      var entry = {
+        id:        generateId(),
+        type:      'banner',
+        startDate: document.getElementById('banner-start').value || '',
+        endDate:   document.getElementById('banner-end').value   || '',
+        data:      fields
+      };
+      var schedule = getSchedule();
+      schedule.push(entry);
+      if (saveSchedule(schedule)) {
+        toast('Promo-Banner gespeichert.');
+        renderScheduleList();
+      }
+    });
+
+    // Load current active Banner into form
+    document.getElementById('btn-load-banner-current').addEventListener('click', function () {
+      var best = getBestActive('banner');
+      if (!best) { toast('Kein aktiver Banner vorhanden.', 'error'); return; }
+      var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
+      setBannerFields(d);
+      toast('Aktuellen Banner geladen.');
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  EMOJI PICKER (shared utility)
+  // ═══════════════════════════════════════════════════════════════
+  var EMOJIS = [
+    ['😊','smiling lächeln happy glücklich freude'],['😄','lachen lächeln happy froh'],
+    ['😎','cool sonnenbrille'],['🤩','wow super toll begeistert'],['🥳','party feiern geburtstag'],
+    ['👍','gut daumen hoch ok prima'],['✅','haken ok check fertig'],['❌','nein falsch fehler kreuz'],
+    ['⚠️','warnung achtung vorsicht'],['🔥','feuer hot beliebt'],['⭐','stern star bewertung'],
+    ['💥','explosion knall boom'],['💯','hundert prozent perfekt top'],['🎉','party feier jubiläum'],
+    ['🏆','trophäe gewinner pokal'],['🥇','gold erster platz gewinner'],
+    ['✨','glitzer funken neu highlight'],['💡','idee tipp glühbirne'],['📣','lautsprecher ankündigung'],
+    ['📢','megaphon laut ankündigung'],['🔔','glocke benachrichtigung'],['📅','kalender datum termin'],
+    ['⏰','alarm uhr zeit'],['🚀','rakete schnell start launch'],['💎','diamant wertvoll premium'],
+    ['👑','krone könig premium vip'],['🎁','geschenk present angebot'],['⚡','blitz schnell energie'],
+    ['🌟','stern glitzer super special'],['❄️','eis kalt winter schnee'],['🌸','blüte blume frühling'],
+    ['🍀','kleeblatt glück luck'],['💰','geld money cash preis'],['💶','euro geld preis'],
+    ['💸','geld ausgaben zahlen preis'],['🏷️','etikett preis tag angebot label'],
+    ['🛒','einkaufswagen shop kaufen'],['🛍️','einkaufstüte shopping kaufen'],
+    ['✂️','schere schneiden rabatt cut'],['％','prozent rabatt angebot discount'],
+    ['👔','hemd shirt hemdenservice reinigung'],['👗','kleid dress reinigung textil'],
+    ['👖','hose jeans pants reinigung'],['🧥','mantel jacke coat reinigung'],
+    ['🧺','wäschekorb laundry wäsche'],['🧧','seife reinigung sauber clean bubbles'],
+    ['🧼','seife soap sauber reinigung'],['💧','wasser tropfen nass'],
+    ['➡️','pfeil rechts weiter'],['❗','ausrufezeichen wichtig'],['💬','sprechblase nachricht'],
+    ['📞','telefon anruf kontakt'],['📍','ort pin standort'],['🗓️','kalender datum termin'],
+  ];
+
+  function initEmojiPicker(btnId, panelId, searchId, gridId, onSelect) {
+    var btn    = document.getElementById(btnId);
+    var panel  = document.getElementById(panelId);
+    var search = document.getElementById(searchId);
+    var grid   = document.getElementById(gridId);
+    if (!btn || !panel) return;
+
+    function renderEmojis(filter) {
+      var list = filter
+        ? EMOJIS.filter(function (e) {
+            var q = filter.toLowerCase();
+            return e[0].includes(q) || e[1].toLowerCase().includes(q);
+          })
+        : EMOJIS;
+      if (!list.length) { grid.innerHTML = '<div class="emoji-no-results">Kein Emoji gefunden.</div>'; return; }
+      grid.innerHTML = list.map(function (e) {
+        return '<button class="emoji-btn" type="button" title="' + esc(e[1].split(' ')[0]) + '" data-emoji="' + esc(e[0]) + '">' + e[0] + '</button>';
+      }).join('');
+      grid.querySelectorAll('.emoji-btn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          onSelect(b.getAttribute('data-emoji'));
+          panel.classList.remove('open');
+          if (search) { search.value = ''; renderEmojis(''); }
+        });
+      });
+    }
+
+    btn.addEventListener('click', function (e) {
+      var isOpen = panel.classList.contains('open');
+      document.querySelectorAll('.emoji-picker-panel.open').forEach(function (p) { p.classList.remove('open'); });
+      if (!isOpen) { panel.classList.add('open'); renderEmojis(''); if (search) setTimeout(function () { search.focus(); }, 50); }
+      e.stopPropagation();
+    });
+    if (search) {
+      search.addEventListener('input', function () { renderEmojis(search.value); });
+      search.addEventListener('keydown', function (e) { e.stopPropagation(); });
+    }
+  }
+
+  // Single global click-outside handler
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.emoji-picker-wrap')) {
+      document.querySelectorAll('.emoji-picker-panel.open').forEach(function (p) { p.classList.remove('open'); });
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ZEITPLAN — schedule list view
+  // ═══════════════════════════════════════════════════════════════
+
+  var TYPE_LABELS = { monatsangebot: 'Monatsangebot', banner: 'Banner', deal: 'Angebot' };
+  var TYPE_CSS    = { monatsangebot: 'type-badge--ma', banner: 'type-badge--banner', deal: 'type-badge--deal' };
+
+  function statusChip(status) {
+    var map = {
+      permanent: ['status-chip--permanent', '∞ Dauerhaft'],
+      active:    ['status-chip--active',    '✓ Aktiv'],
+      scheduled: ['status-chip--scheduled', '🕐 Geplant'],
+      expired:   ['status-chip--expired',   '✗ Abgelaufen']
+    };
+    var pair = map[status] || map.permanent;
+    return '<span class="status-chip ' + pair[0] + '">' + pair[1] + '</span>';
+  }
+
+  function entryTitle(entry) {
+    var d = entry.data || {};
+    if (entry.type === 'monatsangebot') return (d.monat ? d.monat + ' – ' : '') + (d.titel || '(kein Titel)');
+    if (entry.type === 'banner')        return (d.title || d.desc || '(kein Inhalt)');
+    if (entry.type === 'deal')          return (d.title || '(kein Titel)');
+    return '(unbekannt)';
+  }
+
+  function dateRange(entry) {
+    if (!entry.startDate && !entry.endDate) return 'Dauerhaft aktiv';
+    var parts = [];
+    if (entry.startDate) parts.push('ab ' + entry.startDate.split('-').reverse().join('.'));
+    if (entry.endDate)   parts.push('bis ' + entry.endDate.split('-').reverse().join('.'));
+    return parts.join(' ');
+  }
+
+  function renderScheduleList() {
+    var container = document.getElementById('schedule-list');
+    if (!container) return;
+    var schedule = getSchedule();
+    if (!schedule.length) {
+      container.innerHTML = '<div class="sched-empty"><strong>Noch keine Einträge</strong>Speichere ein Monatsangebot, einen Banner oder ein Sonderangebot, um es hier zu sehen.</div>';
+      return;
+    }
+    // Sort: permanent first, then by startDate ascending, expired last
+    schedule.sort(function (a, b) {
+      var sa = entryStatus(a), sb = entryStatus(b);
+      var order = { permanent: 0, active: 1, scheduled: 2, expired: 3 };
+      if (order[sa] !== order[sb]) return order[sa] - order[sb];
+      return (a.startDate || '').localeCompare(b.startDate || '');
+    });
+    container.innerHTML = '';
+    schedule.forEach(function (entry) {
+      var status = entryStatus(entry);
+      var wrapper = document.createElement('div');
+      wrapper.className = 'sched-entry' + (status === 'active' ? ' sched-entry--active' : '');
+      wrapper.setAttribute('data-id', entry.id);
+      wrapper.innerHTML =
+        '<div class="sched-entry-row">' +
+          '<span class="type-badge ' + (TYPE_CSS[entry.type] || '') + '">' + esc(TYPE_LABELS[entry.type] || entry.type) + '</span>' +
+          '<div class="sched-entry-summary">' +
+            '<div class="sched-entry-title">' + esc(entryTitle(entry)) + '</div>' +
+            '<div class="sched-entry-dates">' + esc(dateRange(entry)) + '</div>' +
+          '</div>' +
+          statusChip(status) +
+          '<div class="sched-entry-actions">' +
+            '<button class="btn-add sched-btn-edit" data-id="' + esc(entry.id) + '" type="button" style="padding:7px 13px;font-size:0.82rem;">✏️ Bearbeiten</button>' +
+            '<button class="btn-delete sched-btn-delete" data-id="' + esc(entry.id) + '" type="button">🗑 Löschen</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sched-edit-form" id="edit-form-' + esc(entry.id) + '" style="display:none;"></div>';
+      container.appendChild(wrapper);
+    });
+
+    // Wire edit buttons
+    container.querySelectorAll('.sched-btn-edit').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-id');
+        toggleEditForm(id, schedule);
+      });
+    });
+
+    // Wire delete buttons
+    container.querySelectorAll('.sched-btn-delete').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-id');
+        var entry = schedule.find(function (e) { return e.id === id; });
+        var label = entry ? entryTitle(entry) : id;
+        if (!confirm('Eintrag "' + label + '" wirklich löschen?')) return;
+        var updated = getSchedule().filter(function (e) { return e.id !== id; });
+        saveSchedule(updated);
+        renderScheduleList();
+        toast('Eintrag gelöscht.');
+      });
+    });
+  }
+
+  function toggleEditForm(id, scheduleSnapshot) {
+    var formEl = document.getElementById('edit-form-' + id);
+    if (!formEl) return;
+    if (formEl.style.display !== 'none') {
+      formEl.style.display = 'none';
+      return;
+    }
+    // Close all other open forms first
+    document.querySelectorAll('.sched-edit-form').forEach(function (f) { f.style.display = 'none'; });
+    var entry = (scheduleSnapshot || getSchedule()).find(function (e) { return e.id === id; });
+    if (!entry) return;
+    formEl.style.display = '';
+    formEl.innerHTML = buildEditFormHTML(entry);
+    wireEditForm(formEl, entry);
+  }
+
+  function buildEditFormHTML(entry) {
+    var d = entry.data || {};
+    var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">' +
+      '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig von</label>' +
+        '<input type="date" class="admin-input ef-start" value="' + esc(entry.startDate || '') + '" /></div>' +
+      '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig bis</label>' +
+        '<input type="date" class="admin-input ef-end" value="' + esc(entry.endDate || '') + '" /></div>' +
+    '</div>';
+
+    if (entry.type === 'monatsangebot') {
+      html += '<div class="admin-row" style="margin-bottom:14px;">' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Monat</label><input class="admin-input ef-monat" value="' + esc(d.monat||'') + '" placeholder="z. B. März" /></div>' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Rabatt</label><input class="admin-input ef-angebot" value="' + esc(d.angebot||'') + '" placeholder="10%" /></div>' +
+      '</div>' +
+      '<div class="admin-field"><label class="admin-label">Titel</label><input class="admin-input ef-titel" value="' + esc(d.titel||'') + '" /></div>' +
+      '<div class="admin-field"><label class="admin-label">Gilt für</label><input class="admin-input ef-auf" value="' + esc(d.auf||'') + '" /></div>' +
+      '<div class="admin-field"><label class="admin-label">Beschreibung</label><textarea class="admin-textarea ef-text" rows="2">' + esc(d.text||'') + '</textarea></div>';
+    } else if (entry.type === 'banner') {
+      html += '<div class="admin-field"><label class="admin-label">Icon</label><input class="admin-input ef-icon" value="' + esc(d.icon||'') + '" style="width:72px;" /></div>' +
+        '<div class="admin-field"><label class="admin-label">Titel (fett)</label><input class="admin-input ef-title" value="' + esc(d.title||'') + '" /></div>' +
+        '<div class="admin-field"><label class="admin-label">Beschreibungstext</label><input class="admin-input ef-desc" value="' + esc(d.desc||'') + '" /></div>';
+    } else if (entry.type === 'deal') {
+      html += '<div class="admin-row" style="margin-bottom:14px;">' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Badge</label><input class="admin-input ef-badge" value="' + esc(d.badge||'') + '" /></div>' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Icon</label><input class="admin-input ef-icon" value="' + esc(d.icon||'') + '" style="width:72px;" /></div>' +
+      '</div>' +
+      '<div class="admin-field"><label class="admin-label">Titel</label><input class="admin-input ef-title" value="' + esc(d.title||'') + '" /></div>' +
+      '<div class="admin-row" style="margin-bottom:14px;">' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Preis</label><input class="admin-input ef-price" value="' + esc(d.price||'') + '" /></div>' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Einheit</label><input class="admin-input ef-unit" value="' + esc(d.priceUnit||'') + '" placeholder="/ Stück" /></div>' +
+      '</div>' +
+      '<div class="admin-field"><label class="admin-label">Beschreibung</label><input class="admin-input ef-desc" value="' + esc(d.desc||'') + '" /></div>' +
+      '<label class="admin-checkbox-row"><input type="checkbox" class="ef-highlight"' + (d.highlight ? ' checked' : '') + ' /><span class="admin-checkbox-label">Hervorgehoben</span></label>';
+    }
+
+    html += '<div style="display:flex;gap:10px;margin-top:14px;">' +
+      '<button class="btn-save ef-save-btn" type="button">💾 Speichern</button>' +
+      '<button class="btn-reset ef-cancel-btn" type="button">✕ Abbrechen</button>' +
+    '</div>';
+    return html;
+  }
+
+  function wireEditForm(formEl, entry) {
+    formEl.querySelector('.ef-cancel-btn').addEventListener('click', function () {
+      formEl.style.display = 'none';
+    });
+    formEl.querySelector('.ef-save-btn').addEventListener('click', function () {
+      var updated = Object.assign({}, entry, {
+        startDate: formEl.querySelector('.ef-start').value || '',
+        endDate:   formEl.querySelector('.ef-end').value   || ''
+      });
+      if (entry.type === 'monatsangebot') {
+        updated.data = {
+          monat:   formEl.querySelector('.ef-monat').value.trim(),
+          titel:   formEl.querySelector('.ef-titel').value.trim(),
+          text:    formEl.querySelector('.ef-text').value.trim(),
+          angebot: formEl.querySelector('.ef-angebot').value.trim(),
+          auf:     formEl.querySelector('.ef-auf').value.trim()
+        };
+      } else if (entry.type === 'banner') {
+        updated.data = {
+          icon:  formEl.querySelector('.ef-icon').value.trim(),
+          title: formEl.querySelector('.ef-title').value.trim(),
+          desc:  formEl.querySelector('.ef-desc').value.trim()
+        };
+      } else if (entry.type === 'deal') {
+        updated.data = {
+          badge:     formEl.querySelector('.ef-badge').value.trim(),
+          icon:      formEl.querySelector('.ef-icon').value.trim(),
+          title:     formEl.querySelector('.ef-title').value.trim(),
+          price:     formEl.querySelector('.ef-price').value.trim(),
+          priceUnit: formEl.querySelector('.ef-unit').value.trim(),
+          desc:      formEl.querySelector('.ef-desc').value.trim(),
+          highlight: formEl.querySelector('.ef-highlight').checked
+        };
+      }
+      var schedule = getSchedule();
+      var idx = schedule.findIndex(function (e) { return e.id === entry.id; });
+      if (idx >= 0) schedule[idx] = updated;
+      saveSchedule(schedule);
+      renderScheduleList();
+      toast('Eintrag aktualisiert.');
+    });
+  }
+
+  function initZeitplan() {
+    renderScheduleList();
+
+    // „+ Neuer Eintrag“ button — shows a type picker then a create form
+    document.getElementById('btn-new-schedule-entry').addEventListener('click', function () {
+      var formEl = document.getElementById('schedule-new-form');
+      if (formEl.style.display !== 'none') { formEl.style.display = 'none'; return; }
+      formEl.style.display = '';
+      formEl.innerHTML =
+        '<div class="admin-card" style="margin-bottom:20px;border:2px dashed var(--blue-mid);">' +
+          '<div class="admin-card-title" style="margin-bottom:14px;">﹢ Neuer Eintrag – Typ wählen</div>' +
+          '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+            '<button class="btn-add nf-type-btn" data-type="monatsangebot" type="button">📅 Monatsangebot</button>' +
+            '<button class="btn-add nf-type-btn" data-type="banner" type="button">📣 Banner</button>' +
+            '<button class="btn-add nf-type-btn" data-type="deal" type="button">🏷️ Angebot</button>' +
+          '</div>' +
+          '<div id="nf-fields" style="margin-top:16px;"></div>' +
+        '</div>';
+
+      formEl.querySelectorAll('.nf-type-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          formEl.querySelectorAll('.nf-type-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          var type = btn.getAttribute('data-type');
+          var fakeEntry = { id: '__new__', type: type, startDate: '', endDate: '', data: {} };
+          var nfFields = document.getElementById('nf-fields');
+          nfFields.innerHTML = buildEditFormHTML(fakeEntry);
+          // Override save button to create new entry
+          nfFields.querySelector('.ef-save-btn').addEventListener('click', function () {
+            var newEntry = {
+              id:        generateId(),
+              type:      type,
+              startDate: nfFields.querySelector('.ef-start').value || '',
+              endDate:   nfFields.querySelector('.ef-end').value   || ''
+            };
+            if (type === 'monatsangebot') {
+              newEntry.data = {
+                monat:   nfFields.querySelector('.ef-monat').value.trim(),
+                titel:   nfFields.querySelector('.ef-titel').value.trim(),
+                text:    nfFields.querySelector('.ef-text').value.trim(),
+                angebot: nfFields.querySelector('.ef-angebot').value.trim(),
+                auf:     nfFields.querySelector('.ef-auf').value.trim()
+              };
+            } else if (type === 'banner') {
+              newEntry.data = {
+                icon:  nfFields.querySelector('.ef-icon').value.trim(),
+                title: nfFields.querySelector('.ef-title').value.trim(),
+                desc:  nfFields.querySelector('.ef-desc').value.trim()
+              };
+            } else if (type === 'deal') {
+              newEntry.data = {
+                badge:     nfFields.querySelector('.ef-badge').value.trim(),
+                icon:      nfFields.querySelector('.ef-icon').value.trim(),
+                title:     nfFields.querySelector('.ef-title').value.trim(),
+                price:     nfFields.querySelector('.ef-price').value.trim(),
+                priceUnit: nfFields.querySelector('.ef-unit').value.trim(),
+                desc:      nfFields.querySelector('.ef-desc').value.trim(),
+                highlight: nfFields.querySelector('.ef-highlight').checked
+              };
+            }
+            var schedule = getSchedule();
+            schedule.push(newEntry);
+            saveSchedule(schedule);
+            formEl.style.display = 'none';
+            renderScheduleList();
+            toast('Neuer Eintrag gespeichert.');
+          });
+          nfFields.querySelector('.ef-cancel-btn').addEventListener('click', function () {
+            formEl.style.display = 'none';
+          });
+        });
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  DEALS — Sonderangebote editor (now backed by schedule entries)
+  // ═══════════════════════════════════════════════════════════════
+
+  function dealEntriesToEditorData() {
+    // Load all deal entries from schedule (any status, so user sees all)
+    var schedule = getSchedule();
+    var deals = schedule.filter(function (e) { return e.type === 'deal'; });
+    if (deals.length) return deals.map(function (e) {
+      return Object.assign({}, e.data, { _id: e.id, _startDate: e.startDate || '', _endDate: e.endDate || '' });
+    });
+    // Fallback to DEFAULTS
+    return DEFAULTS.deals.map(function (d) {
+      return Object.assign({}, d, { _id: '', _startDate: '', _endDate: '' });
+    });
+  }
+
+  function renderDealsEditor() {
+    var container = document.getElementById('deals-editor');
+    if (!container) return;
+    var items = dealEntriesToEditorData();
+    container.innerHTML = '';
+    items.forEach(function (d, i) {
+      var el = document.createElement('div');
+      el.className = 'deal-editor-card';
+      el.innerHTML =
+        '<div class="deal-editor-header">' +
+          '<span class="deal-editor-num">Angebot ' + (i + 1) + '</span>' +
+          (d._id ? '<span class="status-chip ' + { permanent:'status-chip--permanent', active:'status-chip--active', scheduled:'status-chip--scheduled', expired:'status-chip--expired' }[entryStatus({ startDate: d._startDate, endDate: d._endDate })] + '" style="font-size:0.68rem;">' +
+            { permanent:'∞ Dauerhaft', active:'✓ Aktiv', scheduled:'🕐 Geplant', expired:'✗ Abgelaufen' }[entryStatus({ startDate: d._startDate, endDate: d._endDate })] + '</span>' : '') +
+          '<button class="btn-delete deal-delete-btn" type="button">✕ Löschen</button>' +
+        '</div>' +
+        '<div class="admin-row-3">' +
+          '<div class="admin-field"><label class="admin-label">Badge-Text</label><input class="admin-input d-badge" value="' + esc(d.badge) + '" placeholder="z. B. Jeden Donnerstag" /></div>' +
+          '<div class="admin-field"><label class="admin-label">Icon (Emoji)</label>' +
+            '<div style="display:flex;gap:6px;align-items:center;">' +
+              '<input class="admin-input d-icon" value="' + esc(d.icon) + '" placeholder="👖" style="flex:1;" />' +
+              '<div class="emoji-picker-wrap">' +
+                '<button class="btn-add deal-emoji-btn" type="button" style="padding:9px 12px;" title="Emoji wählen">😊 ▾</button>' +
+                '<div class="emoji-picker-panel deal-emoji-panel" style="left:auto;right:0;">' +
+                  '<input class="emoji-search-input deal-emoji-search" placeholder="🔍 Suchen…" autocomplete="off" />' +
+                  '<div class="emoji-grid deal-emoji-grid"></div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="admin-field"><label class="admin-label">Titel</label><input class="admin-input d-title" value="' + esc(d.title) + '" placeholder="Angebotstitel" /></div>' +
+        '</div>' +
+        '<div class="admin-row">' +
+          '<div class="admin-field"><label class="admin-label">Preis</label><input class="admin-input d-price" value="' + esc(d.price) + '" placeholder="4,99 €" /></div>' +
+          '<div class="admin-field"><label class="admin-label">Einheit (optional)</label><input class="admin-input d-unit" value="' + esc(d.priceUnit) + '" placeholder="/ Stück" /></div>' +
+        '</div>' +
+        '<div class="admin-field"><label class="admin-label">Beschreibung</label><input class="admin-input d-desc" value="' + esc(d.desc) + '" placeholder="Kurze Beschreibung…" /></div>' +
+        '<label class="admin-checkbox-row"><input type="checkbox" class="d-highlight"' + (d.highlight ? ' checked' : '') + ' /><span class="admin-checkbox-label">Hervorgehoben (blauer Rahmen)</span></label>' +
+        '<div class="schedule-dates-row">' +
+          '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig von <span class="sched-hint">(leer = dauerhaft)</span></label><input type="date" class="admin-input d-start" value="' + esc(d._startDate) + '" /></div>' +
+          '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig bis <span class="sched-hint">(leer = kein Ablauf)</span></label><input type="date" class="admin-input d-end" value="' + esc(d._endDate) + '" /></div>' +
+        '</div>' +
+        '<input type="hidden" class="d-id" value="' + esc(d._id) + '" />';
+      container.appendChild(el);
+    });
+
+    // Wire delete buttons
+    container.querySelectorAll('.deal-delete-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var card = btn.closest('.deal-editor-card');
+        var id = card.querySelector('.d-id').value;
+        if (!confirm('Angebot löschen?')) return;
+        if (id) {
+          var schedule = getSchedule();
+          saveSchedule(schedule.filter(function (e) { return e.id !== id; }));
+        }
+        card.remove();
+        renderDealsEditor();
+        renderScheduleList();
+      });
+    });
+
+    // Wire per-deal emoji pickers
+    container.querySelectorAll('.deal-editor-card').forEach(function (card) {
+      var emojiBtn    = card.querySelector('.deal-emoji-btn');
+      var emojiPanel  = card.querySelector('.deal-emoji-panel');
+      var emojiSearch = card.querySelector('.deal-emoji-search');
+      var emojiGrid   = card.querySelector('.deal-emoji-grid');
+      var iconInput   = card.querySelector('.d-icon');
+
+      function renderDealEmojis(filter) {
+        var list = filter ? EMOJIS.filter(function (e) {
+          var q = filter.toLowerCase();
+          return e[0].includes(q) || e[1].toLowerCase().includes(q);
+        }) : EMOJIS;
+        if (!list.length) { emojiGrid.innerHTML = '<div class="emoji-no-results">Kein Emoji gefunden.</div>'; return; }
+        emojiGrid.innerHTML = list.map(function (e) {
+          return '<button class="emoji-btn" type="button" data-emoji="' + esc(e[0]) + '">' + e[0] + '</button>';
+        }).join('');
+        emojiGrid.querySelectorAll('.emoji-btn').forEach(function (b) {
+          b.addEventListener('click', function () {
+            iconInput.value = b.getAttribute('data-emoji');
+            emojiPanel.classList.remove('open');
+            emojiSearch.value = '';
+            renderDealEmojis('');
+          });
+        });
+      }
+      emojiBtn.addEventListener('click', function (e) {
+        var isOpen = emojiPanel.classList.contains('open');
+        document.querySelectorAll('.emoji-picker-panel.open').forEach(function (p) { p.classList.remove('open'); });
+        if (!isOpen) { emojiPanel.classList.add('open'); renderDealEmojis(''); setTimeout(function () { emojiSearch.focus(); }, 50); }
+        e.stopPropagation();
+      });
+      emojiSearch.addEventListener('input', function () { renderDealEmojis(emojiSearch.value); });
+      emojiSearch.addEventListener('keydown', function (e) { e.stopPropagation(); });
+    });
+  }
+
+  function collectAndSaveDeals() {
+    var schedule = getSchedule().filter(function (e) { return e.type !== 'deal'; }); // remove existing deals
+    document.querySelectorAll('.deal-editor-card').forEach(function (card) {
+      var data = {
+        badge:     card.querySelector('.d-badge').value.trim(),
+        icon:      card.querySelector('.d-icon').value.trim(),
+        title:     card.querySelector('.d-title').value.trim(),
+        price:     card.querySelector('.d-price').value.trim(),
+        priceUnit: card.querySelector('.d-unit').value.trim(),
+        desc:      card.querySelector('.d-desc').value.trim(),
+        highlight: card.querySelector('.d-highlight').checked
+      };
+      var existingId = card.querySelector('.d-id').value;
+      schedule.push({
+        id:        existingId || generateId(),
+        type:      'deal',
+        startDate: card.querySelector('.d-start').value || '',
+        endDate:   card.querySelector('.d-end').value   || '',
+        data:      data
+      });
+    });
+    return saveSchedule(schedule);
+  }
+
+  function initDeals() {
+    renderDealsEditor();
+
+    document.getElementById('btn-add-deal').addEventListener('click', function () {
+      var schedule = getSchedule();
+      schedule.push({ id: generateId(), type: 'deal', startDate: '', endDate: '',
+        data: { badge: '', icon: '🏷️', title: '', price: '', priceUnit: '', desc: '', highlight: false } });
+      saveSchedule(schedule);
+      renderDealsEditor();
+    });
+
+    document.getElementById('btn-save-deals').addEventListener('click', function () {
+      if (collectAndSaveDeals()) {
+        renderScheduleList();
+        toast('Sonderangebote gespeichert.');
+      }
+    });
+
+    document.getElementById('btn-reset-deals').addEventListener('click', function () {
+      if (!confirm('Alle Sonderangebote auf Standard zurücksetzen?')) return;
+      var schedule = getSchedule().filter(function (e) { return e.type !== 'deal'; });
+      DEFAULTS.deals.forEach(function (d) {
+        schedule.push({ id: generateId(), type: 'deal', startDate: '', endDate: '', data: Object.assign({}, d) });
+      });
+      saveSchedule(schedule);
+      renderDealsEditor();
+      renderScheduleList();
+      toast('Sonderangebote zurückgesetzt.');
+    });
+  }
+
+  // ── PRICES ─────────────────────────────────────────────────────
+  var priceData = { reinigung: null, buegeln: null, waesche: null };
+
+  function initPreise() {
+    priceData.reinigung = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-reinigung') || DEFAULTS.preiseReinigung));
+    priceData.buegeln   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-buegeln')   || DEFAULTS.preiseBuegeln));
+    priceData.waesche   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-waesche')   || DEFAULTS.preiseWaesche));
+
+    renderPriceGroups('reinigung');
+    renderPriceGroups('buegeln');
+    renderPriceGroups('waesche');
+
+    document.querySelectorAll('.price-sub-tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.price-sub-tab').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelectorAll('.price-sub-panel').forEach(function (p) { p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('price-panel-' + btn.getAttribute('data-price-tab')).classList.add('active');
+      });
+    });
+
+    document.getElementById('btn-save-preise').addEventListener('click', function () {
+      collectPrices('reinigung');
+      collectPrices('buegeln');
+      collectPrices('waesche');
+      var ok = lsSet('cleanfix-preise-reinigung', priceData.reinigung) &&
+               lsSet('cleanfix-preise-buegeln',   priceData.buegeln)   &&
+               lsSet('cleanfix-preise-waesche',   priceData.waesche);
+      if (ok) toast('Preise gespeichert.');
+    });
+
+    document.getElementById('btn-reset-preise').addEventListener('click', function () {
+      if (!confirm('Alle Preise auf Standard zurücksetzen?')) return;
+      ['cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche'].forEach(lsDel);
+      priceData.reinigung = JSON.parse(JSON.stringify(DEFAULTS.preiseReinigung));
+      priceData.buegeln   = JSON.parse(JSON.stringify(DEFAULTS.preiseBuegeln));
+      priceData.waesche   = JSON.parse(JSON.stringify(DEFAULTS.preiseWaesche));
+      renderPriceGroups('reinigung');
+      renderPriceGroups('buegeln');
+      renderPriceGroups('waesche');
+      toast('Preise zurückgesetzt.');
+    });
+  }
+
+  function isWaesche(tab) { return tab === 'waesche'; }
+
+  function renderPriceGroups(tab) {
+    var container = document.getElementById('groups-' + tab);
+    container.innerHTML = '';
+    var data = priceData[tab];
+    if (!data || !data.groups) return;
+    data.groups.forEach(function (g, gi) {
+      var block = document.createElement('div');
+      block.className = 'price-group-editor';
+      block.setAttribute('data-gi', gi);
+
+      var rowsHTML = (g.rows || []).map(function (r, ri) {
+        var extra = isWaesche(tab)
+          ? '<input class="price-row-preis row-preis2" placeholder="Nur Mangeln" value="' + esc(r.preis2 || '') + '" />'
+          : '';
+        return '<div class="price-row-editor" data-ri="' + ri + '">' +
+          '<input class="price-row-artikel row-artikel" placeholder="Artikel" value="' + esc(r.artikel) + '" />' +
+          '<input class="price-row-preis row-preis1" placeholder="Preis" value="' + esc(r.preis) + '" />' +
+          extra +
+          '<button class="price-row-delete" title="Zeile löschen" onclick="deleteRow(this,\'' + tab + '\',' + gi + ',' + ri + ')">✕</button>' +
+        '</div>';
+      }).join('');
+
+      block.innerHTML =
+        '<div class="price-group-header-row">' +
+          '<span class="price-group-label-badge">Gruppe</span>' +
+          '<input class="price-group-input group-label" value="' + esc(g.label) + '" placeholder="Gruppenname (optional)" />' +
+          '<button class="btn-delete" style="padding:4px 10px;font-size:0.78rem;" onclick="deleteGroup(this,\'' + tab + '\',' + gi + ')">✕ Gruppe</button>' +
+        '</div>' +
+        '<div class="group-rows">' + rowsHTML + '</div>' +
+        '<div class="price-group-footer">' +
+          '<button class="btn-add-row" onclick="addRow(this,\'' + tab + '\',' + gi + ')">＋ Zeile hinzufügen</button>' +
+        '</div>';
+
+      container.appendChild(block);
+    });
+  }
+
+  window.addGroup = function (tab) {
+    collectPrices(tab);
+    priceData[tab].groups.push({ label: 'Neue Gruppe', rows: [{ artikel: '', preis: '', preis2: '' }] });
+    renderPriceGroups(tab);
+  };
+
+  window.deleteGroup = function (btn, tab, gi) {
+    if (!confirm('Gruppe und alle Zeilen löschen?')) return;
+    collectPrices(tab);
+    priceData[tab].groups.splice(gi, 1);
+    renderPriceGroups(tab);
+  };
+
+  window.addRow = function (btn, tab, gi) {
+    collectPrices(tab);
+    priceData[tab].groups[gi].rows.push({ artikel: '', preis: '', preis2: '' });
+    renderPriceGroups(tab);
+    // Focus the new artikel input
+    var groups = document.querySelectorAll('#groups-' + tab + ' .price-group-editor');
+    if (groups[gi]) {
+      var rows = groups[gi].querySelectorAll('.price-row-editor');
+      var last = rows[rows.length - 1];
+      if (last) last.querySelector('.row-artikel').focus();
+    }
+  };
+
+  window.deleteRow = function (btn, tab, gi, ri) {
+    collectPrices(tab);
+    priceData[tab].groups[gi].rows.splice(ri, 1);
+    renderPriceGroups(tab);
+  };
+
+  function collectPrices(tab) {
+    var container = document.getElementById('groups-' + tab);
+    var groups = [];
+    container.querySelectorAll('.price-group-editor').forEach(function (block) {
+      var label = block.querySelector('.group-label').value.trim();
+      var rows  = [];
+      block.querySelectorAll('.price-row-editor').forEach(function (row) {
+        var r = {
+          artikel: row.querySelector('.row-artikel').value.trim(),
+          preis:   row.querySelector('.row-preis1').value.trim()
+        };
+        if (isWaesche(tab)) {
+          var p2 = row.querySelector('.row-preis2');
+          r.preis2 = p2 ? p2.value.trim() : '';
+        }
+        if (r.artikel || r.preis) rows.push(r);
+      });
+      groups.push({ label: label, rows: rows });
+    });
+    priceData[tab] = { groups: groups };
+  }
+
+  // ── DATA / EXPORT / IMPORT ─────────────────────────────────────
+  function initData() {
+    document.getElementById('btn-export').addEventListener('click', function () {
+      var allKeys = [
+        'cleanfix-schedule',
+        'cleanfix-monatsangebot','cleanfix-banner','cleanfix-deals',
+        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche'
+      ];
+      var out = {};
+      allKeys.forEach(function (k) {
+        var v = localStorage.getItem(k);
+        if (v) out[k] = JSON.parse(v);
+      });
+      var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      var today = new Date().toISOString().slice(0,10);
+      a.href     = url;
+      a.download = 'cleanfix-backup-' + today + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast('Export erfolgreich.');
+    });
+
+    document.getElementById('import-file').addEventListener('change', function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        try {
+          var data = JSON.parse(ev.target.result);
+          var count = 0;
+          Object.keys(data).forEach(function (k) {
+            if (k.startsWith('cleanfix-')) {
+              localStorage.setItem(k, JSON.stringify(data[k]));
+              count++;
+            }
+          });
+          toast(count + ' Datensätze importiert. Seite wird neu geladen…');
+          setTimeout(function () { location.reload(); }, 1500);
+        } catch (err) {
+          toast('Fehler beim Import: Ungültige Datei.', 'error');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('btn-clear-all').addEventListener('click', function () {
+      if (!confirm('ACHTUNG: Alle gespeicherten Daten unwiderruflich löschen?\n\nDie Website zeigt dann wieder die Standard-Inhalte.')) return;
+      var allKeys = [
+        'cleanfix-schedule',
+        'cleanfix-monatsangebot','cleanfix-banner','cleanfix-deals',
+        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche'
+      ];
+      allKeys.forEach(lsDel);
+      toast('Alle Daten gelöscht. Seite wird neu geladen…');
+      setTimeout(function () { location.reload(); }, 1500);
+    });
+  }
+
+  // ── DATA MIGRATION / CLEANUP ────────────────────────────────────
+  // Clean up any stale / empty localStorage entries from previous sessions
+  // ── MIGRATION: lift old per-key data into schedule ─────────────
+  function migrateData() {
+    var schedule = getSchedule();
+    var changed = false;
+
+    // Migrate legacy cleanfix-monatsangebot
+    try {
+      var ma = lsGet('cleanfix-monatsangebot');
+      if (ma && typeof ma === 'object' && ma.titel) {
+        schedule.push({ id: generateId(), type: 'monatsangebot', startDate: '', endDate: '', data: ma });
+        lsDel('cleanfix-monatsangebot');
+        changed = true;
+      }
+    } catch (e) {}
+
+    // Migrate legacy cleanfix-banner
+    try {
+      var banner = lsGet('cleanfix-banner');
+      if (banner && typeof banner === 'object') {
+        var bd = banner.title || banner.desc ? banner : (banner.text ? { icon: '✨', title: '', desc: banner.text } : null);
+        if (bd) {
+          schedule.push({ id: generateId(), type: 'banner', startDate: '', endDate: '', data: { icon: bd.icon || '✨', title: bd.title || '', desc: bd.desc || '' } });
+          lsDel('cleanfix-banner');
+          changed = true;
+        }
+      }
+    } catch (e) {}
+
+    // Migrate legacy cleanfix-deals
+    try {
+      var deals = lsGet('cleanfix-deals');
+      if (Array.isArray(deals) && deals.length) {
+        deals.forEach(function (d) {
+          schedule.push({ id: generateId(), type: 'deal', startDate: '', endDate: '', data: d });
+        });
+        lsDel('cleanfix-deals');
+        changed = true;
+      }
+    } catch (e) {}
+
+    if (changed) saveSchedule(schedule);
+  }
+
+  // ── INIT ───────────────────────────────────────────────────────
+  function initAdmin() {
+    migrateData();
+    var fns = [initNav, initAktionen, initZeitplan, initDeals, initPreise, initData];
+    fns.forEach(function (fn) {
+      try { fn(); }
+      catch (e) { console.error('[admin] ' + fn.name + ' failed:', e); }
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
