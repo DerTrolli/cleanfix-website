@@ -1,56 +1,13 @@
 [
   {
-    "id": "default_ma_01",
-    "type": "monatsangebot",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "monat": "Februar",
-      "titel": "10 % auf unseren Hemdenservice",
-      "text": "Im Februar sparen Sie 10 % auf den gesamten Hemdservice – das gilt auch für unsere Bonuskarten! Perfekt für alle, die regelmäßig auf einen frischen, perfekt gebügelten Auftritt setzen.",
-      "angebot": "10%",
-      "auf": "Hemdenservice"
-    }
-  },
-  {
-    "id": "default_bn_01",
+    "id": "buka5v2gcfo3",
     "type": "banner",
     "startDate": "",
     "endDate": "",
     "data": {
-      "icon": "\u2728",
-      "title": "Februar-Aktion:",
-      "desc": "10 % Rabatt auf den Hemdservice – jetzt sparen!"
-    }
-  },
-  {
-    "id": "default_dl_01",
-    "type": "deal",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "badge": "Jeden Donnerstag",
-      "icon": "\uD83D\uDC56",
-      "title": "\u201EHose runter\u201C",
-      "price": "4,99 \u20AC",
-      "priceUnit": "",
-      "desc": "Hosen donnerstags zum Aktionspreis – einfach vorbeikommen und sparen.",
-      "highlight": true
-    }
-  },
-  {
-    "id": "default_dl_02",
-    "type": "deal",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "badge": "Ab 3 Stück",
-      "icon": "\uD83D\uDC56",
-      "title": "Mengenrabatt Hosen",
-      "price": "8,00 \u20AC",
-      "priceUnit": "/ Stück",
-      "desc": "Ab 3 Hosen zahlen Sie nur 8,00 \u20AC pro Stück – gilt dauerhaft, kein Mindestumsatz.",
-      "highlight": false
+      "icon": "✨",
+      "title": "April-Aktion:",
+      "desc": "20 % Rabatt auf Hemden – jetzt sparen!"
     }
   }
 ]
