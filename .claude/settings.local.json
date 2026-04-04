@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(html|js|css|png|jpg|txt|xlsx\\)$\")",
+      "Bash(mkdir -p Cleanfix/public-site/data)",
+      "Bash(mkdir -p Cleanfix/admin-site)",
+      "Bash(cp admin.html admin-site/index.html)",
+      "Bash(cp style.css admin-site/style.css)",
+      "Bash(cp favicon.png admin-site/favicon.png)",
+      "Bash(cp \"Logo-Cleanfix Transparent.png\" \"admin-site/Logo-Cleanfix Transparent.png\")",
+      "Bash(node --check \"C:/Users/troll/StudioProjects/cleanfix-website/Cleanfix/public-site/main.js\")",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Bash(node -e \"try { JSON.parse\\(require\\(''fs''\\).readFileSync\\(''$f'',''utf8''\\)\\); console.log\\(''✓ Valid JSON''\\); } catch\\(e\\) { console.log\\(''✗ ERROR: '' + e.message\\); }\")",
+      "Bash(done)",
+      "Bash(node -e \":*)",
+      "Bash(node -e \"const crypto = require\\(''crypto''\\); const hash = crypto.createHash\\(''sha256''\\).update\\(''cleanfix2026''\\).digest\\(''hex''\\); console.log\\(hash\\);\")",
+      "Bash(ls -1 /c/Users/troll/StudioProjects/cleanfix-website/Cleanfix/public-site/data/*.json)",
+      "WebSearch"
+    ]
+  }
+}
