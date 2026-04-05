@@ -11,5 +11,18 @@
       "angebot": "10%",
       "auf": "Alles"
     }
+  },
+  {
+    "id": "jhh3rltzgw10",
+    "type": "monatsangebot",
+    "startDate": "2026-04-05",
+    "endDate": "2026-04-05",
+    "data": {
+      "monat": "April",
+      "titel": "Alles ist kostenlos!",
+      "text": "",
+      "angebot": "1000%",
+      "auf": "ALLES IST KOSTENLOS"
+    }
   }
 ]
