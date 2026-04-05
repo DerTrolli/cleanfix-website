@@ -11,5 +11,16 @@
       "angebot": "20%",
       "auf": "Jacken und Mäntel"
     }
+  },
+  {
+    "id": "wgfqk84s1ho3",
+    "type": "banner",
+    "startDate": "2026-04-01",
+    "endDate": "2026-04-30",
+    "data": {
+      "icon": "📣",
+      "title": "20% auf Jacken und Mäntel",
+      "desc": "Nur für diesen Monat!"
+    }
   }
 ]
