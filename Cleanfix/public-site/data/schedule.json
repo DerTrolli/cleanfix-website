@@ -1,17 +1,1 @@
-[
-  {
-    "id": "oakk7hxstt50",
-    "type": "deal",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "badge": "Hab heute",
-      "icon": "✅",
-      "title": "Nix",
-      "price": "1000,00€",
-      "priceUnit": "pro Banane",
-      "desc": "Nö",
-      "highlight": true
-    }
-  }
-]
+[]
