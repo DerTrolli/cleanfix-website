@@ -24,5 +24,16 @@
       "angebot": "1000%",
       "auf": "ALLES IST KOSTENLOS"
     }
+  },
+  {
+    "id": "g9xqz686bfvj",
+    "type": "banner",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "icon": "✨",
+      "title": "Februar-Aktion:",
+      "desc": "10 % Rabatt auf den Hemdservice – jetzt sparen!"
+    }
   }
 ]
