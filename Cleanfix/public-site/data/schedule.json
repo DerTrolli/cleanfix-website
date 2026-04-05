@@ -22,5 +22,20 @@
       "title": "20% auf Jacken und Mäntel",
       "desc": "Nur für diesen Monat!"
     }
+  },
+  {
+    "id": "3wccl1su4us3",
+    "type": "deal",
+    "startDate": "2026-04-07",
+    "endDate": "2026-04-18",
+    "data": {
+      "badge": "",
+      "icon": "🧥",
+      "title": "Hallo",
+      "price": "100",
+      "priceUnit": "Bansne",
+      "desc": "Hall",
+      "highlight": false
+    }
   }
 ]
