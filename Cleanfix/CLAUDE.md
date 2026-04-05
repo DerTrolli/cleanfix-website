@@ -157,10 +157,8 @@ All admin JS lives in a single large IIFE (`'use strict'`) at the bottom of the 
 ### Sections (sidebar nav → section IDs)
 | Nav label | Section ID | Content |
 |-----------|-----------|---------|
-| 📣 Aktionen & Banner | `section-aktionen` | MA form + Banner form side-by-side with schedule dates; live previews |
-| 🗓️ Zeitplan | `section-zeitplan` | Full list of all schedule entries; inline edit + delete |
-| 🏷️ Sonderangebote | `section-deals` | Deal cards editor with per-card date fields |
-| 💶 Preise | `section-preise` | Price table editor with group/row management |
+| 🗓️ Zeitplan | `section-zeitplan` | Unified schedule management: visual timeline, type chooser (MA/Banner/Deal), load-existing dropdown, live preview, schedule list with inline edit + delete |
+| 💶 Preise | `section-preise` | Price table editor with group/row management; Excel import/export |
 | 💾 Daten | `section-daten` | Export/import localStorage as JSON |
 
 Active section toggled via `.active` class on both `.admin-nav-item` and `.admin-section`.
@@ -176,27 +174,26 @@ Active section toggled via `.active` class on both `.admin-nav-item` and `.admin
 
 **Section init functions (called from `initAdmin()`):**
 - `initNav()` — wires sidebar nav click handlers
-- `initAktionen()` — loads active MA+Banner into forms; wires save + load-current buttons; live preview on input
-- `initZeitplan()` — renders schedule list; wires new-entry button
-- `initDeals()` — renders deals editor from schedule entries; wires add/save/reset
-- `initPreise()` — renders price editors from localStorage; wires group/row management
+- `initZeitplan()` — unified section: renders timeline + schedule list, wires type chooser (MA/Banner/Deal), load-existing dropdown, new-entry form with live preview, Planen toggle, and save handler. Calls `takeSnapshot()` for dirty tracking.
+- `initPreise()` — renders price editors from localStorage; wires group/row management; Excel import/export via SheetJS
 - `initData()` — export/import/clear-all buttons. Export and clear-all both use an `allKeys` array that must include `cleanfix-schedule` alongside the legacy and price keys. Import accepts any `cleanfix-*` key from the JSON file.
+- `initPublishBar()` — wires publish (calls `apiSave`) and discard (reverts to snapshot) buttons on the sticky bottom bar
 
 **Zeitplan rendering:**
-- `renderScheduleList()` — reads all schedule entries, sorts (permanent→active→scheduled→expired), renders `.sched-entry` rows
-- `buildEditFormHTML(entry)` — returns HTML for inline edit form appropriate to entry type
-- `wireEditForm(formEl, entry)` — attaches save handler to inline edit form; updates entry in-place
-- Edit button toggles `.sched-edit-form` visibility inside the entry row
-- Delete button confirms + splices entry from schedule array + re-renders
+- `renderScheduleList()` — reads all schedule entries, sorts (permanent→active→scheduled→expired), renders `.sched-entry` rows with inline edit + delete
+- `renderTimeline()` — draws a visual Gantt-chart timeline (5-month window, current ±2) with colored bars per type; bars are clickable to scroll to entries
+- `buildEditFormHTML(entry)` — returns HTML for inline edit form appropriate to entry type (dates at bottom, Planen toggle, emoji picker markup for banner/deal)
+- `wireEditForm(formEl, entry)` — attaches save, cancel, Planen toggle, and emoji picker handlers to inline edit form; calls `renderTimeline()` + `checkDirty()` after save; does NOT call `apiSave()`
+- `updateEntryPreview(type, container)` — renders a live preview of the entry being created/edited
+- `populateLoadExisting(type)` — fills the "load existing" dropdown with entries of the selected type as templates
 
-**Deals editor:**
-- Each deal is stored as individual `type='deal'` schedule entry (not a flat array)
-- `renderDealsEditor()` — reads all deal entries from schedule; renders card editors with per-card emoji picker, date fields, hidden `d-id` field
-- `collectAndSaveDeals()` — removes all existing deal entries; re-inserts from current form state
-- DEFAULTS.deals defines the two permanent built-in deals (Donnerstag Hosen + Mengenrabatt)
+**Publish bar (dirty tracking):**
+- `takeSnapshot()` — stores JSON snapshot of current schedule state
+- `checkDirty()` — compares current vs snapshot, builds human-readable change list, shows/hides publish bar
+- All edit/delete handlers call `checkDirty()` — only the publish bar's publish button triggers `apiSave()`
 
 ### Emoji Picker
-Shared `EMOJIS` array (glyph + search keywords) + picker panel in each location that needs it (banner, each deal card). Fuzzy search via `renderEmojis(filter)` scanning both glyph and keyword string. Banner picker is wired with `initEmojiPicker(btnId, panelId, searchId, gridId, onSelect)`. Deal pickers are wired inline per-card in `renderDealsEditor()`. A global click-outside handler closes any open picker.
+Shared `EMOJIS` array (glyph + search keywords) + picker panel for banner/deal icon fields. Fuzzy search via `renderEmojis(filter)` scanning both glyph and keyword string. `initEmojiPicker(btnOrId, panelOrId, searchOrId, gridOrId, onSelect)` accepts both string IDs and DOM elements, used in both the new-entry form and inline edit forms. A global click-outside handler closes any open picker.
 
 ### localStorage Keys (complete list)
 
@@ -263,9 +260,10 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 - **Forms**: No backend connected yet. Contact and newsletter forms show a success state client-side only. Real submission requires a webhook (n8n via Cloudflare Tunnel is planned).
 - **Next Gen mode**: When toggling off, the IIFE cleans up by calling `obs.disconnect()` on all observers in `activeObservers[]` and running all `cleanupFunctions[]` (scroll/mouse listeners). Always push new observers/listeners into these arrays when adding motion effects.
 - **`esc()` vs `escHtml()`**: `admin.html` uses `esc()` (defined at top of its IIFE). `main.js` uses `escHtml()` (defined as a global before the schedule IIFE). They are identical in implementation — do not confuse them.
-- **Saving from Aktionen always creates a new entry** — it never overwrites an existing one. To update the current live entry, use "Aktuellen laden", edit, save new, then delete the old one in Zeitplan. Dated entries expire naturally.
+- **Saving a new entry always creates a new schedule entry** — it never overwrites an existing one. To update an existing entry, use inline edit in the schedule list, or load it as a template via the "load existing" dropdown. Dated entries expire naturally.
 - **Price editor `onclick` handlers**: The price group/row buttons use inline `onclick` attributes calling `addGroup()`, `deleteGroup()`, `addRow()`, `deleteRow()`. These functions are explicitly assigned to `window` inside the IIFE (e.g. `window.addGroup = function(tab) {...}`) to make them accessible from inline handlers. This pattern is intentional — do not refactor to addEventListener without also removing the `onclick` attributes.
-- **`initAdmin()` error isolation**: Each init function is wrapped in its own `try/catch` (line ~2320), so a crash in one section (e.g. `initDeals`) does not prevent other sections from loading. Errors are logged to `console.error` with the function name. Check the browser console if a section appears broken.
+- **`initAdmin()` error isolation**: Each init function is wrapped in its own `try/catch`, so a crash in one section does not prevent other sections from loading. Errors are logged to `console.error` with the function name. Check the browser console if a section appears broken.
+- **Publish bar pattern**: No inline `apiSave()` calls from schedule edits. All schedule changes are local (localStorage) until the user clicks the publish bar's "Änderungen veröffentlichen" button, which batch-syncs to the server. Price saves still use inline `apiSave()` separately.
 
 ---
 

@@ -408,6 +408,7 @@
       transition: background var(--transition), box-shadow var(--transition);
     }
     .btn-add:hover { background: var(--blue-mid); box-shadow: var(--shadow-sm); }
+    .btn-add.active { background: var(--blue); color: #fff; border-color: var(--blue); }
     .btn-delete {
       display: inline-flex;
       align-items: center;
@@ -424,6 +425,69 @@
       transition: background var(--transition);
     }
     .btn-delete:hover { background: #fecaca; }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 20px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--blue);
+      background: transparent;
+      border: 1.5px solid var(--blue-mid);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .btn-outline:hover { background: var(--blue-light); }
+    .btn-outline.active { background: var(--blue-light); border-color: var(--blue); }
+
+    /* ── PUBLISH BAR (sticky bottom) ───────────────────────────── */
+    .publish-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: var(--neutral-900);
+      border-top: 2px solid var(--blue);
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
+      padding: 14px 24px;
+      animation: publishSlideUp 0.25s ease-out;
+    }
+    @keyframes publishSlideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .publish-bar-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .publish-changes {
+      font-size: 0.85rem;
+      color: var(--neutral-300);
+      line-height: 1.5;
+    }
+    .publish-changes span {
+      display: inline-block;
+      background: var(--neutral-800);
+      border: 1px solid var(--neutral-700);
+      border-radius: var(--radius-sm);
+      padding: 2px 8px;
+      margin: 2px 4px 2px 0;
+      font-size: 0.8rem;
+    }
+    .publish-bar-actions { display: flex; gap: 10px; flex-shrink: 0; }
+    .publish-btn {
+      background: #16a34a !important;
+      box-shadow: 0 4px 14px rgba(22,163,74,0.3) !important;
+    }
+    .publish-btn:hover { opacity: 0.9; }
+    .publish-actions { align-items: center; }
 
     /* ── DEAL EDITOR ───────────────────────────────────────────── */
     .deal-editor-card {
@@ -853,6 +917,152 @@
       background: rgba(17,19,24,0.95);
       border-bottom-color: var(--neutral-200);
     }
+
+    /* ── TIMELINE GANTT CHART ──────────────────────────────── */
+    .tl-card { overflow: hidden; }
+    .tl-container {
+      position: relative;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: var(--neutral-300) transparent;
+    }
+    .tl-container::-webkit-scrollbar { height: 6px; }
+    .tl-container::-webkit-scrollbar-thumb { background: var(--neutral-300); border-radius: 3px; }
+    .tl-inner { position: relative; min-width: 700px; }
+    .tl-header {
+      display: flex;
+      border-bottom: 1px solid var(--neutral-200);
+      margin-bottom: 6px;
+      user-select: none;
+    }
+    .tl-month-cell {
+      flex: none;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--neutral-600);
+      padding: 6px 0 8px;
+      border-right: 1px solid var(--neutral-200);
+    }
+    .tl-month-cell:last-child { border-right: none; }
+    .tl-days-row {
+      position: relative;
+      height: 16px;
+      border-bottom: 1px solid var(--neutral-200);
+      margin-bottom: 2px;
+    }
+    .tl-day-tick {
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: var(--neutral-200);
+      opacity: 0.45;
+    }
+    .tl-day-label {
+      position: absolute;
+      top: 1px;
+      font-size: 0.56rem;
+      color: var(--neutral-400);
+      transform: translateX(-50%);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .tl-today-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #ef4444;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .tl-today-label {
+      position: absolute;
+      top: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.58rem;
+      font-weight: 700;
+      color: #ef4444;
+      background: var(--white);
+      padding: 0 4px;
+      border-radius: 3px;
+      white-space: nowrap;
+      line-height: 1.3;
+      border: 1px solid #ef4444;
+    }
+    .tl-lanes { position: relative; padding: 4px 0; }
+    .tl-lane { position: relative; height: 32px; margin-bottom: 4px; }
+    .tl-lane:last-child { margin-bottom: 0; }
+    .tl-bar {
+      position: absolute;
+      top: 2px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.12s ease;
+      z-index: 2;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .tl-bar:hover {
+      box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+      transform: translateY(-1px);
+      z-index: 5;
+    }
+    .tl-bar--banner { background: #0830DD; color: #fff; }
+    .tl-bar--monatsangebot { background: #0d9488; color: #fff; }
+    .tl-bar--deal { background: #ea580c; color: #fff; }
+    .tl-bar--permanent { border: 2px dashed currentColor; opacity: 0.7; }
+    .tl-bar--permanent.tl-bar--banner { background: rgba(8,48,221,0.25); color: #6b8aff; border-color: #6b8aff; }
+    .tl-bar--permanent.tl-bar--monatsangebot { background: rgba(13,148,136,0.25); color: #5eead4; border-color: #5eead4; }
+    .tl-bar--permanent.tl-bar--deal { background: rgba(234,88,12,0.25); color: #fb923c; border-color: #fb923c; }
+    .tl-bar--expired { opacity: 0.35; filter: saturate(0.3); }
+    .tl-bar--scheduled {
+      opacity: 0.75;
+      background-image: repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.08) 4px, rgba(255,255,255,0.08) 8px);
+    }
+    .tl-bar-infinity { font-size: 0.85rem; margin-right: 5px; opacity: 0.7; }
+    .tl-legend { display: flex; gap: 14px; align-items: center; }
+    .tl-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; color: var(--neutral-600); }
+    .tl-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+    .tl-legend-dot--banner { background: #0830DD; }
+    .tl-legend-dot--ma { background: #0d9488; }
+    .tl-legend-dot--deal { background: #ea580c; }
+    .tl-empty { text-align: center; padding: 32px 20px; color: var(--neutral-400); font-size: 0.88rem; }
+    .tl-tooltip {
+      position: fixed;
+      z-index: 1000;
+      padding: 8px 12px;
+      background: var(--neutral-900);
+      color: var(--white);
+      font-size: 0.75rem;
+      line-height: 1.4;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      pointer-events: none;
+      max-width: 240px;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .tl-tooltip.visible { opacity: 1; }
+    @media (max-width: 900px) {
+      .tl-legend { gap: 8px; flex-wrap: wrap; }
+      .tl-bar { font-size: 0.65rem; height: 24px; padding: 0 6px; }
+      .tl-lane { height: 28px; }
+    }
   </style>
 </head>
 <body>
@@ -897,14 +1107,8 @@
     <!-- Sidebar -->
     <aside class="admin-sidebar">
       <div class="admin-sidebar-title">Navigation</div>
-      <button class="admin-nav-item active" data-section="aktionen">
-        <span class="admin-nav-icon">📣</span> Aktionen &amp; Banner
-      </button>
-      <button class="admin-nav-item" data-section="zeitplan">
+      <button class="admin-nav-item active" data-section="zeitplan">
         <span class="admin-nav-icon">🗓️</span> Zeitplan
-      </button>
-      <button class="admin-nav-item" data-section="deals">
-        <span class="admin-nav-icon">🏷️</span> Sonderangebote
       </button>
       <button class="admin-nav-item" data-section="preise">
         <span class="admin-nav-icon">💶</span> Preise
@@ -917,174 +1121,54 @@
     <!-- Main content -->
     <main>
 
-      <!-- ── MONATSANGEBOT ─────────────────────────────────── -->
-      <!-- ── AKTIONEN & BANNER (combined) ─────────────────── -->
-      <!-- ── AKTIONEN & BANNER ─────────────────────────────── -->
-      <section class="admin-section active" id="section-aktionen">
-        <h1 class="admin-section-title">Aktionen &amp; Banner</h1>
-        <p class="admin-section-desc">Monatsangebot und Promo-Banner auf einen Blick — bearbeiten, Zeitraum festlegen und direkt vergleichen.</p>
-
-        <!-- Top row: both forms side by side -->
-        <div class="aktionen-grid">
-
-          <!-- Monatsangebot form -->
-          <div class="admin-card" style="margin-bottom:0;">
-            <div class="admin-card-title">📅 Monatsangebot</div>
-            <div class="admin-field">
-              <label class="admin-label" for="ma-monat">Monat</label>
-              <input type="text" id="ma-monat" class="admin-input" placeholder="z. B. März" />
-            </div>
-            <div class="admin-field">
-              <label class="admin-label" for="ma-titel">Titel</label>
-              <input type="text" id="ma-titel" class="admin-input" placeholder="z. B. 10 % auf unseren Hemdenservice" />
-            </div>
-            <div class="admin-field">
-              <label class="admin-label" for="ma-text">Beschreibungstext</label>
-              <textarea id="ma-text" class="admin-textarea" rows="3" placeholder="Kurze Beschreibung des Angebots…"></textarea>
-            </div>
-            <div class="admin-row">
-              <div class="admin-field">
-                <label class="admin-label" for="ma-angebot">Rabatt (z. B. 10%)</label>
-                <input type="text" id="ma-angebot" class="admin-input" placeholder="10%" />
-              </div>
-              <div class="admin-field">
-                <label class="admin-label" for="ma-auf">Gilt für</label>
-                <input type="text" id="ma-auf" class="admin-input" placeholder="z. B. Hemdenservice" />
-              </div>
-            </div>
-            <!-- Schedule dates -->
-            <div class="schedule-dates-row">
-              <div class="admin-field" style="margin-bottom:0;">
-                <label class="admin-label">Gültig von <span class="sched-hint">(leer = sofort &amp; dauerhaft)</span></label>
-                <input type="date" id="ma-start" class="admin-input" />
-              </div>
-              <div class="admin-field" style="margin-bottom:0;">
-                <label class="admin-label">Gültig bis <span class="sched-hint">(leer = kein Ablaufdatum)</span></label>
-                <input type="date" id="ma-end" class="admin-input" />
-              </div>
-            </div>
-            <div class="admin-actions">
-              <button class="btn-save" id="btn-save-ma">💾 Als neuen Eintrag speichern</button>
-              <button class="btn-reset" id="btn-load-ma-current">↺ Aktuellen laden</button>
-            </div>
-          </div>
-
-          <!-- Banner form -->
-          <div class="admin-card" style="margin-bottom:0;">
-            <div class="admin-card-title">📣 Promo-Banner</div>
-            <div class="admin-field">
-              <label class="admin-label">Icon (Emoji)</label>
-              <div style="display:flex;gap:8px;align-items:center;">
-                <input type="text" id="banner-icon" class="admin-input" placeholder="✨" style="width:72px;flex-shrink:0;font-size:1.35rem;text-align:center;" />
-                <div class="emoji-picker-wrap">
-                  <button class="btn-add" id="banner-emoji-btn" type="button" style="padding:9px 14px;white-space:nowrap;" title="Emoji auswählen">😊 ▾</button>
-                  <div class="emoji-picker-panel" id="banner-emoji-panel">
-                    <input class="emoji-search-input" id="banner-emoji-search" placeholder="🔍 Emoji suchen…" autocomplete="off" />
-                    <div class="emoji-grid" id="banner-emoji-grid"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="admin-field">
-              <label class="admin-label">Titel <span style="font-weight:400;color:var(--neutral-400);">(immer fett)</span></label>
-              <input type="text" id="banner-title" class="admin-input" placeholder="Februar-Aktion:" />
-            </div>
-            <div class="admin-field">
-              <label class="admin-label">Beschreibungstext</label>
-              <input type="text" id="banner-desc" class="admin-input" placeholder="10 % Rabatt auf den Hemdservice – jetzt sparen!" />
-            </div>
-            <!-- Schedule dates -->
-            <div class="schedule-dates-row">
-              <div class="admin-field" style="margin-bottom:0;">
-                <label class="admin-label">Gültig von <span class="sched-hint">(leer = sofort &amp; dauerhaft)</span></label>
-                <input type="date" id="banner-start" class="admin-input" />
-              </div>
-              <div class="admin-field" style="margin-bottom:0;">
-                <label class="admin-label">Gültig bis <span class="sched-hint">(leer = kein Ablaufdatum)</span></label>
-                <input type="date" id="banner-end" class="admin-input" />
-              </div>
-            </div>
-            <div class="admin-actions">
-              <button class="btn-save" id="btn-save-banner">💾 Als neuen Eintrag speichern</button>
-              <button class="btn-reset" id="btn-load-banner-current">↺ Aktuellen laden</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom row: both previews side by side -->
-        <div class="aktionen-grid" style="margin-top:20px;">
-          <div>
-            <p class="preview-label">Vorschau – Monatsangebot</p>
-            <div class="preview-box">
-              <div class="monatsangebot-card" style="pointer-events:none;">
-                <div class="monatsangebot-tag">Monatsangebot</div>
-                <div class="monatsangebot-inner">
-                  <div class="monatsangebot-left">
-                    <div class="monatsangebot-month" id="prev-ma-monat"></div>
-                    <div class="monatsangebot-headline" id="prev-ma-titel"></div>
-                    <p class="monatsangebot-body" id="prev-ma-text"></p>
-                  </div>
-                  <div class="monatsangebot-right" aria-hidden="true">
-                    <div class="monatsangebot-discount" id="prev-ma-angebot"></div>
-                    <div class="monatsangebot-service" id="prev-ma-auf"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <p class="preview-label">Vorschau – Promo-Banner</p>
-            <div class="preview-box" style="padding:8px;">
-              <div class="promo-banner" style="border-radius:var(--radius-sm);">
-                <div class="container promo-inner" style="max-width:100%;padding:0 16px;">
-                  <span class="promo-icon" id="prev-banner-icon" aria-hidden="true">✨</span>
-                  <p id="prev-banner-text"></p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── ZEITPLAN ──────────────────────────────────────── -->
-      <section class="admin-section" id="section-zeitplan">
+      <!-- ── ZEITPLAN (unified) ──────────────────────────────── -->
+      <section class="admin-section active" id="section-zeitplan">
         <h1 class="admin-section-title">Zeitplan</h1>
-        <p class="admin-section-desc">Alle gespeicherten Aktionen im Überblick. Geplante Einträge werden automatisch zur richtigen Zeit auf der Website aktiviert.</p>
+        <p class="admin-section-desc">Alle Aktionen, Banner und Sonderangebote – erstellen, planen und veröffentlichen.</p>
 
+        <!-- Timeline Gantt Chart -->
+        <div class="admin-card tl-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--neutral-200);">
+            <span class="admin-card-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">Timeline</span>
+            <div class="tl-legend">
+              <span class="tl-legend-item"><span class="tl-legend-dot tl-legend-dot--banner"></span>Banner</span>
+              <span class="tl-legend-item"><span class="tl-legend-dot tl-legend-dot--ma"></span>Monatsangebot</span>
+              <span class="tl-legend-item"><span class="tl-legend-dot tl-legend-dot--deal"></span>Angebot</span>
+            </div>
+          </div>
+          <div id="timeline-container" class="tl-container">
+            <div class="tl-empty">Keine Einträge vorhanden.</div>
+          </div>
+        </div>
+
+        <!-- Unified entry creation + schedule list -->
         <div class="admin-card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--neutral-200);">
             <span class="admin-card-title" style="margin-bottom:0;padding-bottom:0;border-bottom:none;">Alle Einträge</span>
             <button class="btn-add" id="btn-new-schedule-entry" type="button">＋ Neuer Eintrag</button>
           </div>
-          <!-- New entry creation form (hidden by default) -->
-          <div id="schedule-new-form" style="display:none;"></div>
+
+          <!-- Type chooser + form (hidden by default) -->
+          <div id="schedule-new-form" style="display:none;">
+            <div id="nf-type-chooser" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+            <!-- Load existing entry selector (shown after type is chosen) -->
+            <div id="nf-load-existing" style="display:none;margin-bottom:16px;">
+              <label class="admin-label">Bestehenden Eintrag als Vorlage laden</label>
+              <select id="nf-load-select" class="admin-input" style="max-width:400px;">
+                <option value="">– Leer beginnen –</option>
+              </select>
+            </div>
+            <div id="nf-fields"></div>
+          </div>
+
+          <!-- Live preview area (shown when creating/editing) -->
+          <div id="entry-preview-area" style="display:none;margin-bottom:20px;">
+            <p class="preview-label" id="entry-preview-label">Vorschau</p>
+            <div class="preview-box" id="entry-preview-box"></div>
+          </div>
+
           <!-- Schedule list -->
           <div id="schedule-list"></div>
-        </div>
-      </section>
-
-      <!-- ── SONDERANGEBOTE ────────────────────────────────── -->
-      <section class="admin-section" id="section-deals">
-        <h1 class="admin-section-title">Sonderangebote</h1>
-        <p class="admin-section-desc">Angebotskarten auf der Website. Dauerhafte Angebote leer lassen bei den Datumsfeldern. Zeitlich begrenzte Aktionen erhalten Start- und Enddatum.</p>
-
-        <div class="admin-card">
-          <div class="admin-card-title">Angebote</div>
-          <div id="deals-editor"></div>
-          <div style="margin-top:14px;">
-            <button class="btn-add" id="btn-add-deal">＋ Angebot hinzufügen</button>
-          </div>
-          <div class="admin-actions">
-            <button class="btn-save" id="btn-save-deals">💾 Alle speichern</button>
-            <button class="btn-reset" id="btn-reset-deals">↺ Zurücksetzen</button>
-          </div>
-        </div>
-
-        <div class="admin-card" style="margin-top:18px;">
-          <p class="preview-label">Vorschau – Sonderangebote (so sieht es auf der Website aus)</p>
-          <div class="preview-box" style="padding:16px;background:var(--bg-dark,#0d0d1a);">
-            <div class="deals-grid" id="deals-preview-grid" style="pointer-events:none;"></div>
-          </div>
         </div>
       </section>
 
@@ -1161,6 +1245,17 @@
       </section>
 
     </main>
+  </div>
+</div>
+
+<!-- Global publish bar (sticky bottom) -->
+<div class="publish-bar" id="publish-bar" style="display:none;">
+  <div class="publish-bar-inner">
+    <div class="publish-changes" id="publish-changes"></div>
+    <div class="publish-bar-actions">
+      <button class="btn-reset" id="publish-discard">Verwerfen</button>
+      <button class="btn-save publish-btn" id="publish-btn">🚀 Änderungen veröffentlichen</button>
+    </div>
   </div>
 </div>
 
@@ -1482,209 +1577,8 @@
   };
 
   // ═══════════════════════════════════════════════════════════════
-  //  AKTIONEN — Monatsangebot + Banner forms
+  //  (Aktionen section removed — unified into Zeitplan)
   // ═══════════════════════════════════════════════════════════════
-
-  // ── Form field helpers ──────────────────────────────────────────────────
-  function getMaFields() {
-    return {
-      monat:   document.getElementById('ma-monat').value.trim(),
-      titel:   document.getElementById('ma-titel').value.trim(),
-      text:    document.getElementById('ma-text').value.trim(),
-      angebot: document.getElementById('ma-angebot').value.trim(),
-      auf:     document.getElementById('ma-auf').value.trim()
-    };
-  }
-  function setMaFields(d) {
-    document.getElementById('ma-monat').value   = d.monat   || '';
-    document.getElementById('ma-titel').value   = d.titel   || '';
-    document.getElementById('ma-text').value    = d.text    || '';
-    document.getElementById('ma-angebot').value = d.angebot || '';
-    document.getElementById('ma-auf').value     = d.auf     || '';
-    document.getElementById('ma-start').value   = d._startDate || '';
-    document.getElementById('ma-end').value     = d._endDate   || '';
-    updateMAPreview();
-  }
-  function getBannerFields() {
-    return {
-      icon:  document.getElementById('banner-icon').value.trim(),
-      title: document.getElementById('banner-title').value.trim(),
-      desc:  document.getElementById('banner-desc').value.trim()
-    };
-  }
-  function setBannerFields(d) {
-    document.getElementById('banner-icon').value    = d.icon  || '';
-    document.getElementById('banner-title').value   = d.title || '';
-    document.getElementById('banner-desc').value    = d.desc  || '';
-    document.getElementById('banner-start').value   = d._startDate || '';
-    document.getElementById('banner-end').value     = d._endDate   || '';
-    updateBannerPreview();
-  }
-
-  // ── Previews ───────────────────────────────────────────────────────────────
-  function updateMAPreview() {
-    var v = getMaFields();
-    var el;
-    el = document.getElementById('prev-ma-monat');   if (el) el.textContent = v.monat;
-    el = document.getElementById('prev-ma-titel');   if (el) el.textContent = v.titel;
-    el = document.getElementById('prev-ma-text');    if (el) el.textContent = v.text;
-    el = document.getElementById('prev-ma-angebot'); if (el) el.textContent = v.angebot ? '−' + v.angebot : '';
-    el = document.getElementById('prev-ma-auf');     if (el) el.textContent = v.auf;
-  }
-  function updateBannerPreview() {
-    var icon  = (document.getElementById('banner-icon').value  || '').trim();
-    var title = (document.getElementById('banner-title').value || '').trim();
-    var desc  = (document.getElementById('banner-desc').value  || '').trim();
-    var prevIcon = document.getElementById('prev-banner-icon');
-    if (prevIcon) prevIcon.textContent = icon || '✨';
-    var prevText = document.getElementById('prev-banner-text');
-    if (prevText) {
-      var html = '';
-      if (title) html += '<strong>' + esc(title) + '</strong>';
-      if (title && desc) html += ' ';
-      if (desc)  html += esc(desc);
-      prevText.innerHTML = html;
-    }
-  }
-
-  // ── initAktionen ──────────────────────────────────────────────────────────────
-  function initAktionen() {
-    // Load current best active MA into form
-    var bestMA = getBestActive('monatsangebot');
-    if (bestMA) {
-      var d = Object.assign({}, bestMA.data, { _startDate: bestMA.startDate, _endDate: bestMA.endDate });
-      setMaFields(d);
-    } else {
-      setMaFields(DEFAULTS.monatsangebot);
-    }
-
-    // Load current best active Banner into form
-    var bestBanner = getBestActive('banner');
-    if (bestBanner) {
-      var bd = Object.assign({}, bestBanner.data, { _startDate: bestBanner.startDate, _endDate: bestBanner.endDate });
-      setBannerFields(bd);
-    } else {
-      setBannerFields(DEFAULTS.banner);
-    }
-
-    // Live preview on typing
-    ['ma-monat','ma-titel','ma-text','ma-angebot','ma-auf'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener('input', updateMAPreview);
-    });
-    ['banner-icon','banner-title','banner-desc'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener('input', updateBannerPreview);
-    });
-
-    // Banner emoji picker
-    initEmojiPicker('banner-emoji-btn','banner-emoji-panel','banner-emoji-search','banner-emoji-grid',
-      function (emoji) {
-        document.getElementById('banner-icon').value = emoji;
-        updateBannerPreview();
-      }
-    );
-
-    // Save MA → new schedule entry
-    document.getElementById('btn-save-ma').addEventListener('click', function () {
-      var fields = getMaFields();
-      if (!fields.monat || !fields.titel) { toast('Monat und Titel sind Pflichtfelder.', 'error'); return; }
-      var entry = {
-        id:        generateId(),
-        type:      'monatsangebot',
-        startDate: document.getElementById('ma-start').value || '',
-        endDate:   document.getElementById('ma-end').value   || '',
-        data:      fields
-      };
-      var schedule = getSchedule();
-      schedule.push(entry);
-      if (saveSchedule(schedule)) {
-        toast('Monatsangebot gespeichert.');
-        renderScheduleList();
-        apiSave('save-schedule', { schedule: schedule });
-      }
-    });
-
-    // Load current active MA into form
-    document.getElementById('btn-load-ma-current').addEventListener('click', function () {
-      var best = getBestActive('monatsangebot');
-      if (best) {
-        var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
-        setMaFields(d);
-        toast('Aktuelles Monatsangebot geladen.');
-        return;
-      }
-      // Fallback: fetch from server
-      toast('Lade vom Server…');
-      fetchServerSchedule().then(function (arr) {
-        var found = null;
-        arr.forEach(function (e) {
-          if (e.type === 'monatsangebot') {
-            var st = entryStatus(e);
-            if (st === 'permanent' || st === 'active') found = e;
-          }
-        });
-        if (found) {
-          var d = Object.assign({}, found.data, { _startDate: found.startDate, _endDate: found.endDate });
-          setMaFields(d);
-          renderScheduleList();
-          toast('Monatsangebot vom Server geladen.', 'success');
-        } else {
-          toast('Kein aktives Monatsangebot vorhanden.', 'error');
-        }
-      });
-    });
-
-    // Save Banner → new schedule entry
-    document.getElementById('btn-save-banner').addEventListener('click', function () {
-      var fields = getBannerFields();
-      if (!fields.title && !fields.desc) { toast('Bitte Titel oder Beschreibungstext eingeben.', 'error'); return; }
-      var entry = {
-        id:        generateId(),
-        type:      'banner',
-        startDate: document.getElementById('banner-start').value || '',
-        endDate:   document.getElementById('banner-end').value   || '',
-        data:      fields
-      };
-      var schedule = getSchedule();
-      schedule.push(entry);
-      if (saveSchedule(schedule)) {
-        toast('Promo-Banner gespeichert.');
-        renderScheduleList();
-        apiSave('save-schedule', { schedule: schedule });
-      }
-    });
-
-    // Load current active Banner into form
-    document.getElementById('btn-load-banner-current').addEventListener('click', function () {
-      var best = getBestActive('banner');
-      if (best) {
-        var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
-        setBannerFields(d);
-        toast('Aktuellen Banner geladen.');
-        return;
-      }
-      // Fallback: fetch from server
-      toast('Lade vom Server…');
-      fetchServerSchedule().then(function (arr) {
-        var found = null;
-        arr.forEach(function (e) {
-          if (e.type === 'banner') {
-            var st = entryStatus(e);
-            if (st === 'permanent' || st === 'active') found = e;
-          }
-        });
-        if (found) {
-          var d = Object.assign({}, found.data, { _startDate: found.startDate, _endDate: found.endDate });
-          setBannerFields(d);
-          renderScheduleList();
-          toast('Banner vom Server geladen.', 'success');
-        } else {
-          toast('Kein aktiver Banner vorhanden.', 'error');
-        }
-      });
-    });
-  }
 
   // ═══════════════════════════════════════════════════════════════
   //  EMOJI PICKER (shared utility)
@@ -1713,11 +1607,11 @@
     ['📞','telefon anruf kontakt'],['📍','ort pin standort'],['🗓️','kalender datum termin'],
   ];
 
-  function initEmojiPicker(btnId, panelId, searchId, gridId, onSelect) {
-    var btn    = document.getElementById(btnId);
-    var panel  = document.getElementById(panelId);
-    var search = document.getElementById(searchId);
-    var grid   = document.getElementById(gridId);
+  function initEmojiPicker(btnOrId, panelOrId, searchOrId, gridOrId, onSelect) {
+    var btn    = typeof btnOrId    === 'string' ? document.getElementById(btnOrId)    : btnOrId;
+    var panel  = typeof panelOrId  === 'string' ? document.getElementById(panelOrId)  : panelOrId;
+    var search = typeof searchOrId === 'string' ? document.getElementById(searchOrId) : searchOrId;
+    var grid   = typeof gridOrId   === 'string' ? document.getElementById(gridOrId)   : gridOrId;
     if (!btn || !panel) return;
 
     function renderEmojis(filter) {
@@ -1849,8 +1743,9 @@
         var updated = getSchedule().filter(function (e) { return e.id !== id; });
         saveSchedule(updated);
         renderScheduleList();
+        renderTimeline();
+        checkDirty();
         toast('Eintrag gelöscht.');
-        apiSave('save-schedule', { schedule: updated });
       });
     });
   }
@@ -1873,12 +1768,7 @@
 
   function buildEditFormHTML(entry) {
     var d = entry.data || {};
-    var html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">' +
-      '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig von</label>' +
-        '<input type="date" class="admin-input ef-start" value="' + esc(entry.startDate || '') + '" /></div>' +
-      '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig bis</label>' +
-        '<input type="date" class="admin-input ef-end" value="' + esc(entry.endDate || '') + '" /></div>' +
-    '</div>';
+    var html = '';
 
     if (entry.type === 'monatsangebot') {
       html += '<div class="admin-row" style="margin-bottom:14px;">' +
@@ -1889,13 +1779,33 @@
       '<div class="admin-field"><label class="admin-label">Gilt für</label><input class="admin-input ef-auf" value="' + esc(d.auf||'') + '" /></div>' +
       '<div class="admin-field"><label class="admin-label">Beschreibung</label><textarea class="admin-textarea ef-text" rows="2">' + esc(d.text||'') + '</textarea></div>';
     } else if (entry.type === 'banner') {
-      html += '<div class="admin-field"><label class="admin-label">Icon</label><input class="admin-input ef-icon" value="' + esc(d.icon||'') + '" style="width:72px;" /></div>' +
+      html += '<div class="admin-field"><label class="admin-label">Icon</label>' +
+        '<div style="display:flex;gap:8px;align-items:center;">' +
+          '<input class="admin-input ef-icon" value="' + esc(d.icon||'') + '" style="width:72px;flex-shrink:0;font-size:1.35rem;text-align:center;" />' +
+          '<div class="emoji-picker-wrap">' +
+            '<button class="btn-add ef-emoji-btn" type="button" style="padding:9px 14px;white-space:nowrap;" title="Emoji auswählen">😊 ▾</button>' +
+            '<div class="emoji-picker-panel ef-emoji-panel">' +
+              '<input class="emoji-search-input ef-emoji-search" placeholder="🔍 Emoji suchen…" autocomplete="off" />' +
+              '<div class="emoji-grid ef-emoji-grid"></div>' +
+            '</div>' +
+          '</div>' +
+        '</div></div>' +
         '<div class="admin-field"><label class="admin-label">Titel (fett)</label><input class="admin-input ef-title" value="' + esc(d.title||'') + '" /></div>' +
         '<div class="admin-field"><label class="admin-label">Beschreibungstext</label><input class="admin-input ef-desc" value="' + esc(d.desc||'') + '" /></div>';
     } else if (entry.type === 'deal') {
       html += '<div class="admin-row" style="margin-bottom:14px;">' +
         '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Badge</label><input class="admin-input ef-badge" value="' + esc(d.badge||'') + '" /></div>' +
-        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Icon</label><input class="admin-input ef-icon" value="' + esc(d.icon||'') + '" style="width:72px;" /></div>' +
+        '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Icon</label>' +
+          '<div style="display:flex;gap:6px;align-items:center;">' +
+            '<input class="admin-input ef-icon" value="' + esc(d.icon||'') + '" style="flex:1;" />' +
+            '<div class="emoji-picker-wrap">' +
+              '<button class="btn-add ef-emoji-btn" type="button" style="padding:9px 12px;" title="Emoji wählen">😊 ▾</button>' +
+              '<div class="emoji-picker-panel ef-emoji-panel" style="left:auto;right:0;">' +
+                '<input class="emoji-search-input ef-emoji-search" placeholder="🔍 Suchen…" autocomplete="off" />' +
+                '<div class="emoji-grid ef-emoji-grid"></div>' +
+              '</div>' +
+            '</div>' +
+          '</div></div>' +
       '</div>' +
       '<div class="admin-field"><label class="admin-label">Titel</label><input class="admin-input ef-title" value="' + esc(d.title||'') + '" /></div>' +
       '<div class="admin-row" style="margin-bottom:14px;">' +
@@ -1906,9 +1816,14 @@
       '<label class="admin-checkbox-row"><input type="checkbox" class="ef-highlight"' + (d.highlight ? ' checked' : '') + ' /><span class="admin-checkbox-label">Hervorgehoben</span></label>';
     }
 
-    html += '<div style="display:flex;gap:10px;margin-top:14px;">' +
-      '<button class="btn-save ef-save-btn" type="button">💾 Speichern</button>' +
-      '<button class="btn-reset ef-cancel-btn" type="button">✕ Abbrechen</button>' +
+    html += '<div class="ef-dates-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">' +
+      '<div><label class="admin-label">Gültig von</label><input type="date" class="admin-input ef-start" value="' + esc(entry.startDate || '') + '" /></div>' +
+      '<div><label class="admin-label">Gültig bis</label><input type="date" class="admin-input ef-end" value="' + esc(entry.endDate || '') + '" /></div>' +
+    '</div>';
+    html += '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">' +
+      '<button class="btn-save ef-save-btn" type="button">✓ Jetzt veröffentlichen</button>' +
+      '<button class="btn-outline ef-plan-btn" type="button">🕐 Planen …</button>' +
+      '<button class="btn-reset ef-cancel-btn" type="button">Abbrechen</button>' +
     '</div>';
     return html;
   }
@@ -1917,6 +1832,28 @@
     formEl.querySelector('.ef-cancel-btn').addEventListener('click', function () {
       formEl.style.display = 'none';
     });
+    /* Planen toggle (date row visibility) */
+    var dateRow = formEl.querySelector('.ef-dates-row');
+    var planBtn = formEl.querySelector('.ef-plan-btn');
+    if (planBtn && dateRow) {
+      planBtn.addEventListener('click', function () {
+        var isShown = dateRow.style.display !== 'none';
+        dateRow.style.display = isShown ? 'none' : '';
+        planBtn.classList.toggle('active', !isShown);
+        planBtn.textContent = isShown ? '🕐 Planen …' : '🕐 Daten ausblenden';
+      });
+    }
+    /* Emoji picker for banner / deal icon fields */
+    var emojiBtn = formEl.querySelector('.ef-emoji-btn');
+    var emojiPanel = formEl.querySelector('.ef-emoji-panel');
+    var emojiSearch = formEl.querySelector('.ef-emoji-search');
+    var emojiGrid = formEl.querySelector('.ef-emoji-grid');
+    var iconInput = formEl.querySelector('.ef-icon');
+    if (emojiBtn && emojiPanel && emojiSearch && emojiGrid && iconInput) {
+      initEmojiPicker(emojiBtn, emojiPanel, emojiSearch, emojiGrid, function (emoji) {
+        iconInput.value = emoji;
+      });
+    }
     formEl.querySelector('.ef-save-btn').addEventListener('click', function () {
       var updated = Object.assign({}, entry, {
         startDate: formEl.querySelector('.ef-start').value || '',
@@ -1952,300 +1889,471 @@
       if (idx >= 0) schedule[idx] = updated;
       saveSchedule(schedule);
       renderScheduleList();
+      renderTimeline();
+      checkDirty();
       toast('Eintrag aktualisiert.');
-      apiSave('save-schedule', { schedule: schedule });
+    });
+  }
+
+  // ── Publish bar: dirty tracking ────────────────────────────────────
+  var _cleanSnapshot = null;
+  var _pendingChanges = [];
+
+  function takeSnapshot() {
+    _cleanSnapshot = JSON.stringify(getSchedule());
+  }
+
+  function checkDirty() {
+    _pendingChanges = [];
+    var current = JSON.stringify(getSchedule());
+    if (_cleanSnapshot !== null && current !== _cleanSnapshot) {
+      var oldArr = JSON.parse(_cleanSnapshot);
+      var newArr = getSchedule();
+      var oldIds = oldArr.map(function (e) { return e.id; });
+      var newIds = newArr.map(function (e) { return e.id; });
+      var added = newIds.filter(function (id) { return oldIds.indexOf(id) < 0; }).length;
+      var removed = oldIds.filter(function (id) { return newIds.indexOf(id) < 0; }).length;
+      var modified = newArr.filter(function (e) {
+        var old = null;
+        oldArr.forEach(function (o) { if (o.id === e.id) old = o; });
+        return old && JSON.stringify(old) !== JSON.stringify(e);
+      }).length;
+      if (added) _pendingChanges.push(added + ' neu');
+      if (removed) _pendingChanges.push(removed + ' gelöscht');
+      if (modified) _pendingChanges.push(modified + ' bearbeitet');
+    }
+    var bar = document.getElementById('publish-bar');
+    if (_pendingChanges.length) {
+      bar.style.display = '';
+      document.getElementById('publish-changes').innerHTML =
+        'Unveröffentlichte Änderungen: ' +
+        _pendingChanges.map(function (c) { return '<span>' + esc(c) + '</span>'; }).join(' ');
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+
+  // ── Live preview for new/edit entry ────────────────────────────────
+  function updateEntryPreview(type, formContainer) {
+    var previewArea = document.getElementById('entry-preview-area');
+    var previewBox  = document.getElementById('entry-preview-box');
+    var previewLabel = document.getElementById('entry-preview-label');
+    if (!previewArea || !previewBox) return;
+    previewArea.style.display = '';
+
+    if (type === 'monatsangebot') {
+      previewLabel.textContent = 'Vorschau – Monatsangebot';
+      previewBox.style.cssText = '';
+      var monat   = (formContainer.querySelector('.ef-monat')   || {}).value || '';
+      var titel   = (formContainer.querySelector('.ef-titel')   || {}).value || '';
+      var text    = (formContainer.querySelector('.ef-text')    || {}).value || '';
+      var angebot = (formContainer.querySelector('.ef-angebot') || {}).value || '';
+      var auf     = (formContainer.querySelector('.ef-auf')     || {}).value || '';
+      previewBox.innerHTML =
+        '<div class=”monatsangebot-card” style=”pointer-events:none;margin-bottom:0;”>' +
+          '<div class=”monatsangebot-tag”>Monatsangebot</div>' +
+          '<div class=”monatsangebot-inner”>' +
+            '<div class=”monatsangebot-left”>' +
+              '<div class=”monatsangebot-month”>' + esc(monat) + '</div>' +
+              '<div class=”monatsangebot-headline”>' + esc(titel) + '</div>' +
+              '<p class=”monatsangebot-body”>' + esc(text) + '</p>' +
+            '</div>' +
+            (angebot || auf ? '<div class=”monatsangebot-right” aria-hidden=”true”>' +
+              '<div class=”monatsangebot-discount”>' + (angebot ? '−' + esc(angebot) : '') + '</div>' +
+              '<div class=”monatsangebot-service”>' + esc(auf) + '</div>' +
+            '</div>' : '') +
+          '</div>' +
+        '</div>';
+    } else if (type === 'banner') {
+      previewLabel.textContent = 'Vorschau – Promo-Banner';
+      previewBox.style.cssText = 'padding:8px;';
+      var icon  = (formContainer.querySelector('.ef-icon')  || {}).value || '';
+      var title = (formContainer.querySelector('.ef-title') || {}).value || '';
+      var desc  = (formContainer.querySelector('.ef-desc')  || {}).value || '';
+      var html = '';
+      if (title) html += '<strong>' + esc(title) + '</strong>';
+      if (title && desc) html += ' ';
+      if (desc)  html += esc(desc);
+      previewBox.innerHTML =
+        '<div class=”promo-banner” style=”border-radius:var(--radius-sm);”>' +
+          '<div class=”container promo-inner” style=”max-width:100%;padding:0 16px;”>' +
+            '<span class=”promo-icon” aria-hidden=”true”>' + (icon || '✨') + '</span>' +
+            '<p>' + html + '</p>' +
+          '</div>' +
+        '</div>';
+    } else if (type === 'deal') {
+      previewLabel.textContent = 'Vorschau – Sonderangebot';
+      previewBox.style.cssText = 'padding:16px;background:var(--bg-dark,#0d0d1a);';
+      var badge     = (formContainer.querySelector('.ef-badge') || {}).value || '';
+      var dIcon     = (formContainer.querySelector('.ef-icon')  || {}).value || '';
+      var dTitle    = (formContainer.querySelector('.ef-title') || {}).value || '';
+      var price     = (formContainer.querySelector('.ef-price') || {}).value || '';
+      var priceUnit = (formContainer.querySelector('.ef-unit')  || {}).value || '';
+      var dDesc     = (formContainer.querySelector('.ef-desc')  || {}).value || '';
+      var hl = formContainer.querySelector('.ef-highlight');
+      var highlight = hl ? hl.checked : false;
+      previewBox.innerHTML =
+        '<div class=”deals-grid” style=”pointer-events:none;”>' +
+          '<div class=”deal-card' + (highlight ? ' deal-card--highlight' : '') + '”>' +
+            (badge ? '<div class=”deal-badge”>' + esc(badge) + '</div>' : '') +
+            '<div class=”deal-icon” aria-hidden=”true”>' + esc(dIcon) + '</div>' +
+            '<div class=”deal-title”>' + esc(dTitle) + '</div>' +
+            '<div class=”deal-price”>' + esc(price) +
+              (priceUnit ? ' <span class=”deal-price-unit”>' + esc(priceUnit) + '</span>' : '') +
+            '</div>' +
+            '<div class=”deal-desc”>' + esc(dDesc) + '</div>' +
+          '</div>' +
+        '</div>';
+    }
+  }
+
+  function hideEntryPreview() {
+    var pa = document.getElementById('entry-preview-area');
+    if (pa) pa.style.display = 'none';
+  }
+
+  // ── Load-existing selector ─────────────────────────────────────────
+  function populateLoadExisting(type) {
+    var container = document.getElementById('nf-load-existing');
+    var select = document.getElementById('nf-load-select');
+    if (!container || !select) return;
+    var entries = getSchedule().filter(function (e) { return e.type === type; });
+    select.innerHTML = '<option value=””>– Leer beginnen –</option>';
+    if (!entries.length) {
+      container.style.display = 'none';
+      return;
+    }
+    entries.forEach(function (e) {
+      var name = entryTitle(e);
+      var status = entryStatus(e);
+      var statusLabel = status === 'permanent' ? '∞' : status === 'active' ? '✓' : status === 'scheduled' ? '🕐' : '✗';
+      var dateInfo = '';
+      if (e.startDate) dateInfo += ' ab ' + e.startDate;
+      if (e.endDate) dateInfo += ' bis ' + e.endDate;
+      var opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = statusLabel + ' ' + name + dateInfo;
+      select.appendChild(opt);
+    });
+    container.style.display = '';
+  }
+
+  // ── VISUAL TIMELINE ────────────────────────────────────────────────
+  function renderTimeline() {
+    var container = document.getElementById('timeline-container');
+    if (!container) return;
+    var schedule = getSchedule();
+    if (!schedule.length) {
+      container.innerHTML = '<div class=”tl-empty”>Keine Einträge vorhanden. Erstelle einen Eintrag, um die Timeline zu sehen.</div>';
+      return;
+    }
+    var now = new Date();
+    var rangeStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+    var rangeEnd   = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+    var totalDays  = Math.round((rangeEnd - rangeStart) / 86400000) + 1;
+    var pxPerDay   = Math.max(8, Math.ceil(700 / totalDays));
+    var totalWidth = totalDays * pxPerDay;
+    var MONATE = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+    function dateToX(dateStr) {
+      var d = new Date(dateStr + 'T00:00:00');
+      return Math.round((d - rangeStart) / 86400000 * pxPerDay);
+    }
+
+    // Month header
+    var monthsHTML = '';
+    var cursor = new Date(rangeStart);
+    while (cursor <= rangeEnd) {
+      var mEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0);
+      var visStart = cursor < rangeStart ? rangeStart : new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+      var visEnd   = mEnd > rangeEnd ? rangeEnd : mEnd;
+      var daysInView = Math.round((visEnd - visStart) / 86400000) + 1;
+      monthsHTML += '<div class=”tl-month-cell” style=”width:' + (daysInView * pxPerDay) + 'px;”>' + MONATE[cursor.getMonth()] + ' ' + cursor.getFullYear() + '</div>';
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+    }
+
+    // Day ticks
+    var daysHTML = '';
+    for (var di = 0; di < totalDays; di++) {
+      var tickDate = new Date(rangeStart.getTime() + di * 86400000);
+      var dayNum = tickDate.getDate();
+      if (dayNum === 1 || dayNum % 5 === 0) {
+        daysHTML += '<div class=”tl-day-tick” style=”left:' + (di * pxPerDay) + 'px;”></div>';
+        if (dayNum === 1 || dayNum % 10 === 0)
+          daysHTML += '<span class=”tl-day-label” style=”left:' + (di * pxPerDay) + 'px;”>' + dayNum + '</span>';
+      }
+    }
+
+    // Today line
+    var todayX = dateToX(TODAY);
+    var todayVisible = todayX >= 0 && todayX <= totalWidth;
+
+    // Bars
+    var entries = schedule.slice().sort(function (a, b) {
+      var order = { permanent: 0, active: 1, scheduled: 2, expired: 3 };
+      var diff = (order[entryStatus(a)] || 0) - (order[entryStatus(b)] || 0);
+      return diff || (a.startDate || '').localeCompare(b.startDate || '');
+    });
+
+    var lanesHTML = '';
+    entries.forEach(function (entry) {
+      var status = entryStatus(entry);
+      var name = entryTitle(entry);
+      var barLeft, barWidth;
+      if (status === 'permanent') { barLeft = 0; barWidth = totalWidth; }
+      else {
+        var sDate = entry.startDate || rangeStart.toISOString().slice(0, 10);
+        var eDate = entry.endDate || rangeEnd.toISOString().slice(0, 10);
+        barLeft = dateToX(sDate);
+        barWidth = dateToX(eDate) + pxPerDay - barLeft;
+      }
+      var cl = Math.max(0, barLeft);
+      var cr = Math.min(totalWidth, barLeft + barWidth);
+      if (cr <= cl) return;
+
+      var classes = 'tl-bar tl-bar--' + entry.type;
+      if (status === 'permanent') classes += ' tl-bar--permanent';
+      if (status === 'expired')   classes += ' tl-bar--expired';
+      if (status === 'scheduled') classes += ' tl-bar--scheduled';
+
+      var prefix = status === 'permanent' ? '<span class=”tl-bar-infinity”>∞</span>' : '';
+      var dateInfo = status === 'permanent' ? 'Dauerhaft' : (entry.startDate || '?') + ' – ' + (entry.endDate || '?');
+
+      lanesHTML += '<div class=”tl-lane”><div class=”' + classes + '” style=”left:' + cl + 'px;width:' + (cr - cl) + 'px;” data-id=”' + esc(entry.id) + '” title=”' + esc(name + ' — ' + dateInfo) + '”>' + prefix + esc(name) + '</div></div>';
+    });
+
+    var todayLineHTML = todayVisible ? '<div class=”tl-today-line” style=”left:' + todayX + 'px;”><span class=”tl-today-label”>Heute</span></div>' : '';
+
+    container.innerHTML = '<div class=”tl-inner” style=”width:' + totalWidth + 'px;”>' +
+      '<div class=”tl-header”>' + monthsHTML + '</div>' +
+      '<div class=”tl-days-row”>' + daysHTML + '</div>' +
+      '<div class=”tl-lanes”>' + todayLineHTML + lanesHTML + '</div></div>';
+
+    // Click bar → scroll to entry
+    container.querySelectorAll('.tl-bar').forEach(function (bar) {
+      bar.addEventListener('click', function () {
+        var target = document.querySelector('.sched-entry[data-id=”' + bar.getAttribute('data-id') + '”]');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.boxShadow = '0 0 0 3px var(--blue), 0 0 16px rgba(8,48,221,0.3)';
+          setTimeout(function () { target.style.boxShadow = ''; }, 1500);
+        }
+      });
     });
   }
 
   function initZeitplan() {
+    renderTimeline();
     renderScheduleList();
+    takeSnapshot();
 
-    // „+ Neuer Eintrag“ button — shows a type picker then a create form
+    var newForm = document.getElementById('schedule-new-form');
+    var nfTypeChooser = document.getElementById('nf-type-chooser');
+    var nfFields = document.getElementById('nf-fields');
+    var nfLoadExisting = document.getElementById('nf-load-existing');
+    var nfLoadSelect = document.getElementById('nf-load-select');
+    var currentType = null;
+
+    // Show type chooser on “Neuer Eintrag” click
     document.getElementById('btn-new-schedule-entry').addEventListener('click', function () {
-      var formEl = document.getElementById('schedule-new-form');
-      if (formEl.style.display !== 'none') { formEl.style.display = 'none'; return; }
-      formEl.style.display = '';
-      formEl.innerHTML =
-        '<div class="admin-card" style="margin-bottom:20px;border:2px dashed var(--blue-mid);">' +
-          '<div class="admin-card-title" style="margin-bottom:14px;">﹢ Neuer Eintrag – Typ wählen</div>' +
-          '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
-            '<button class="btn-add nf-type-btn" data-type="monatsangebot" type="button">📅 Monatsangebot</button>' +
-            '<button class="btn-add nf-type-btn" data-type="banner" type="button">📣 Banner</button>' +
-            '<button class="btn-add nf-type-btn" data-type="deal" type="button">🏷️ Angebot</button>' +
-          '</div>' +
-          '<div id="nf-fields" style="margin-top:16px;"></div>' +
-        '</div>';
+      if (newForm.style.display !== 'none') {
+        // Toggle off
+        newForm.style.display = 'none';
+        hideEntryPreview();
+        return;
+      }
+      newForm.style.display = '';
+      nfFields.innerHTML = '';
+      nfLoadExisting.style.display = 'none';
+      hideEntryPreview();
+      currentType = null;
 
-      formEl.querySelectorAll('.nf-type-btn').forEach(function (btn) {
+      // Render type buttons
+      nfTypeChooser.innerHTML = '';
+      var types = [
+        { type: 'monatsangebot', label: '📅 Monatsangebot', color: '#0d9488' },
+        { type: 'banner',        label: '📣 Promo-Banner',  color: '#0830DD' },
+        { type: 'deal',          label: '🏷️ Sonderangebot', color: '#ea580c' }
+      ];
+      types.forEach(function (t) {
+        var btn = document.createElement('button');
+        btn.className = 'btn-add';
+        btn.type = 'button';
+        btn.textContent = t.label;
+        btn.style.borderColor = t.color;
         btn.addEventListener('click', function () {
-          formEl.querySelectorAll('.nf-type-btn').forEach(function (b) { b.classList.remove('active'); });
+          // Highlight selected type
+          nfTypeChooser.querySelectorAll('.btn-add').forEach(function (b) { b.classList.remove('active'); });
           btn.classList.add('active');
-          var type = btn.getAttribute('data-type');
-          var fakeEntry = { id: '__new__', type: type, startDate: '', endDate: '', data: {} };
-          var nfFields = document.getElementById('nf-fields');
-          nfFields.innerHTML = buildEditFormHTML(fakeEntry);
-          // Override save button to create new entry
-          nfFields.querySelector('.ef-save-btn').addEventListener('click', function () {
-            var newEntry = {
-              id:        generateId(),
-              type:      type,
-              startDate: nfFields.querySelector('.ef-start').value || '',
-              endDate:   nfFields.querySelector('.ef-end').value   || ''
-            };
-            if (type === 'monatsangebot') {
-              newEntry.data = {
-                monat:   nfFields.querySelector('.ef-monat').value.trim(),
-                titel:   nfFields.querySelector('.ef-titel').value.trim(),
-                text:    nfFields.querySelector('.ef-text').value.trim(),
-                angebot: nfFields.querySelector('.ef-angebot').value.trim(),
-                auf:     nfFields.querySelector('.ef-auf').value.trim()
-              };
-            } else if (type === 'banner') {
-              newEntry.data = {
-                icon:  nfFields.querySelector('.ef-icon').value.trim(),
-                title: nfFields.querySelector('.ef-title').value.trim(),
-                desc:  nfFields.querySelector('.ef-desc').value.trim()
-              };
-            } else if (type === 'deal') {
-              newEntry.data = {
-                badge:     nfFields.querySelector('.ef-badge').value.trim(),
-                icon:      nfFields.querySelector('.ef-icon').value.trim(),
-                title:     nfFields.querySelector('.ef-title').value.trim(),
-                price:     nfFields.querySelector('.ef-price').value.trim(),
-                priceUnit: nfFields.querySelector('.ef-unit').value.trim(),
-                desc:      nfFields.querySelector('.ef-desc').value.trim(),
-                highlight: nfFields.querySelector('.ef-highlight').checked
-              };
-            }
-            var schedule = getSchedule();
-            schedule.push(newEntry);
-            saveSchedule(schedule);
-            formEl.style.display = 'none';
-            renderScheduleList();
-            toast('Neuer Eintrag gespeichert.');
-            apiSave('save-schedule', { schedule: schedule });
-          });
-          nfFields.querySelector('.ef-cancel-btn').addEventListener('click', function () {
-            formEl.style.display = 'none';
-          });
+          currentType = t.type;
+          showNewEntryForm(t.type);
         });
+        nfTypeChooser.appendChild(btn);
       });
     });
-  }
 
-  // ═══════════════════════════════════════════════════════════════
-  //  DEALS — Sonderangebote editor (now backed by schedule entries)
-  // ═══════════════════════════════════════════════════════════════
+    function showNewEntryForm(type) {
+      // Build a blank entry for the form
+      var fakeEntry = { id: '', type: type, startDate: '', endDate: '', data: {} };
+      if (type === 'monatsangebot') fakeEntry.data = { monat: '', titel: '', text: '', angebot: '', auf: '' };
+      else if (type === 'banner')   fakeEntry.data = { icon: '', title: '', desc: '' };
+      else if (type === 'deal')     fakeEntry.data = { badge: '', icon: '🏷️', title: '', price: '', priceUnit: '', desc: '', highlight: false };
 
-  function dealEntriesToEditorData() {
-    // Load all deal entries from schedule (any status, so user sees all)
-    var schedule = getSchedule();
-    var deals = schedule.filter(function (e) { return e.type === 'deal'; });
-    return deals.map(function (e) {
-      return Object.assign({}, e.data, { _id: e.id, _startDate: e.startDate || '', _endDate: e.endDate || '' });
-    });
-  }
+      nfFields.innerHTML = buildEditFormHTML(fakeEntry);
 
-  function updateDealsPreview() {
-    var previewBox = document.getElementById('deals-preview-grid');
-    if (!previewBox) return;
-    var cards = document.querySelectorAll('.deal-editor-card');
-    if (!cards.length) {
-      previewBox.innerHTML = '<p style="color:var(--neutral-400);font-style:italic;text-align:center;padding:18px 0;">Keine Sonderangebote vorhanden.</p>';
-      return;
-    }
-    previewBox.innerHTML = '';
-    cards.forEach(function (card) {
-      var badge     = card.querySelector('.d-badge').value.trim();
-      var icon      = card.querySelector('.d-icon').value.trim();
-      var title     = card.querySelector('.d-title').value.trim();
-      var price     = card.querySelector('.d-price').value.trim();
-      var priceUnit = card.querySelector('.d-unit').value.trim();
-      var desc      = card.querySelector('.d-desc').value.trim();
-      var highlight = card.querySelector('.d-highlight').checked;
-      previewBox.innerHTML +=
-        '<div class="deal-card' + (highlight ? ' deal-card--highlight' : '') + '">' +
-          (badge ? '<div class="deal-badge">' + esc(badge) + '</div>' : '') +
-          '<div class="deal-icon" aria-hidden="true">' + esc(icon) + '</div>' +
-          '<div class="deal-title">' + esc(title) + '</div>' +
-          '<div class="deal-price">' + esc(price) +
-            (priceUnit ? ' <span class="deal-price-unit">' + esc(priceUnit) + '</span>' : '') +
-          '</div>' +
-          '<div class="deal-desc">' + esc(desc) + '</div>' +
-        '</div>';
-    });
-  }
+      // Populate load-existing dropdown
+      populateLoadExisting(type);
 
-  function renderDealsEditor() {
-    var container = document.getElementById('deals-editor');
-    if (!container) return;
-    var items = dealEntriesToEditorData();
-    container.innerHTML = '';
-    if (!items.length) {
-      container.innerHTML = '<p style="color:var(--neutral-400);font-style:italic;padding:12px 0;">Keine Sonderangebote vorhanden. Klicke auf „＋ Angebot hinzufügen" um ein neues zu erstellen.</p>';
-      updateDealsPreview();
-      return;
-    }
-    items.forEach(function (d, i) {
-      var el = document.createElement('div');
-      el.className = 'deal-editor-card';
-      el.innerHTML =
-        '<div class="deal-editor-header">' +
-          '<span class="deal-editor-num">Angebot ' + (i + 1) + '</span>' +
-          (d._id ? '<span class="status-chip ' + { permanent:'status-chip--permanent', active:'status-chip--active', scheduled:'status-chip--scheduled', expired:'status-chip--expired' }[entryStatus({ startDate: d._startDate, endDate: d._endDate })] + '" style="font-size:0.68rem;">' +
-            { permanent:'∞ Dauerhaft', active:'✓ Aktiv', scheduled:'🕐 Geplant', expired:'✗ Abgelaufen' }[entryStatus({ startDate: d._startDate, endDate: d._endDate })] + '</span>' : '') +
-          '<button class="btn-delete deal-delete-btn" type="button">✕ Löschen</button>' +
-        '</div>' +
-        '<div class="admin-row-3">' +
-          '<div class="admin-field"><label class="admin-label">Badge-Text</label><input class="admin-input d-badge" value="' + esc(d.badge) + '" placeholder="z. B. Jeden Donnerstag" /></div>' +
-          '<div class="admin-field"><label class="admin-label">Icon (Emoji)</label>' +
-            '<div style="display:flex;gap:6px;align-items:center;">' +
-              '<input class="admin-input d-icon" value="' + esc(d.icon) + '" placeholder="👖" style="flex:1;" />' +
-              '<div class="emoji-picker-wrap">' +
-                '<button class="btn-add deal-emoji-btn" type="button" style="padding:9px 12px;" title="Emoji wählen">😊 ▾</button>' +
-                '<div class="emoji-picker-panel deal-emoji-panel" style="left:auto;right:0;">' +
-                  '<input class="emoji-search-input deal-emoji-search" placeholder="🔍 Suchen…" autocomplete="off" />' +
-                  '<div class="emoji-grid deal-emoji-grid"></div>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="admin-field"><label class="admin-label">Titel</label><input class="admin-input d-title" value="' + esc(d.title) + '" placeholder="Angebotstitel" /></div>' +
-        '</div>' +
-        '<div class="admin-row">' +
-          '<div class="admin-field"><label class="admin-label">Preis</label><input class="admin-input d-price" value="' + esc(d.price) + '" placeholder="4,99 €" /></div>' +
-          '<div class="admin-field"><label class="admin-label">Einheit (optional)</label><input class="admin-input d-unit" value="' + esc(d.priceUnit) + '" placeholder="/ Stück" /></div>' +
-        '</div>' +
-        '<div class="admin-field"><label class="admin-label">Beschreibung</label><input class="admin-input d-desc" value="' + esc(d.desc) + '" placeholder="Kurze Beschreibung…" /></div>' +
-        '<label class="admin-checkbox-row"><input type="checkbox" class="d-highlight"' + (d.highlight ? ' checked' : '') + ' /><span class="admin-checkbox-label">Hervorgehoben (blauer Rahmen)</span></label>' +
-        '<div class="schedule-dates-row">' +
-          '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig von <span class="sched-hint">(leer = dauerhaft)</span></label><input type="date" class="admin-input d-start" value="' + esc(d._startDate) + '" /></div>' +
-          '<div class="admin-field" style="margin-bottom:0;"><label class="admin-label">Gültig bis <span class="sched-hint">(leer = kein Ablauf)</span></label><input type="date" class="admin-input d-end" value="' + esc(d._endDate) + '" /></div>' +
-        '</div>' +
-        '<input type="hidden" class="d-id" value="' + esc(d._id) + '" />';
-      container.appendChild(el);
-    });
+      // Hide date fields by default (shown via “Planen” button)
+      var dateRow = nfFields.querySelector('.ef-dates-row');
+      if (dateRow) dateRow.style.display = 'none';
 
-    // Wire delete buttons
-    container.querySelectorAll('.deal-delete-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var card = btn.closest('.deal-editor-card');
-        var id = card.querySelector('.d-id').value;
-        if (!confirm('Angebot löschen?')) return;
-        if (id) {
+      // Wire Planen toggle
+      var planBtn = nfFields.querySelector('.ef-plan-btn');
+      if (planBtn && dateRow) {
+        planBtn.addEventListener('click', function () {
+          var isShown = dateRow.style.display !== 'none';
+          dateRow.style.display = isShown ? 'none' : '';
+          planBtn.classList.toggle('active', !isShown);
+          planBtn.textContent = isShown ? '🕐 Planen …' : '🕐 Daten ausblenden';
+        });
+      }
+
+      // Wire live preview
+      updateEntryPreview(type, nfFields);
+      nfFields.querySelectorAll('input, textarea').forEach(function (inp) {
+        inp.addEventListener('input', function () { updateEntryPreview(type, nfFields); });
+      });
+      var hlCheck = nfFields.querySelector('.ef-highlight');
+      if (hlCheck) hlCheck.addEventListener('change', function () { updateEntryPreview(type, nfFields); });
+
+      // Wire emoji picker for banner/deal icon
+      var emojiBtn = nfFields.querySelector('.ef-emoji-btn');
+      var emojiPanel = nfFields.querySelector('.ef-emoji-panel');
+      var emojiSearch = nfFields.querySelector('.ef-emoji-search');
+      var emojiGrid = nfFields.querySelector('.ef-emoji-grid');
+      var iconInput = nfFields.querySelector('.ef-icon');
+      if (emojiBtn && emojiPanel && emojiSearch && emojiGrid && iconInput) {
+        initEmojiPicker(emojiBtn, emojiPanel, emojiSearch, emojiGrid, function (emoji) {
+          iconInput.value = emoji;
+          updateEntryPreview(type, nfFields);
+        });
+      }
+
+      // Wire save (publish) button
+      var saveBtn = nfFields.querySelector('.ef-save-btn');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', function () {
+          var data = {};
+          if (type === 'monatsangebot') {
+            data.monat   = (nfFields.querySelector('.ef-monat')   || {}).value || '';
+            data.titel   = (nfFields.querySelector('.ef-titel')   || {}).value || '';
+            data.text    = (nfFields.querySelector('.ef-text')    || {}).value || '';
+            data.angebot = (nfFields.querySelector('.ef-angebot') || {}).value || '';
+            data.auf     = (nfFields.querySelector('.ef-auf')     || {}).value || '';
+            if (!data.titel) { toast('Titel ist ein Pflichtfeld.', 'error'); return; }
+          } else if (type === 'banner') {
+            data.icon  = (nfFields.querySelector('.ef-icon')  || {}).value || '';
+            data.title = (nfFields.querySelector('.ef-title') || {}).value || '';
+            data.desc  = (nfFields.querySelector('.ef-desc')  || {}).value || '';
+            if (!data.title && !data.desc) { toast('Titel oder Beschreibung erforderlich.', 'error'); return; }
+          } else if (type === 'deal') {
+            data.badge     = (nfFields.querySelector('.ef-badge') || {}).value || '';
+            data.icon      = (nfFields.querySelector('.ef-icon')  || {}).value || '';
+            data.title     = (nfFields.querySelector('.ef-title') || {}).value || '';
+            data.price     = (nfFields.querySelector('.ef-price') || {}).value || '';
+            data.priceUnit = (nfFields.querySelector('.ef-unit')  || {}).value || '';
+            data.desc      = (nfFields.querySelector('.ef-desc')  || {}).value || '';
+            var hlEl = nfFields.querySelector('.ef-highlight');
+            data.highlight = hlEl ? hlEl.checked : false;
+            if (!data.title) { toast('Titel ist ein Pflichtfeld.', 'error'); return; }
+          }
+
+          var entry = {
+            id:        generateId(),
+            type:      type,
+            startDate: (nfFields.querySelector('.ef-start') || {}).value || '',
+            endDate:   (nfFields.querySelector('.ef-end')   || {}).value || '',
+            data:      data
+          };
           var schedule = getSchedule();
-          saveSchedule(schedule.filter(function (e) { return e.id !== id; }));
-        }
-        card.remove();
-        renderDealsEditor();
-        renderScheduleList();
-      });
-    });
+          schedule.push(entry);
+          saveSchedule(schedule);
+          renderScheduleList();
+          renderTimeline();
+          checkDirty();
+          toast(TYPE_LABELS[type] + ' gespeichert.');
 
-    // Wire per-deal emoji pickers
-    container.querySelectorAll('.deal-editor-card').forEach(function (card) {
-      var emojiBtn    = card.querySelector('.deal-emoji-btn');
-      var emojiPanel  = card.querySelector('.deal-emoji-panel');
-      var emojiSearch = card.querySelector('.deal-emoji-search');
-      var emojiGrid   = card.querySelector('.deal-emoji-grid');
-      var iconInput   = card.querySelector('.d-icon');
-
-      function renderDealEmojis(filter) {
-        var list = filter ? EMOJIS.filter(function (e) {
-          var q = filter.toLowerCase();
-          return e[0].includes(q) || e[1].toLowerCase().includes(q);
-        }) : EMOJIS;
-        if (!list.length) { emojiGrid.innerHTML = '<div class="emoji-no-results">Kein Emoji gefunden.</div>'; return; }
-        emojiGrid.innerHTML = list.map(function (e) {
-          return '<button class="emoji-btn" type="button" data-emoji="' + esc(e[0]) + '">' + e[0] + '</button>';
-        }).join('');
-        emojiGrid.querySelectorAll('.emoji-btn').forEach(function (b) {
-          b.addEventListener('click', function () {
-            iconInput.value = b.getAttribute('data-emoji');
-            emojiPanel.classList.remove('open');
-            emojiSearch.value = '';
-            renderDealEmojis('');
-            updateDealsPreview();
-          });
+          // Reset form
+          newForm.style.display = 'none';
+          nfFields.innerHTML = '';
+          hideEntryPreview();
+          currentType = null;
         });
       }
-      emojiBtn.addEventListener('click', function (e) {
-        var isOpen = emojiPanel.classList.contains('open');
-        document.querySelectorAll('.emoji-picker-panel.open').forEach(function (p) { p.classList.remove('open'); });
-        if (!isOpen) { emojiPanel.classList.add('open'); renderDealEmojis(''); setTimeout(function () { emojiSearch.focus(); }, 50); }
-        e.stopPropagation();
-      });
-      emojiSearch.addEventListener('input', function () { renderDealEmojis(emojiSearch.value); });
-      emojiSearch.addEventListener('keydown', function (e) { e.stopPropagation(); });
-    });
 
-    // Wire live preview updates on all deal inputs
-    container.querySelectorAll('.deal-editor-card').forEach(function (card) {
-      card.querySelectorAll('.d-badge,.d-icon,.d-title,.d-price,.d-unit,.d-desc').forEach(function (inp) {
-        inp.addEventListener('input', updateDealsPreview);
-      });
-      var hl = card.querySelector('.d-highlight');
-      if (hl) hl.addEventListener('change', updateDealsPreview);
-    });
-    updateDealsPreview();
-  }
-
-  function collectAndSaveDeals() {
-    var schedule = getSchedule().filter(function (e) { return e.type !== 'deal'; }); // remove existing deals
-    document.querySelectorAll('.deal-editor-card').forEach(function (card) {
-      var data = {
-        badge:     card.querySelector('.d-badge').value.trim(),
-        icon:      card.querySelector('.d-icon').value.trim(),
-        title:     card.querySelector('.d-title').value.trim(),
-        price:     card.querySelector('.d-price').value.trim(),
-        priceUnit: card.querySelector('.d-unit').value.trim(),
-        desc:      card.querySelector('.d-desc').value.trim(),
-        highlight: card.querySelector('.d-highlight').checked
-      };
-      var existingId = card.querySelector('.d-id').value;
-      schedule.push({
-        id:        existingId || generateId(),
-        type:      'deal',
-        startDate: card.querySelector('.d-start').value || '',
-        endDate:   card.querySelector('.d-end').value   || '',
-        data:      data
-      });
-    });
-    return saveSchedule(schedule);
-  }
-
-  function initDeals() {
-    renderDealsEditor();
-
-    document.getElementById('btn-add-deal').addEventListener('click', function () {
-      var schedule = getSchedule();
-      schedule.push({ id: generateId(), type: 'deal', startDate: '', endDate: '',
-        data: { badge: '', icon: '🏷️', title: '', price: '', priceUnit: '', desc: '', highlight: false } });
-      saveSchedule(schedule);
-      renderDealsEditor();
-    });
-
-    document.getElementById('btn-save-deals').addEventListener('click', function () {
-      if (collectAndSaveDeals()) {
-        renderScheduleList();
-        toast('Sonderangebote gespeichert.');
-        apiSave('save-schedule', { schedule: getSchedule() });
+      // Wire cancel button
+      var cancelBtn = nfFields.querySelector('.ef-cancel-btn');
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', function () {
+          newForm.style.display = 'none';
+          nfFields.innerHTML = '';
+          hideEntryPreview();
+          currentType = null;
+        });
       }
-    });
+    }
 
-    document.getElementById('btn-reset-deals').addEventListener('click', function () {
-      if (!confirm('Alle Sonderangebote auf Standard zurücksetzen?')) return;
-      var schedule = getSchedule().filter(function (e) { return e.type !== 'deal'; });
-      DEFAULTS.deals.forEach(function (d) {
-        schedule.push({ id: generateId(), type: 'deal', startDate: '', endDate: '', data: Object.assign({}, d) });
+    // Wire load-existing selector
+    if (nfLoadSelect) {
+      nfLoadSelect.addEventListener('change', function () {
+        var id = nfLoadSelect.value;
+        if (!id || !currentType) return;
+        var entry = null;
+        getSchedule().forEach(function (e) { if (e.id === id) entry = e; });
+        if (!entry) return;
+
+        // Fill form fields from the selected entry's data
+        var d = entry.data || {};
+        if (currentType === 'monatsangebot') {
+          var f = nfFields;
+          if (f.querySelector('.ef-monat'))   f.querySelector('.ef-monat').value   = d.monat   || '';
+          if (f.querySelector('.ef-titel'))   f.querySelector('.ef-titel').value   = d.titel   || '';
+          if (f.querySelector('.ef-text'))    f.querySelector('.ef-text').value    = d.text    || '';
+          if (f.querySelector('.ef-angebot')) f.querySelector('.ef-angebot').value = d.angebot || '';
+          if (f.querySelector('.ef-auf'))     f.querySelector('.ef-auf').value     = d.auf     || '';
+        } else if (currentType === 'banner') {
+          if (nfFields.querySelector('.ef-icon'))  nfFields.querySelector('.ef-icon').value  = d.icon  || '';
+          if (nfFields.querySelector('.ef-title')) nfFields.querySelector('.ef-title').value = d.title || '';
+          if (nfFields.querySelector('.ef-desc'))  nfFields.querySelector('.ef-desc').value  = d.desc  || '';
+        } else if (currentType === 'deal') {
+          if (nfFields.querySelector('.ef-badge')) nfFields.querySelector('.ef-badge').value = d.badge || '';
+          if (nfFields.querySelector('.ef-icon'))  nfFields.querySelector('.ef-icon').value  = d.icon  || '';
+          if (nfFields.querySelector('.ef-title')) nfFields.querySelector('.ef-title').value = d.title || '';
+          if (nfFields.querySelector('.ef-price')) nfFields.querySelector('.ef-price').value = d.price || '';
+          if (nfFields.querySelector('.ef-unit'))  nfFields.querySelector('.ef-unit').value  = d.priceUnit || '';
+          if (nfFields.querySelector('.ef-desc'))  nfFields.querySelector('.ef-desc').value  = d.desc  || '';
+          var hlEl = nfFields.querySelector('.ef-highlight');
+          if (hlEl) hlEl.checked = !!d.highlight;
+        }
+        // Also fill dates from the source entry
+        if (nfFields.querySelector('.ef-start')) nfFields.querySelector('.ef-start').value = entry.startDate || '';
+        if (nfFields.querySelector('.ef-end'))   nfFields.querySelector('.ef-end').value   = entry.endDate || '';
+        // Show dates row if the source entry had dates
+        if (entry.startDate || entry.endDate) {
+          var dateRow = nfFields.querySelector('.ef-dates-row');
+          if (dateRow) dateRow.style.display = '';
+          var planBtn = nfFields.querySelector('.ef-plan-btn');
+          if (planBtn) { planBtn.classList.add('active'); planBtn.textContent = '🕐 Daten ausblenden'; }
+        }
+        // Update preview
+        updateEntryPreview(currentType, nfFields);
+        toast('Vorlage geladen.', 'success');
       });
-      saveSchedule(schedule);
-      renderDealsEditor();
-      renderScheduleList();
-      toast('Sonderangebote zurückgesetzt.');
-      apiSave('save-schedule', { schedule: schedule });
-    });
+    }
   }
+
+  // (Deals section removed — unified into Zeitplan)
 
   // ── PRICES ─────────────────────────────────────────────────────
   var priceData = { reinigung: null, buegeln: null, waesche: null };
@@ -2631,10 +2739,36 @@
     if (changed) saveSchedule(schedule);
   }
 
+  // ── PUBLISH BAR ─────────────────────────────────────────────────
+  function initPublishBar() {
+    document.getElementById('publish-btn').addEventListener('click', function () {
+      var schedule = getSchedule();
+      apiSave('save-schedule', { schedule: schedule }).then(function (res) {
+        if (res) {
+          takeSnapshot();
+          _pendingChanges = [];
+          document.getElementById('publish-bar').style.display = 'none';
+          toast('Alle Änderungen veröffentlicht!', 'success');
+        }
+      });
+    });
+    document.getElementById('publish-discard').addEventListener('click', function () {
+      if (!confirm('Alle unveröffentlichten Änderungen verwerfen und letzten Stand laden?')) return;
+      if (_cleanSnapshot) {
+        saveSchedule(JSON.parse(_cleanSnapshot));
+        renderScheduleList();
+        renderTimeline();
+      }
+      _pendingChanges = [];
+      document.getElementById('publish-bar').style.display = 'none';
+      toast('Änderungen verworfen.');
+    });
+  }
+
   // ── INIT ───────────────────────────────────────────────────────
   function initAdmin() {
     migrateData();
-    var fns = [initNav, initAktionen, initZeitplan, initDeals, initPreise, initData];
+    var fns = [initNav, initZeitplan, initPreise, initData, initPublishBar];
     fns.forEach(function (fn) {
       try { fn(); }
       catch (e) { console.error('[admin] ' + fn.name + ' failed:', e); }
