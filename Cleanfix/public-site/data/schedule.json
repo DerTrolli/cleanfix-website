@@ -9,5 +9,20 @@
       "title": "April-Aktion:",
       "desc": "20 % Rabatt auf Hemden – jetzt sparen!"
     }
+  },
+  {
+    "id": "zw9yykoxdari",
+    "type": "deal",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "badge": "Ab heute",
+      "icon": "🔔",
+      "title": "3 Bananen!",
+      "price": "10€",
+      "priceUnit": "pro Banane",
+      "desc": "BANANA",
+      "highlight": false
+    }
   }
 ]
