@@ -24,5 +24,16 @@
       "title": "Oster-Aktion",
       "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
     }
+  },
+  {
+    "id": "hfms8ywncoto",
+    "type": "banner",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "icon": "📢",
+      "title": "Hallo Ralf",
+      "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
+    }
   }
 ]
