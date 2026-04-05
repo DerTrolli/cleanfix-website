@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "uzgaptjy86qf",
+    "type": "deal",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "badge": "Jeden Donnerstag",
+      "icon": "👖",
+      "title": "„Hose runter\"",
+      "price": "4,99 €",
+      "priceUnit": "",
+      "desc": "Hosen donnerstags zum Aktionspreis – einfach vorbeikommen und sparen.",
+      "highlight": true
+    }
+  },
+  {
+    "id": "3441f6b3nbum",
+    "type": "deal",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "badge": "Ab 3 Stück",
+      "icon": "👖",
+      "title": "Mengenrabatt Hosen",
+      "price": "8,00 €",
+      "priceUnit": "/ Stück",
+      "desc": "Ab 3 Hosen zahlen Sie nur 8,00 € pro Stück – gilt dauerhaft, kein Mindestumsatz.",
+      "highlight": false
+    }
+  }
+]
