@@ -35,5 +35,16 @@
       "title": "Hallo Ralf",
       "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
     }
+  },
+  {
+    "id": "tmex1pcr4gj0",
+    "type": "banner",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "icon": "📢",
+      "title": "Hallo Ralf",
+      "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
+    }
   }
 ]
