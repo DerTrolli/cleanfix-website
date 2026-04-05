@@ -1336,6 +1336,8 @@
     return Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 6);
   }
   var TODAY = new Date().toISOString().slice(0, 10);
+  /** yyyy-mm-dd → dd.mm.yyyy */
+  function fmtDate(iso) { return iso ? iso.split('-').reverse().join('.') : ''; }
   function entryStatus(e) {
     var s = e.startDate || '', en = e.endDate || '';
     if (!s && !en) return 'permanent';
@@ -1375,7 +1377,7 @@
            sessionStorage.getItem('cleanfix-admin-fp') === PASS_FINGERPRINT;
   }
 
-  if (checkAuth()) { showApp(); }
+  // Auth check deferred to end of IIFE so DEFAULTS and all functions are initialized first
 
   loginBtn.addEventListener('click', async function () {
     const pw = pwInput.value;
@@ -1682,8 +1684,8 @@
   function dateRange(entry) {
     if (!entry.startDate && !entry.endDate) return 'Dauerhaft aktiv';
     var parts = [];
-    if (entry.startDate) parts.push('ab ' + entry.startDate.split('-').reverse().join('.'));
-    if (entry.endDate)   parts.push('bis ' + entry.endDate.split('-').reverse().join('.'));
+    if (entry.startDate) parts.push('ab ' + fmtDate(entry.startDate));
+    if (entry.endDate)   parts.push('bis ' + fmtDate(entry.endDate));
     return parts.join(' ');
   }
 
@@ -1950,17 +1952,17 @@
       var angebot = (formContainer.querySelector('.ef-angebot') || {}).value || '';
       var auf     = (formContainer.querySelector('.ef-auf')     || {}).value || '';
       previewBox.innerHTML =
-        '<div class=”monatsangebot-card” style=”pointer-events:none;margin-bottom:0;”>' +
-          '<div class=”monatsangebot-tag”>Monatsangebot</div>' +
-          '<div class=”monatsangebot-inner”>' +
-            '<div class=”monatsangebot-left”>' +
-              '<div class=”monatsangebot-month”>' + esc(monat) + '</div>' +
-              '<div class=”monatsangebot-headline”>' + esc(titel) + '</div>' +
-              '<p class=”monatsangebot-body”>' + esc(text) + '</p>' +
+        '<div class="monatsangebot-card" style="pointer-events:none;margin-bottom:0;">' +
+          '<div class="monatsangebot-tag">Monatsangebot</div>' +
+          '<div class="monatsangebot-inner">' +
+            '<div class="monatsangebot-left">' +
+              '<div class="monatsangebot-month">' + esc(monat) + '</div>' +
+              '<div class="monatsangebot-headline">' + esc(titel) + '</div>' +
+              '<p class="monatsangebot-body">' + esc(text) + '</p>' +
             '</div>' +
-            (angebot || auf ? '<div class=”monatsangebot-right” aria-hidden=”true”>' +
-              '<div class=”monatsangebot-discount”>' + (angebot ? '−' + esc(angebot) : '') + '</div>' +
-              '<div class=”monatsangebot-service”>' + esc(auf) + '</div>' +
+            (angebot || auf ? '<div class="monatsangebot-right" aria-hidden="true">' +
+              '<div class="monatsangebot-discount">' + (angebot ? '−' + esc(angebot) : '') + '</div>' +
+              '<div class="monatsangebot-service">' + esc(auf) + '</div>' +
             '</div>' : '') +
           '</div>' +
         '</div>';
@@ -1975,9 +1977,9 @@
       if (title && desc) html += ' ';
       if (desc)  html += esc(desc);
       previewBox.innerHTML =
-        '<div class=”promo-banner” style=”border-radius:var(--radius-sm);”>' +
-          '<div class=”container promo-inner” style=”max-width:100%;padding:0 16px;”>' +
-            '<span class=”promo-icon” aria-hidden=”true”>' + (icon || '✨') + '</span>' +
+        '<div class="promo-banner" style="border-radius:var(--radius-sm);">' +
+          '<div class="container promo-inner" style="max-width:100%;padding:0 16px;">' +
+            '<span class="promo-icon" aria-hidden="true">' + (icon || '✨') + '</span>' +
             '<p>' + html + '</p>' +
           '</div>' +
         '</div>';
@@ -1993,15 +1995,15 @@
       var hl = formContainer.querySelector('.ef-highlight');
       var highlight = hl ? hl.checked : false;
       previewBox.innerHTML =
-        '<div class=”deals-grid” style=”pointer-events:none;”>' +
-          '<div class=”deal-card' + (highlight ? ' deal-card--highlight' : '') + '”>' +
-            (badge ? '<div class=”deal-badge”>' + esc(badge) + '</div>' : '') +
-            '<div class=”deal-icon” aria-hidden=”true”>' + esc(dIcon) + '</div>' +
-            '<div class=”deal-title”>' + esc(dTitle) + '</div>' +
-            '<div class=”deal-price”>' + esc(price) +
-              (priceUnit ? ' <span class=”deal-price-unit”>' + esc(priceUnit) + '</span>' : '') +
+        '<div class="deals-grid" style="pointer-events:none;">' +
+          '<div class="deal-card' + (highlight ? ' deal-card--highlight' : '') + '">' +
+            (badge ? '<div class="deal-badge">' + esc(badge) + '</div>' : '') +
+            '<div class="deal-icon" aria-hidden="true">' + esc(dIcon) + '</div>' +
+            '<div class="deal-title">' + esc(dTitle) + '</div>' +
+            '<div class="deal-price">' + esc(price) +
+              (priceUnit ? ' <span class="deal-price-unit">' + esc(priceUnit) + '</span>' : '') +
             '</div>' +
-            '<div class=”deal-desc”>' + esc(dDesc) + '</div>' +
+            '<div class="deal-desc">' + esc(dDesc) + '</div>' +
           '</div>' +
         '</div>';
     }
@@ -2018,7 +2020,7 @@
     var select = document.getElementById('nf-load-select');
     if (!container || !select) return;
     var entries = getSchedule().filter(function (e) { return e.type === type; });
-    select.innerHTML = '<option value=””>– Leer beginnen –</option>';
+    select.innerHTML = '<option value="">– Leer beginnen –</option>';
     if (!entries.length) {
       container.style.display = 'none';
       return;
@@ -2028,8 +2030,8 @@
       var status = entryStatus(e);
       var statusLabel = status === 'permanent' ? '∞' : status === 'active' ? '✓' : status === 'scheduled' ? '🕐' : '✗';
       var dateInfo = '';
-      if (e.startDate) dateInfo += ' ab ' + e.startDate;
-      if (e.endDate) dateInfo += ' bis ' + e.endDate;
+      if (e.startDate) dateInfo += ' ab ' + fmtDate(e.startDate);
+      if (e.endDate) dateInfo += ' bis ' + fmtDate(e.endDate);
       var opt = document.createElement('option');
       opt.value = e.id;
       opt.textContent = statusLabel + ' ' + name + dateInfo;
@@ -2044,7 +2046,7 @@
     if (!container) return;
     var schedule = getSchedule();
     if (!schedule.length) {
-      container.innerHTML = '<div class=”tl-empty”>Keine Einträge vorhanden. Erstelle einen Eintrag, um die Timeline zu sehen.</div>';
+      container.innerHTML = '<div class="tl-empty">Keine Einträge vorhanden. Erstelle einen Eintrag, um die Timeline zu sehen.</div>';
       return;
     }
     var now = new Date();
@@ -2068,7 +2070,7 @@
       var visStart = cursor < rangeStart ? rangeStart : new Date(cursor.getFullYear(), cursor.getMonth(), 1);
       var visEnd   = mEnd > rangeEnd ? rangeEnd : mEnd;
       var daysInView = Math.round((visEnd - visStart) / 86400000) + 1;
-      monthsHTML += '<div class=”tl-month-cell” style=”width:' + (daysInView * pxPerDay) + 'px;”>' + MONATE[cursor.getMonth()] + ' ' + cursor.getFullYear() + '</div>';
+      monthsHTML += '<div class="tl-month-cell" style="width:' + (daysInView * pxPerDay) + 'px;">' + MONATE[cursor.getMonth()] + ' ' + cursor.getFullYear() + '</div>';
       cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
     }
 
@@ -2078,9 +2080,9 @@
       var tickDate = new Date(rangeStart.getTime() + di * 86400000);
       var dayNum = tickDate.getDate();
       if (dayNum === 1 || dayNum % 5 === 0) {
-        daysHTML += '<div class=”tl-day-tick” style=”left:' + (di * pxPerDay) + 'px;”></div>';
+        daysHTML += '<div class="tl-day-tick" style="left:' + (di * pxPerDay) + 'px;"></div>';
         if (dayNum === 1 || dayNum % 10 === 0)
-          daysHTML += '<span class=”tl-day-label” style=”left:' + (di * pxPerDay) + 'px;”>' + dayNum + '</span>';
+          daysHTML += '<span class="tl-day-label" style="left:' + (di * pxPerDay) + 'px;">' + dayNum + '</span>';
       }
     }
 
@@ -2116,23 +2118,23 @@
       if (status === 'expired')   classes += ' tl-bar--expired';
       if (status === 'scheduled') classes += ' tl-bar--scheduled';
 
-      var prefix = status === 'permanent' ? '<span class=”tl-bar-infinity”>∞</span>' : '';
-      var dateInfo = status === 'permanent' ? 'Dauerhaft' : (entry.startDate || '?') + ' – ' + (entry.endDate || '?');
+      var prefix = status === 'permanent' ? '<span class="tl-bar-infinity">∞</span>' : '';
+      var dateInfo = status === 'permanent' ? 'Dauerhaft' : (fmtDate(entry.startDate) || '?') + ' – ' + (fmtDate(entry.endDate) || '?');
 
-      lanesHTML += '<div class=”tl-lane”><div class=”' + classes + '” style=”left:' + cl + 'px;width:' + (cr - cl) + 'px;” data-id=”' + esc(entry.id) + '” title=”' + esc(name + ' — ' + dateInfo) + '”>' + prefix + esc(name) + '</div></div>';
+      lanesHTML += '<div class="tl-lane"><div class="' + classes + '" style="left:' + cl + 'px;width:' + (cr - cl) + 'px;" data-id="' + esc(entry.id) + '" title="' + esc(name + ' — ' + dateInfo) + '">' + prefix + esc(name) + '</div></div>';
     });
 
-    var todayLineHTML = todayVisible ? '<div class=”tl-today-line” style=”left:' + todayX + 'px;”><span class=”tl-today-label”>Heute</span></div>' : '';
+    var todayLineHTML = todayVisible ? '<div class="tl-today-line" style="left:' + todayX + 'px;"><span class="tl-today-label">Heute</span></div>' : '';
 
-    container.innerHTML = '<div class=”tl-inner” style=”width:' + totalWidth + 'px;”>' +
-      '<div class=”tl-header”>' + monthsHTML + '</div>' +
-      '<div class=”tl-days-row”>' + daysHTML + '</div>' +
-      '<div class=”tl-lanes”>' + todayLineHTML + lanesHTML + '</div></div>';
+    container.innerHTML = '<div class="tl-inner" style="width:' + totalWidth + 'px;">' +
+      '<div class="tl-header">' + monthsHTML + '</div>' +
+      '<div class="tl-days-row">' + daysHTML + '</div>' +
+      '<div class="tl-lanes">' + todayLineHTML + lanesHTML + '</div></div>';
 
     // Click bar → scroll to entry
     container.querySelectorAll('.tl-bar').forEach(function (bar) {
       bar.addEventListener('click', function () {
-        var target = document.querySelector('.sched-entry[data-id=”' + bar.getAttribute('data-id') + '”]');
+        var target = document.querySelector('.sched-entry[data-id="' + bar.getAttribute('data-id') + '"]');
         if (target) {
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
           target.style.boxShadow = '0 0 0 3px var(--blue), 0 0 16px rgba(8,48,221,0.3)';
@@ -2154,7 +2156,7 @@
     var nfLoadSelect = document.getElementById('nf-load-select');
     var currentType = null;
 
-    // Show type chooser on “Neuer Eintrag” click
+    // Show type chooser on "Neuer Eintrag" click
     document.getElementById('btn-new-schedule-entry').addEventListener('click', function () {
       if (newForm.style.display !== 'none') {
         // Toggle off
@@ -2204,7 +2206,7 @@
       // Populate load-existing dropdown
       populateLoadExisting(type);
 
-      // Hide date fields by default (shown via “Planen” button)
+      // Hide date fields by default (shown via "Planen" button)
       var dateRow = nfFields.querySelector('.ef-dates-row');
       if (dateRow) dateRow.style.display = 'none';
 
@@ -2783,6 +2785,9 @@
       });
     }
   }
+
+  // ── AUTO-LOGIN (runs after all declarations) ────────────────
+  if (checkAuth()) { showApp(); }
 
 })();
 </script>
