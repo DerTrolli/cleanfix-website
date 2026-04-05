@@ -148,11 +148,11 @@ The `DEFAULTS` object in `admin.html` JS contains the canonical price data. When
 All admin JS lives in a single large IIFE (`'use strict'`) at the bottom of the file. All admin CSS is in an inline `<style>` block in `<head>`.
 
 ### Authentication
-- Password: `cleanfix2026`
-- Login checks against SHA-256 hash via `crypto.subtle.digest`; plain string compare as fallback if `crypto.subtle` unavailable
-- `PASS_HASH` must be the exact SHA-256 hex digest of `PASS_PLAIN`. Current correct hash for `cleanfix2026`: `fa635e3ca4aaed9001b0f2c6cd1b52cd8fec1254e0e2ac998064a577afb99f92`
+- Login checks the entered password against its SHA-256 hash via `crypto.subtle.digest`
+- `PASS_HASH` in the source code is the SHA-256 hex digest of the admin password. **Never store the plaintext password in the code.**
 - Auth state: `sessionStorage.getItem('cleanfix-admin-auth') === 'ok'` — clears on tab close
-- **When changing the password**: update **both** `PASS_PLAIN` and `PASS_HASH` together. Compute the new hash with: `node -e "require('crypto').subtle.digest('SHA-256',new TextEncoder().encode('NEW_PASSWORD')).then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))"`. If the hash is wrong, login silently falls back to insecure plaintext comparison — this is a bug-prone state, not a feature.
+- A fingerprint of `PASS_HASH` is stored in sessionStorage so changing the hash automatically invalidates existing sessions
+- **When changing the password**: update `PASS_HASH` with the new SHA-256 digest. Compute it with: `node -e "require('crypto').subtle.digest('SHA-256',new TextEncoder().encode('NEW_PASSWORD')).then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))"`. Requires HTTPS or localhost (`crypto.subtle` needs a secure context).
 
 ### Sections (sidebar nav → section IDs)
 | Nav label | Section ID | Content |
@@ -272,5 +272,5 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 - **`\!` syntax bug**: A Python-based text replacement once escaped every `!` operator as `\!` in `admin.html`. Fixed by global replacement. If this recurs, run: `python -c "open('admin.html','w').write(open('admin.html').read().replace('\\\\!','!'))"` and re-validate with `node --check`.
 - **Stale localStorage causing broken admin**: Old `cleanfix-banner` stored as `{text: '<strong>...</strong>'}` (HTML blob). `migrateData()` and the fallback guard in the banner reader handle this. If something still breaks, open DevTools → Application → Storage → Clear all `cleanfix-*` keys to reset to DEFAULTS.
 - **Rich text editor removed**: The banner description was previously a `contenteditable` div with `execCommand` — it was unreliable. It was replaced with three plain text inputs (`banner-icon`, `banner-title`, `banner-desc`). Do not reintroduce `contenteditable` for this.
-- **Wrong password hash (Feb 2026)**: `PASS_HASH` was a fabricated value that didn't match `cleanfix2026`. Login only worked via the insecure plaintext fallback (`PASS_PLAIN`). Fixed by computing the real SHA-256 hash. **Always recompute the hash when changing the password** — see Authentication section above.
+- **Wrong password hash (Feb 2026)**: `PASS_HASH` was a fabricated value. Login only worked via the insecure plaintext fallback (`PASS_PLAIN`). Fixed by computing the real SHA-256 hash. The plaintext fallback (`PASS_PLAIN`) was removed entirely in Apr 2026 — authentication now relies solely on hash comparison. **Always recompute the hash when changing the password** — see Authentication section above.
 - **Export/Clear missing `cleanfix-schedule` (Feb 2026)**: The export and clear-all functions in `initData()` only listed legacy keys in their `allKeys` arrays, omitting `cleanfix-schedule`. This caused exports to silently lose all schedule data (MA, banner, deal entries) and "clear all" to leave schedule entries untouched. Fixed by adding `cleanfix-schedule` to both arrays. **When adding new localStorage keys, always update the `allKeys` arrays in `initData()`.**

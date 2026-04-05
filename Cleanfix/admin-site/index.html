@@ -1348,7 +1348,6 @@
 
   // ── PASSWORD ───────────────────────────────────────────────────
   const PASS_HASH = 'fa635e3ca4aaed9001b0f2c6cd1b52cd8fec1254e0e2ac998064a577afb99f92';
-  const PASS_PLAIN = 'cleanfix2026';
 
   async function hashPassword(pw) {
     if (!crypto || !crypto.subtle) return null;
@@ -1386,8 +1385,6 @@
       const hash = await hashPassword(pw);
       ok = hash === PASS_HASH;
     } catch (e) {}
-    // Fallback to plain comparison
-    if (!ok) ok = (pw === PASS_PLAIN);
     if (ok) {
       sessionStorage.setItem('cleanfix-admin-auth', 'ok');
       sessionStorage.setItem('cleanfix-admin-fp', PASS_FINGERPRINT);
