@@ -603,6 +603,13 @@
       margin-bottom: 0;
       font-size: 0.82em;
     }
+    .preview-box .deals-grid {
+      font-size: 0.82em;
+      gap: 14px;
+    }
+    .preview-box .deal-card {
+      margin-bottom: 0;
+    }
     .preview-box .promo-banner {
       border-radius: var(--radius-sm);
     }
@@ -1068,6 +1075,13 @@
           <div class="admin-actions">
             <button class="btn-save" id="btn-save-deals">💾 Alle speichern</button>
             <button class="btn-reset" id="btn-reset-deals">↺ Zurücksetzen</button>
+          </div>
+        </div>
+
+        <div class="admin-card" style="margin-top:18px;">
+          <p class="preview-label">Vorschau – Sonderangebote (so sieht es auf der Website aus)</p>
+          <div class="preview-box" style="padding:16px;background:var(--bg-dark,#0d0d1a);">
+            <div class="deals-grid" id="deals-preview-grid" style="pointer-events:none;"></div>
           </div>
         </div>
       </section>
@@ -1951,12 +1965,38 @@
     // Load all deal entries from schedule (any status, so user sees all)
     var schedule = getSchedule();
     var deals = schedule.filter(function (e) { return e.type === 'deal'; });
-    if (deals.length) return deals.map(function (e) {
+    return deals.map(function (e) {
       return Object.assign({}, e.data, { _id: e.id, _startDate: e.startDate || '', _endDate: e.endDate || '' });
     });
-    // Fallback to DEFAULTS
-    return DEFAULTS.deals.map(function (d) {
-      return Object.assign({}, d, { _id: '', _startDate: '', _endDate: '' });
+  }
+
+  function updateDealsPreview() {
+    var previewBox = document.getElementById('deals-preview-grid');
+    if (!previewBox) return;
+    var cards = document.querySelectorAll('.deal-editor-card');
+    if (!cards.length) {
+      previewBox.innerHTML = '<p style="color:var(--neutral-400);font-style:italic;text-align:center;padding:18px 0;">Keine Sonderangebote vorhanden.</p>';
+      return;
+    }
+    previewBox.innerHTML = '';
+    cards.forEach(function (card) {
+      var badge     = card.querySelector('.d-badge').value.trim();
+      var icon      = card.querySelector('.d-icon').value.trim();
+      var title     = card.querySelector('.d-title').value.trim();
+      var price     = card.querySelector('.d-price').value.trim();
+      var priceUnit = card.querySelector('.d-unit').value.trim();
+      var desc      = card.querySelector('.d-desc').value.trim();
+      var highlight = card.querySelector('.d-highlight').checked;
+      previewBox.innerHTML +=
+        '<div class="deal-card' + (highlight ? ' deal-card--highlight' : '') + '">' +
+          (badge ? '<div class="deal-badge">' + esc(badge) + '</div>' : '') +
+          '<div class="deal-icon" aria-hidden="true">' + esc(icon) + '</div>' +
+          '<div class="deal-title">' + esc(title) + '</div>' +
+          '<div class="deal-price">' + esc(price) +
+            (priceUnit ? ' <span class="deal-price-unit">' + esc(priceUnit) + '</span>' : '') +
+          '</div>' +
+          '<div class="deal-desc">' + esc(desc) + '</div>' +
+        '</div>';
     });
   }
 
@@ -1965,6 +2005,11 @@
     if (!container) return;
     var items = dealEntriesToEditorData();
     container.innerHTML = '';
+    if (!items.length) {
+      container.innerHTML = '<p style="color:var(--neutral-400);font-style:italic;padding:12px 0;">Keine Sonderangebote vorhanden. Klicke auf „＋ Angebot hinzufügen" um ein neues zu erstellen.</p>';
+      updateDealsPreview();
+      return;
+    }
     items.forEach(function (d, i) {
       var el = document.createElement('div');
       el.className = 'deal-editor-card';
@@ -2044,6 +2089,7 @@
             emojiPanel.classList.remove('open');
             emojiSearch.value = '';
             renderDealEmojis('');
+            updateDealsPreview();
           });
         });
       }
@@ -2056,6 +2102,16 @@
       emojiSearch.addEventListener('input', function () { renderDealEmojis(emojiSearch.value); });
       emojiSearch.addEventListener('keydown', function (e) { e.stopPropagation(); });
     });
+
+    // Wire live preview updates on all deal inputs
+    container.querySelectorAll('.deal-editor-card').forEach(function (card) {
+      card.querySelectorAll('.d-badge,.d-icon,.d-title,.d-price,.d-unit,.d-desc').forEach(function (inp) {
+        inp.addEventListener('input', updateDealsPreview);
+      });
+      var hl = card.querySelector('.d-highlight');
+      if (hl) hl.addEventListener('change', updateDealsPreview);
+    });
+    updateDealsPreview();
   }
 
   function collectAndSaveDeals() {
