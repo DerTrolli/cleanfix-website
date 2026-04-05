@@ -433,6 +433,7 @@ address { font-style: normal; }
 .promo-inner {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   font-size: 0.95rem;
 }

@@ -157,11 +157,12 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
       applyDeals(dealsActive.map(function (e) { return e.data; }));
       applied = true;
     } else {
-      // No active deals — hide the deals section
+      // No active deals — hide heading + grid, clear any hardcoded cards
       var dealsGrid = document.getElementById('deals-grid');
       var dealsHeading = document.querySelector('.deals-heading');
-      if (dealsGrid) dealsGrid.style.display = 'none';
+      if (dealsGrid) { dealsGrid.innerHTML = ''; dealsGrid.style.display = 'none'; }
       if (dealsHeading) dealsHeading.style.display = 'none';
+      applied = true;
     }
 
     return applied;

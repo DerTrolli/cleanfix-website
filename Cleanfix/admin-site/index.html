@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/png" href="favicon.png" />
+  <!-- SheetJS for Excel import/export of price lists -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <!-- Link main stylesheet for CSS tokens + preview rendering -->
   <link rel="stylesheet" href="style.css" />
   <style>
@@ -1122,6 +1124,11 @@
             <button class="btn-save" id="btn-save-preise">💾 Preise speichern</button>
             <button class="btn-reset" id="btn-reset-preise">↺ Zurücksetzen</button>
           </div>
+          <div class="admin-actions" style="margin-top:12px;gap:10px;">
+            <button class="btn-save" id="btn-export-excel" style="background:var(--neutral-700);">📥 Excel exportieren</button>
+            <button class="btn-save" id="btn-import-excel" style="background:var(--neutral-700);">📤 Excel importieren</button>
+            <input type="file" id="excel-import-file" accept=".xlsx,.xls,.csv" style="display:none;" />
+          </div>
         </div>
       </section>
 
@@ -1168,6 +1175,33 @@
   //  API CONFIG
   // ═══════════════════════════════════════════════════════════════
   var API_BASE = 'https://cleanfix-api.thetrolli.com/webhook';
+  var PUBLIC_SITE = 'https://cleanfix.thetrolli.com';
+
+  /**
+   * Fetch schedule.json from the live public site.
+   * Only writes to localStorage if local is empty (never overwrites local changes).
+   * Returns a promise resolving to the schedule array (or [] on failure).
+   */
+  function fetchServerSchedule() {
+    return fetch(PUBLIC_SITE + '/data/schedule.json', { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (arr) {
+        if (!Array.isArray(arr)) return [];
+        // Only seed localStorage when completely empty — never overwrite local edits
+        var local = getSchedule();
+        if (!local.length && arr.length) {
+          saveSchedule(arr);
+        }
+        return arr;
+      })
+      .catch(function (err) {
+        console.error('[fetchServerSchedule]', err);
+        return [];
+      });
+  }
 
   /**
    * POST data to the n8n API for server-side persistence (GitHub commit).
@@ -1574,10 +1608,31 @@
     // Load current active MA into form
     document.getElementById('btn-load-ma-current').addEventListener('click', function () {
       var best = getBestActive('monatsangebot');
-      if (!best) { toast('Kein aktives Monatsangebot vorhanden.', 'error'); return; }
-      var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
-      setMaFields(d);
-      toast('Aktuelles Monatsangebot geladen.');
+      if (best) {
+        var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
+        setMaFields(d);
+        toast('Aktuelles Monatsangebot geladen.');
+        return;
+      }
+      // Fallback: fetch from server
+      toast('Lade vom Server…');
+      fetchServerSchedule().then(function (arr) {
+        var found = null;
+        arr.forEach(function (e) {
+          if (e.type === 'monatsangebot') {
+            var st = entryStatus(e);
+            if (st === 'permanent' || st === 'active') found = e;
+          }
+        });
+        if (found) {
+          var d = Object.assign({}, found.data, { _startDate: found.startDate, _endDate: found.endDate });
+          setMaFields(d);
+          renderScheduleList();
+          toast('Monatsangebot vom Server geladen.', 'success');
+        } else {
+          toast('Kein aktives Monatsangebot vorhanden.', 'error');
+        }
+      });
     });
 
     // Save Banner → new schedule entry
@@ -1603,10 +1658,31 @@
     // Load current active Banner into form
     document.getElementById('btn-load-banner-current').addEventListener('click', function () {
       var best = getBestActive('banner');
-      if (!best) { toast('Kein aktiver Banner vorhanden.', 'error'); return; }
-      var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
-      setBannerFields(d);
-      toast('Aktuellen Banner geladen.');
+      if (best) {
+        var d = Object.assign({}, best.data, { _startDate: best.startDate, _endDate: best.endDate });
+        setBannerFields(d);
+        toast('Aktuellen Banner geladen.');
+        return;
+      }
+      // Fallback: fetch from server
+      toast('Lade vom Server…');
+      fetchServerSchedule().then(function (arr) {
+        var found = null;
+        arr.forEach(function (e) {
+          if (e.type === 'banner') {
+            var st = entryStatus(e);
+            if (st === 'permanent' || st === 'active') found = e;
+          }
+        });
+        if (found) {
+          var d = Object.assign({}, found.data, { _startDate: found.startDate, _endDate: found.endDate });
+          setBannerFields(d);
+          renderScheduleList();
+          toast('Banner vom Server geladen.', 'success');
+        } else {
+          toast('Kein aktiver Banner vorhanden.', 'error');
+        }
+      });
     });
   }
 
@@ -2225,6 +2301,136 @@
         waesche:   priceData.waesche
       });
     });
+
+    // ── EXCEL EXPORT ──────────────────────────────────────────────
+    document.getElementById('btn-export-excel').addEventListener('click', function () {
+      collectPrices('reinigung');
+      collectPrices('buegeln');
+      collectPrices('waesche');
+
+      function sheetFromData(data, hasPreis2) {
+        var rows = [];
+        var header = hasPreis2
+          ? ['Gruppe', 'Artikel', 'Preis', 'Preis (nur Mangeln)']
+          : ['Gruppe', 'Artikel', 'Preis'];
+        rows.push(header);
+        (data.groups || []).forEach(function (g) {
+          if (g.label) {
+            rows.push(hasPreis2 ? [g.label, '', '', ''] : [g.label, '', '']);
+          }
+          (g.rows || []).forEach(function (r) {
+            var row = ['', r.artikel || '', r.preis || ''];
+            if (hasPreis2) row.push(r.preis2 || '');
+            rows.push(row);
+          });
+        });
+        return XLSX.utils.aoa_to_sheet(rows);
+      }
+
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheetFromData(priceData.reinigung, false), 'Reinigung');
+      XLSX.utils.book_append_sheet(wb, sheetFromData(priceData.buegeln, false), 'Bügeln');
+      XLSX.utils.book_append_sheet(wb, sheetFromData(priceData.waesche, true), 'Wäsche & Mangeln');
+
+      // Auto-size columns
+      wb.SheetNames.forEach(function (name) {
+        var ws = wb.Sheets[name];
+        var range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+        var colWidths = [];
+        for (var c = range.s.c; c <= range.e.c; c++) {
+          var maxW = 10;
+          for (var r = range.s.r; r <= range.e.r; r++) {
+            var cell = ws[XLSX.utils.encode_cell({ r: r, c: c })];
+            if (cell && cell.v) maxW = Math.max(maxW, String(cell.v).length + 2);
+          }
+          colWidths.push({ wch: Math.min(maxW, 40) });
+        }
+        ws['!cols'] = colWidths;
+      });
+
+      var today = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'Cleanfix-Preise-' + today + '.xlsx');
+      toast('Excel exportiert.', 'success');
+    });
+
+    // ── EXCEL IMPORT ──────────────────────────────────────────────
+    document.getElementById('btn-import-excel').addEventListener('click', function () {
+      document.getElementById('excel-import-file').click();
+    });
+
+    document.getElementById('excel-import-file').addEventListener('change', function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      e.target.value = '';
+
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        try {
+          var wb = XLSX.read(ev.target.result, { type: 'array' });
+
+          function parseSheet(ws, hasPreis2) {
+            var aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+            if (!aoa.length) return { groups: [] };
+            // Skip header row
+            var startRow = 0;
+            if (aoa[0] && String(aoa[0][0]).toLowerCase().indexOf('gruppe') >= 0) startRow = 1;
+
+            var groups = [];
+            var currentGroup = { label: '', rows: [] };
+
+            for (var i = startRow; i < aoa.length; i++) {
+              var row = aoa[i];
+              var col0 = String(row[0] || '').trim();
+              var col1 = String(row[1] || '').trim();
+              var col2 = String(row[2] || '').trim();
+
+              // Group header row: col0 has text, col1 and col2 are empty
+              if (col0 && !col1 && !col2) {
+                if (currentGroup.label || currentGroup.rows.length) {
+                  groups.push(currentGroup);
+                }
+                currentGroup = { label: col0, rows: [] };
+              } else if (col1 || col2) {
+                var r = { artikel: col1, preis: col2 };
+                if (hasPreis2) r.preis2 = String(row[3] || '').trim();
+                currentGroup.rows.push(r);
+              }
+            }
+            if (currentGroup.label || currentGroup.rows.length) {
+              groups.push(currentGroup);
+            }
+            return { groups: groups };
+          }
+
+          // Map sheets by name (with fallbacks by position)
+          var sheetMap = { reinigung: null, buegeln: null, waesche: null };
+          wb.SheetNames.forEach(function (name) {
+            var lower = name.toLowerCase();
+            if (lower.indexOf('reinigung') >= 0)                    sheetMap.reinigung = wb.Sheets[name];
+            else if (lower.indexOf('gel') >= 0 || lower.indexOf('büg') >= 0 || lower.indexOf('bueg') >= 0) sheetMap.buegeln = wb.Sheets[name];
+            else if (lower.indexOf('äsche') >= 0 || lower.indexOf('waesche') >= 0 || lower.indexOf('mangel') >= 0) sheetMap.waesche = wb.Sheets[name];
+          });
+          // Fallback by position if names didn't match
+          if (!sheetMap.reinigung && wb.SheetNames[0]) sheetMap.reinigung = wb.Sheets[wb.SheetNames[0]];
+          if (!sheetMap.buegeln && wb.SheetNames[1])   sheetMap.buegeln   = wb.Sheets[wb.SheetNames[1]];
+          if (!sheetMap.waesche && wb.SheetNames[2])    sheetMap.waesche   = wb.Sheets[wb.SheetNames[2]];
+
+          var imported = 0;
+          if (sheetMap.reinigung) { priceData.reinigung = parseSheet(sheetMap.reinigung, false); imported++; }
+          if (sheetMap.buegeln)   { priceData.buegeln   = parseSheet(sheetMap.buegeln, false);   imported++; }
+          if (sheetMap.waesche)   { priceData.waesche    = parseSheet(sheetMap.waesche, true);    imported++; }
+
+          renderPriceGroups('reinigung');
+          renderPriceGroups('buegeln');
+          renderPriceGroups('waesche');
+          toast(imported + ' Preisliste(n) aus Excel importiert. Bitte prüfen und speichern.', 'success');
+        } catch (err) {
+          console.error('[Excel Import]', err);
+          toast('Fehler beim Import: ' + err.message, 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    });
   }
 
   function isWaesche(tab) { return tab === 'waesche'; }
@@ -2433,6 +2639,15 @@
       try { fn(); }
       catch (e) { console.error('[admin] ' + fn.name + ' failed:', e); }
     });
+    // If localStorage has no schedule, fetch from server in background and reload
+    if (!getSchedule().length) {
+      fetchServerSchedule().then(function (arr) {
+        if (arr.length) {
+          toast('Daten vom Server geladen. Seite wird aktualisiert…', 'success');
+          setTimeout(function () { location.reload(); }, 1200);
+        }
+      });
+    }
   }
 
 })();
