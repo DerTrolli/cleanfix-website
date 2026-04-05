@@ -13,5 +13,16 @@
       "desc": "Hallo Mama",
       "highlight": true
     }
+  },
+  {
+    "id": "t7g5hqiw5uyk",
+    "type": "banner",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "icon": "🎁",
+      "title": "Oster-Aktion",
+      "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
+    }
   }
 ]
