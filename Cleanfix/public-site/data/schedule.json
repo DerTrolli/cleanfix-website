@@ -1,32 +1,17 @@
 [
   {
-    "id": "cu62xb4xfliu",
+    "id": "iirnmux6miv2",
     "type": "deal",
-    "startDate": "",
-    "endDate": "",
+    "startDate": "2026-04-05",
+    "endDate": "2026-04-06",
     "data": {
-      "badge": "Jeden Donnerstag",
-      "icon": "👖",
-      "title": "„Hose runter\"",
-      "price": "4,99 €",
-      "priceUnit": "",
-      "desc": "Hosen donnerstags zum Aktionspreis – einfach vorbeikommen und sparen.",
-      "highlight": true
-    }
-  },
-  {
-    "id": "9ve38u8z4bsj",
-    "type": "deal",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "badge": "Ab 3 Stück",
-      "icon": "👖",
-      "title": "Mengenrabatt Hosen",
-      "price": "8,00 €",
+      "badge": "Frohe Ostern",
+      "icon": "🔔",
+      "title": "FROHE OSTERN",
+      "price": "0,00€",
       "priceUnit": "/ Stück",
-      "desc": "Ab 3 Hosen zahlen Sie nur 8,00 € pro Stück – gilt dauerhaft, kein Mindestumsatz.",
-      "highlight": false
+      "desc": "Das funktioniert jetzt.",
+      "highlight": true
     }
   }
 ]
