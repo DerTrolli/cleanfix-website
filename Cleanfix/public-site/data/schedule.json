@@ -1,50 +1,32 @@
 [
   {
-    "id": "iirnmux6miv2",
+    "id": "wl2asnyayuh8",
     "type": "deal",
-    "startDate": "2026-04-05",
-    "endDate": "2026-04-06",
+    "startDate": "",
+    "endDate": "",
     "data": {
-      "badge": "Frohe Ostern",
-      "icon": "🔔",
-      "title": "FROHE OSTERN",
-      "price": "0,00€",
-      "priceUnit": "/ Stück",
-      "desc": "Hallo Mama",
+      "badge": "Jeden Donnerstag",
+      "icon": "👖",
+      "title": "„Hose runter\"",
+      "price": "4,99 €",
+      "priceUnit": "",
+      "desc": "Hosen donnerstags zum Aktionspreis – einfach vorbeikommen und sparen.",
       "highlight": true
     }
   },
   {
-    "id": "t7g5hqiw5uyk",
-    "type": "banner",
+    "id": "vnmuh11u8mgp",
+    "type": "deal",
     "startDate": "",
     "endDate": "",
     "data": {
-      "icon": "🎁",
-      "title": "Oster-Aktion",
-      "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
-    }
-  },
-  {
-    "id": "hfms8ywncoto",
-    "type": "banner",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "icon": "📢",
-      "title": "Hallo Ralf",
-      "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
-    }
-  },
-  {
-    "id": "tmex1pcr4gj0",
-    "type": "banner",
-    "startDate": "",
-    "endDate": "",
-    "data": {
-      "icon": "📢",
-      "title": "Hallo Ralf",
-      "desc": "100 % Rabatt auf den Hemdservice – jetzt sparen!"
+      "badge": "Ab 3 Stück",
+      "icon": "👖",
+      "title": "Mengenrabatt Hosen",
+      "price": "8,00 €",
+      "priceUnit": "/ Stück",
+      "desc": "Ab 3 Hosen zahlen Sie nur 8,00 € pro Stück – gilt dauerhaft, kein Mindestumsatz.",
+      "highlight": false
     }
   }
 ]
