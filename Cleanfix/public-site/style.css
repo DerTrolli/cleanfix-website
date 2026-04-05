@@ -736,7 +736,46 @@ address { font-style: normal; }
   letter-spacing: 0.04em;
 }
 
-/* Permanent deals grid */
+/* Monatsangebot placeholder state (no active offer) */
+.monatsangebot-card--placeholder {
+  background: linear-gradient(135deg, var(--neutral-100) 0%, var(--neutral-200) 100%);
+  box-shadow: var(--shadow-md);
+  color: var(--neutral-900);
+}
+.monatsangebot-card--placeholder .monatsangebot-tag {
+  background: rgba(8,48,221,0.08);
+  border-color: rgba(8,48,221,0.18);
+  color: var(--blue);
+}
+.monatsangebot-card--placeholder .monatsangebot-month {
+  opacity: 1;
+  color: var(--blue);
+}
+.monatsangebot-card--placeholder .monatsangebot-headline {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  color: var(--neutral-600);
+}
+.monatsangebot-card--placeholder .monatsangebot-body {
+  opacity: 1;
+  color: var(--neutral-500);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder {
+  background: linear-gradient(135deg, var(--neutral-800) 0%, var(--neutral-900) 100%);
+  color: var(--neutral-100);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder .monatsangebot-tag {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  color: var(--blue-mid);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder .monatsangebot-headline {
+  color: var(--neutral-400);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder .monatsangebot-body {
+  color: var(--neutral-500);
+}
+
+/* Deals grid */
 .deals-heading {
   font-size: 1.15rem;
   font-weight: 700;

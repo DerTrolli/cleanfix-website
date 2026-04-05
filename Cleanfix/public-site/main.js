@@ -63,13 +63,25 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
   var SCHEDULE_KEY = 'cleanfix-schedule';
   var today = new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
 
-  // MA hardcoded defaults — shown immediately so card is never empty
-  var MA_DEFAULTS = {
-    monat:   'Februar',
-    titel:   '10 % auf unseren Hemdenservice',
-    text:    'Im Februar sparen Sie 10 % auf den gesamten Hemdservice – das gilt auch für unsere Bonuskarten! Perfekt für alle, die regelmäßig auf einen frischen, perfekt gebügelten Auftritt setzen.',
-    angebot: '10%',
-    auf:     'Hemdenservice'
+  // German month names for placeholder
+  var GERMAN_MONTHS = ['Januar','Februar','März','April','Mai','Juni',
+                       'Juli','August','September','Oktober','November','Dezember'];
+
+  // MA placeholder — shown when no active Monatsangebot exists
+  var MA_PLACEHOLDER = {
+    monat:   GERMAN_MONTHS[new Date().getMonth()],
+    titel:   'Kein aktuelles Monatsangebot',
+    text:    'Für diesen Monat gibt es noch kein Monatsangebot. Schauen Sie bald wieder vorbei!',
+    angebot: '',
+    auf:     '',
+    _placeholder: true
+  };
+
+  // Banner welcome default — shown when no active banner exists
+  var BANNER_DEFAULT = {
+    icon:  '✨',
+    title: 'Willkommen bei Cleanfix',
+    desc:  '– Ihrem Textilreiniger in Mönchengladbach!'
   };
 
   // ── helpers ──────────────────────────────────────────────────────
@@ -99,11 +111,19 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
   // ── apply functions ───────────────────────────────────────────────
   function applyMA(d) {
     var el;
+    var isPlaceholder = !!d._placeholder;
     el = document.getElementById('ma-monat');   if (el) el.textContent = d.monat   || '';
     el = document.getElementById('ma-titel');   if (el) el.textContent = d.titel   || '';
     el = document.getElementById('ma-text');    if (el) el.textContent = d.text    || '';
     el = document.getElementById('ma-angebot'); if (el) el.textContent = d.angebot ? '−' + d.angebot : '';
     el = document.getElementById('ma-auf');     if (el) el.textContent = d.auf     || '';
+    // Toggle placeholder state
+    var card = document.querySelector('.monatsangebot-card');
+    if (card) card.classList.toggle('monatsangebot-card--placeholder', isPlaceholder);
+    var cta = document.querySelector('.monatsangebot-cta');
+    if (cta) cta.style.display = isPlaceholder ? 'none' : '';
+    var right = document.querySelector('.monatsangebot-right');
+    if (right) right.style.display = isPlaceholder ? 'none' : '';
   }
 
   function applyBanner(d) {
@@ -135,37 +155,43 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
     }).join('');
   }
 
-  // ── Show MA defaults immediately (card never empty) ───────────────
-  applyMA(MA_DEFAULTS);
+  // ── Show placeholder immediately (card never empty) ───────────────
+  applyMA(MA_PLACEHOLDER);
+
+  function resetBannerToDefault() {
+    applyBanner(BANNER_DEFAULT);
+    var banner = document.querySelector('.promo-banner');
+    if (banner) banner.setAttribute('aria-label', 'Willkommen');
+  }
+
+  function hideDeals() {
+    var dealsGrid = document.getElementById('deals-grid');
+    var dealsHeading = document.querySelector('.deals-heading');
+    if (dealsGrid) { dealsGrid.innerHTML = ''; dealsGrid.style.display = 'none'; }
+    if (dealsHeading) dealsHeading.style.display = 'none';
+  }
 
   // ── Apply schedule data from an array ─────────────────────────────
   function applySchedule(schedule) {
     if (!Array.isArray(schedule) || !schedule.length) return false;
-    var applied = false;
 
     // Monatsangebot
     var bestMA = getBestActive(schedule, 'monatsangebot');
-    if (bestMA) { applyMA(bestMA.data); applied = true; }
+    if (bestMA) { applyMA(bestMA.data); } else { applyMA(MA_PLACEHOLDER); }
 
     // Banner
     var bestBanner = getBestActive(schedule, 'banner');
-    if (bestBanner) { applyBanner(bestBanner.data); applied = true; }
+    if (bestBanner) { applyBanner(bestBanner.data); } else { resetBannerToDefault(); }
 
     // Deals
     var dealsActive = schedule.filter(function (e) { return e.type === 'deal' && isActive(e); });
     if (dealsActive.length) {
       applyDeals(dealsActive.map(function (e) { return e.data; }));
-      applied = true;
     } else {
-      // No active deals — hide heading + grid, clear any hardcoded cards
-      var dealsGrid = document.getElementById('deals-grid');
-      var dealsHeading = document.querySelector('.deals-heading');
-      if (dealsGrid) { dealsGrid.innerHTML = ''; dealsGrid.style.display = 'none'; }
-      if (dealsHeading) dealsHeading.style.display = 'none';
-      applied = true;
+      hideDeals();
     }
 
-    return applied;
+    return true;
   }
 
   // ── Load schedule: fetch JSON first, then localStorage fallback ───
@@ -176,6 +202,7 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
     // Legacy individual keys fallback
     var legacyMA = lsJson('cleanfix-monatsangebot');
     if (legacyMA) applyMA(legacyMA);
+    // (MA_PLACEHOLDER already applied at startup, no else needed)
 
     var legacyBanner = lsJson('cleanfix-banner');
     if (legacyBanner) {
@@ -185,11 +212,15 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
         var textEl = document.getElementById('promo-text');
         if (textEl) textEl.innerHTML = legacyBanner.text;
       }
+    } else {
+      resetBannerToDefault();
     }
 
     var legacyDeals = lsJson('cleanfix-deals');
     if (Array.isArray(legacyDeals) && legacyDeals.length) {
       applyDeals(legacyDeals);
+    } else {
+      hideDeals();
     }
   }
 
