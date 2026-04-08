@@ -22,20 +22,5 @@
       "title": "20% auf Jacken und Mäntel",
       "desc": "Nur für diesen Monat!"
     }
-  },
-  {
-    "id": "uvwd3obe1iim",
-    "type": "deal",
-    "startDate": "2026-04-07",
-    "endDate": "2026-04-08",
-    "data": {
-      "badge": "Beans",
-      "icon": "LAA",
-      "title": "Titel",
-      "price": "1000000000.99",
-      "priceUnit": "/pice",
-      "desc": "Yes it good",
-      "highlight": true
-    }
   }
 ]
