@@ -12,6 +12,16 @@
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <!-- Link main stylesheet for CSS tokens + preview rendering -->
   <link rel="stylesheet" href="style.css" />
+  <!-- Apply theme before paint (default: dark) -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem('cleanfix-theme');
+      // Default to dark when no preference is saved
+      if (saved !== 'light') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
   <style>
     /* ── ADMIN CHROME ──────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,6 +196,29 @@
       transition: background var(--transition), color var(--transition);
     }
     .admin-btn-danger:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+    .admin-dark-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--neutral-100);
+      border: 1.5px solid var(--neutral-200);
+      color: var(--neutral-700);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition), border-color var(--transition);
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .admin-dark-toggle:hover {
+      background: var(--blue-light);
+      border-color: var(--blue-mid);
+      transform: rotate(15deg);
+    }
+    .admin-dark-toggle:active { transform: rotate(15deg) scale(0.92); }
 
     /* ── ADMIN LAYOUT BODY ─────────────────────────────────────── */
     .admin-body {
@@ -918,6 +951,39 @@
       border-bottom-color: var(--neutral-200);
     }
 
+    /* Dark mode: status chips — swap light pastels for dark-friendly tints */
+    [data-theme="dark"] .status-chip--active   { background: rgba(34,197,94,0.15);  color: #86efac; border-color: rgba(34,197,94,0.35); }
+    [data-theme="dark"] .status-chip--expired  { background: rgba(239,68,68,0.15);  color: #fca5a5; border-color: rgba(239,68,68,0.35); }
+
+    /* Dark mode: type badges */
+    [data-theme="dark"] .type-badge--ma     { background: rgba(139,92,246,0.15); color: #c4b5fd; border-color: rgba(139,92,246,0.35); }
+    [data-theme="dark"] .type-badge--banner { background: rgba(234,88,12,0.15);  color: #fed7aa; border-color: rgba(234,88,12,0.35); }
+    [data-theme="dark"] .type-badge--deal   { background: rgba(34,197,94,0.15);  color: #bbf7d0; border-color: rgba(34,197,94,0.35); }
+
+    /* Dark mode: danger button hover */
+    [data-theme="dark"] .admin-btn-danger:hover {
+      background: rgba(239,68,68,0.15);
+      color: #fca5a5;
+      border-color: rgba(239,68,68,0.45);
+    }
+
+    /* Dark mode: active entry border stays green but dimmer */
+    [data-theme="dark"] .sched-entry--active { border-color: rgba(34,197,94,0.45); }
+
+    /* Dark mode: blue-on-blue elements need a lighter blue for readable contrast */
+    [data-theme="dark"] .admin-btn-outline {
+      color: #A3B4FF;
+      border-color: #1e2d7a;
+    }
+    [data-theme="dark"] .admin-btn-outline:hover {
+      background: #1e2d7a;
+      border-color: #2a3ea3;
+    }
+    [data-theme="dark"] .admin-nav-item.active {
+      color: #A3B4FF;
+      border-left-color: #A3B4FF;
+    }
+
     /* ── TIMELINE GANTT CHART ──────────────────────────────── */
     .tl-card { overflow: hidden; }
     .tl-container {
@@ -1095,6 +1161,7 @@
         <span class="admin-header-title">Management Panel</span>
       </div>
       <div class="admin-header-right">
+        <button class="admin-dark-toggle" id="dark-toggle" aria-label="Dunkelmodus umschalten" title="Dunkelmodus umschalten" type="button">🌙</button>
         <a href="https://cleanfix.thetrolli.com" target="_blank" class="admin-btn-outline">🌐 Website ansehen</a>
         <button class="admin-btn-danger" id="logout-btn">Abmelden</button>
       </div>
@@ -1405,6 +1472,34 @@
     sessionStorage.removeItem('cleanfix-admin-auth');
     location.reload();
   });
+
+  // ── DARK MODE TOGGLE ───────────────────────────────────────────
+  (function () {
+    var htmlEl = document.documentElement;
+    var btn    = document.getElementById('dark-toggle');
+    if (!btn) return;
+
+    function updateIcon() {
+      var isDark = htmlEl.getAttribute('data-theme') === 'dark';
+      btn.textContent = isDark ? '☀️' : '🌙';
+      btn.setAttribute('aria-label', isDark ? 'Hellmodus umschalten' : 'Dunkelmodus umschalten');
+      btn.title       = isDark ? 'Hellmodus' : 'Dunkelmodus';
+    }
+
+    updateIcon(); // Sync icon with whatever the pre-paint script set
+
+    btn.addEventListener('click', function () {
+      var isDark = htmlEl.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        htmlEl.removeAttribute('data-theme');
+        localStorage.setItem('cleanfix-theme', 'light');
+      } else {
+        htmlEl.setAttribute('data-theme', 'dark');
+        localStorage.setItem('cleanfix-theme', 'dark');
+      }
+      updateIcon();
+    });
+  })();
 
   // ── TOAST ──────────────────────────────────────────────────────
   function toast(msg, type) {
