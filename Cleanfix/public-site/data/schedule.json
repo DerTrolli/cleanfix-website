@@ -24,18 +24,18 @@
     }
   },
   {
-    "id": "3wccl1su4us3",
+    "id": "uvwd3obe1iim",
     "type": "deal",
     "startDate": "2026-04-07",
-    "endDate": "2026-04-18",
+    "endDate": "2026-04-08",
     "data": {
-      "badge": "",
-      "icon": "🧥",
-      "title": "Hallo",
-      "price": "100",
-      "priceUnit": "Bansne",
-      "desc": "Hall",
-      "highlight": false
+      "badge": "Beans",
+      "icon": "LAA",
+      "title": "Titel",
+      "price": "1000000000.99",
+      "priceUnit": "/pice",
+      "desc": "Yes it good",
+      "highlight": true
     }
   }
 ]
