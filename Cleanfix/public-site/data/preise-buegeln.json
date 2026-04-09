@@ -1,1 +1,49 @@
-{"groups":[{"label":"","rows":[{"artikel":"Hemd / Hemdbluse (maschinell)","preis":"3,45 €"},{"artikel":"T-Shirt / Polo","preis":"3,45 €"},{"artikel":"Bluse (handbügelt)","preis":"4,90 €"},{"artikel":"Hose / Rock","preis":"5,90 €"},{"artikel":"Faltenrock","preis":"8,50 €"},{"artikel":"Kleid","preis":"ab 9,90 €"},{"artikel":"Sakko","preis":"9,50 €"},{"artikel":"Jacke","preis":"11,90 €"},{"artikel":"Mantel","preis":"13,90 €"},{"artikel":"Krawatte","preis":"4,50 €"}]}]}
+{
+  "groups": [
+    {
+      "label": "",
+      "rows": [
+        {
+          "artikel": "Hemd / Hemdbluse (maschinell)",
+          "preis": "3,45 €"
+        },
+        {
+          "artikel": "T-Shirt / Polo",
+          "preis": "3,45 €"
+        },
+        {
+          "artikel": "Bluse (handbügelt)",
+          "preis": "4,90 €"
+        },
+        {
+          "artikel": "Hose / Rock",
+          "preis": "5,90 €"
+        },
+        {
+          "artikel": "Faltenrock",
+          "preis": "8,50 €"
+        },
+        {
+          "artikel": "Kleid",
+          "preis": "ab 9,90 €"
+        },
+        {
+          "artikel": "Sakko",
+          "preis": "9,50 €"
+        },
+        {
+          "artikel": "Jacke",
+          "preis": "11,90 €"
+        },
+        {
+          "artikel": "Mantel",
+          "preis": "13,90 €"
+        },
+        {
+          "artikel": "Krawatte",
+          "preis": "4,50 €"
+        }
+      ]
+    }
+  ]
+}
