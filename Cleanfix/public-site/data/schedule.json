@@ -19,38 +19,8 @@
     "endDate": "2026-04-30",
     "data": {
       "icon": "📣",
-      "title": "20% auf Jacken und Mäntel Test",
+      "title": "20% auf Jacken und Mäntel",
       "desc": "Nur für diesen Monat!"
-    }
-  },
-  {
-    "id": "zod1m9apep2w",
-    "type": "deal",
-    "startDate": "2026-04-09",
-    "endDate": "2026-04-09",
-    "data": {
-      "badge": "09.04.2026",
-      "icon": "🛒",
-      "title": "Bring 2 zahl 3! SONDERANGEBOT",
-      "price": "",
-      "priceUnit": "",
-      "desc": "Das ist ein Sonderangebot was nur bis zum 09.04.2026 läuft. ",
-      "highlight": true
-    }
-  },
-  {
-    "id": "yv75nty5gpsx",
-    "type": "deal",
-    "startDate": "2026-04-10",
-    "endDate": "2026-04-10",
-    "data": {
-      "badge": "10.04.2026",
-      "icon": "🛒",
-      "title": "Bring 5 zahl 10! SONDERANGEBOT",
-      "price": "10€",
-      "priceUnit": "pro Hemd",
-      "desc": "Das ist ein Sonderangebot was nur bis zum 09.04.2026 läuft. ",
-      "highlight": true
     }
   }
 ]
