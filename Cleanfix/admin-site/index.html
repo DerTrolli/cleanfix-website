@@ -914,6 +914,11 @@
     }
 
     /* ── MOBILE ────────────────────────────────────────────────── */
+    /* Override the public site's mobile root font-size bump so the
+       admin panel keeps its existing 16px sizing on phones. */
+    @media (max-width: 640px) {
+      html { font-size: 16px; }
+    }
     @media (max-width: 900px) {
       .admin-body {
         grid-template-columns: minmax(0, 1fr);
