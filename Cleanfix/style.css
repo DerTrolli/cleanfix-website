@@ -559,7 +559,11 @@ address { font-style: normal; }
   border-color: transparent;
   box-shadow: 0 4px 14px rgba(8,48,221,0.3);
 }
-.tab-btn--active:hover {
+.tab-btn--active:hover,
+.tab-btn--active:focus,
+.tab-btn--active:focus-visible {
+  color: var(--white);
+  border-color: transparent;
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(8,48,221,0.4);
 }

@@ -260,6 +260,11 @@ function escHtml(s) {
       return parseFloat(m[1].replace(',', '.'));
     }
 
+    function stripPerHemdSuffix(str) {
+      if (typeof str !== 'string') return '';
+      return str.replace(/\s*pro\s+Hemd\s*$/i, '').trim();
+    }
+
     Object.keys(d.cards).forEach(function (id) {
       var entry = d.cards[id];
       if (!entry || typeof entry !== 'object') return;
@@ -271,14 +276,14 @@ function escHtml(s) {
         priceEl.textContent = entry.preis.trim();
       }
       if (perShirtEl) {
-        var perHemd = (typeof entry.perHemd === 'string' && entry.perHemd.trim()) ? entry.perHemd.trim() : '';
+        var perHemd = (typeof entry.perHemd === 'string' && entry.perHemd.trim()) ? stripPerHemdSuffix(entry.perHemd) : '';
         if (!perHemd) {
           var strongEl = card.querySelector('.bonus-shirt-count strong');
           var count = strongEl ? parseInt(strongEl.textContent, 10) : NaN;
           var n = parsePriceNumber(entry.preis);
-          if (isFinite(n) && count) perHemd = (n / count).toFixed(2).replace('.', ',') + ' € pro Hemd';
+          if (isFinite(n) && count) perHemd = (n / count).toFixed(2).replace('.', ',') + ' €';
         }
-        if (perHemd) perShirtEl.textContent = perHemd;
+        if (perHemd) perShirtEl.textContent = perHemd + ' pro Hemd';
       }
     });
   } catch (e) {}

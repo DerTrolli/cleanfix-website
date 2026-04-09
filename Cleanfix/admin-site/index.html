@@ -1677,10 +1677,10 @@
     ]},
     preiseBonus: {
       cards: {
-        bonus:   { label: 'Hemden-Bonus-Karte',   count: 11, preis: '37,50 €',  perHemd: '3,41 € pro Hemd' },
-        finish:  { label: 'Hemden-Finish-Karte',  count: 22, preis: '69,00 €',  perHemd: '3,14 € pro Hemd' },
-        premium: { label: 'Hemden-Premium-Karte', count: 30, preis: '93,75 €',  perHemd: '3,13 € pro Hemd' },
-        vip:     { label: 'Hemden-VIP-Karte',     count: 65, preis: '187,50 €', perHemd: '2,88 € pro Hemd' }
+        bonus:   { label: 'Hemden-Bonus-Karte',   count: 11, preis: '37,50 €',  perHemd: '3,41 €' },
+        finish:  { label: 'Hemden-Finish-Karte',  count: 22, preis: '69,00 €',  perHemd: '3,14 €' },
+        premium: { label: 'Hemden-Premium-Karte', count: 30, preis: '93,75 €',  perHemd: '3,13 €' },
+        vip:     { label: 'Hemden-VIP-Karte',     count: 65, preis: '187,50 €', perHemd: '2,88 €' }
       }
     }
   };
@@ -2753,6 +2753,14 @@
   }
 
   // ── BONUS CARDS ────────────────────────────────────────────────
+  // The admin stores & displays just the € price (e.g. "3,41 €"). main.js
+  // on the public page appends " pro Hemd" when rendering. This helper
+  // strips the suffix to normalise old saved values or accidental input.
+  function stripPerHemdSuffix(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/\s*pro\s+Hemd\s*$/i, '').trim();
+  }
+
   // Merge a loaded bonus object with defaults so renaming a card in code
   // or adding a new card keeps the editor functional even if the user's
   // localStorage copy is older.
@@ -2763,7 +2771,7 @@
       var src = loaded.cards[id];
       if (src && typeof src === 'object') {
         if (typeof src.preis === 'string')   out.cards[id].preis   = src.preis;
-        if (typeof src.perHemd === 'string') out.cards[id].perHemd = src.perHemd;
+        if (typeof src.perHemd === 'string') out.cards[id].perHemd = stripPerHemdSuffix(src.perHemd);
       }
     });
     return out;
@@ -2779,11 +2787,13 @@
   }
 
   // Format a per-shirt price based on total price and shirt count.
+  // Returns just the € price (e.g. "3,41 €") — "pro Hemd" is appended by
+  // the public-site renderer so the admin shows a clean, tidy value.
   function computePerHemd(preisStr, count) {
     var n = parsePriceNumber(preisStr);
     if (!isFinite(n) || !count) return '';
     var v = n / count;
-    return v.toFixed(2).replace('.', ',') + ' € pro Hemd';
+    return v.toFixed(2).replace('.', ',') + ' €';
   }
 
   function renderBonusEditor() {
@@ -2806,8 +2816,8 @@
             '<label style="flex:1;display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:var(--neutral-600);">Gesamtpreis' +
               '<input class="price-row-preis bonus-preis" value="' + esc(c.preis) + '" placeholder="z. B. 37,50 €" />' +
             '</label>' +
-            '<label style="flex:1;display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:var(--neutral-600);">Pro Hemd (Anzeige)' +
-              '<input class="price-row-preis bonus-perhemd" value="' + esc(c.perHemd) + '" placeholder="wird automatisch berechnet" />' +
+            '<label style="flex:1;display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:var(--neutral-600);">Pro Hemd' +
+              '<input class="price-row-preis bonus-perhemd" value="' + esc(c.perHemd) + '" placeholder="z. B. 3,41 €" />' +
             '</label>' +
           '</div>' +
         '</div>';
@@ -2841,7 +2851,7 @@
       var card = priceData.bonus.cards[id];
       if (!card) return;
       var preis   = block.querySelector('.bonus-preis').value.trim();
-      var perHemd = block.querySelector('.bonus-perhemd').value.trim();
+      var perHemd = stripPerHemdSuffix(block.querySelector('.bonus-perhemd').value);
       card.preis   = preis;
       card.perHemd = perHemd || computePerHemd(preis, card.count) || card.perHemd;
     });
