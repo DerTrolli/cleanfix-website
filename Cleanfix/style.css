@@ -151,6 +151,11 @@ body {
   background: var(--white);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* Prevent browser scroll-anchoring from compensating when the sticky
+     header shrinks/grows — it would otherwise produce synthetic scroll
+     events that fight the .scrolled toggle and cause an expand/contract
+     loop. See sticky-nav handler in main.js. */
+  overflow-anchor: none;
 }
 
 img, svg { display: block; max-width: 100%; }

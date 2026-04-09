@@ -248,21 +248,35 @@ function escHtml(s) {
 // ── Sticky nav: shrink on scroll-down, grow on scroll-up ──────────
 // Hysteresis: only commit a state change after 12px of consistent
 // movement, so micro-oscillations on trackpads never trigger the toggle.
+// Cooldown lock: after a toggle the header height transitions for 350ms;
+// during that window we ignore scroll events so layout-induced scroll
+// changes (browser scroll-anchoring, mobile URL bar collapse mid-transition)
+// can't flip the state back and create an expand/contract loop.
 const header = document.getElementById('site-header');
 let anchorY = window.scrollY;
+let lockedUntil = 0;
+const LOCK_MS = 400;
 
 window.addEventListener('scroll', () => {
+  if (performance.now() < lockedUntil) {
+    // Re-anchor so the next user scroll is measured from the post-transition position.
+    anchorY = window.scrollY;
+    return;
+  }
+
   const currentY = window.scrollY;
   const delta = currentY - anchorY;
 
-  if (delta > 12 && currentY > 80) {
+  if (delta > 12 && currentY > 80 && !header.classList.contains('scrolled')) {
     // Down 12px+ past the top zone → shrink header (desktop only, mobile header scrolls away)
     header.classList.add('scrolled');
     anchorY = currentY;
-  } else if (delta < -12) {
+    lockedUntil = performance.now() + LOCK_MS;
+  } else if (delta < -12 && header.classList.contains('scrolled')) {
     // Up 12px+ from anywhere → restore header
     header.classList.remove('scrolled');
     anchorY = currentY;
+    lockedUntil = performance.now() + LOCK_MS;
   }
   // Within ±12px: ignore, no state change
 }, { passive: true });
