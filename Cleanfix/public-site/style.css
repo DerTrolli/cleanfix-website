@@ -80,7 +80,8 @@
 
 /* Dark mode: form inputs */
 [data-theme="dark"] .form-group input,
-[data-theme="dark"] .form-group textarea {
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select {
   background: var(--neutral-100);
   border-color: var(--neutral-300);
   color: var(--neutral-900);
@@ -108,7 +109,7 @@
 /* Dark mode: smooth transition on everything */
 body, .site-header, .service-card, .branch-card, .bonus-card,
 .contact-detail, .newsletter-box, .pickup-banner,
-.form-group input, .form-group textarea,
+.form-group input, .form-group textarea, .form-group select,
 .price-table-wrapper, .hours-row {
   transition: background var(--transition), border-color var(--transition), color var(--transition), box-shadow var(--transition);
 }
@@ -1022,7 +1023,8 @@ address { font-style: normal; }
 .form-group label span { color: var(--pink); }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   padding: 11px 14px;
   border: 1.5px solid var(--neutral-300);
   border-radius: var(--radius-sm);
@@ -1034,13 +1036,30 @@ address { font-style: normal; }
   resize: vertical;
 }
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(8,48,221,0.12);
   outline: none;
 }
 .form-group input.invalid,
-.form-group textarea.invalid { border-color: #DC2626; }
+.form-group textarea.invalid,
+.form-group select.invalid { border-color: #DC2626; }
+/* Give the select a native-feeling chevron so it reads as a dropdown */
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  cursor: pointer;
+}
+[data-theme="dark"] .form-group select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23CBD5E1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/></svg>");
+}
 .field-error { font-size: 0.8rem; color: #DC2626; min-height: 18px; }
 
 .form-note { font-size: 0.82rem; color: var(--neutral-400); line-height: 1.5; }
