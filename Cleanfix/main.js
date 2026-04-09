@@ -615,9 +615,10 @@ if (form) {
     let valid = true;
 
     const fields = [
-      { id: 'name',    errorId: 'name-error',    msg: 'Bitte geben Sie Ihren Namen ein.' },
-      { id: 'email',   errorId: 'email-error',   msg: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' },
-      { id: 'message', errorId: 'message-error', msg: 'Bitte schreiben Sie eine Nachricht.' },
+      { id: 'name',      errorId: 'name-error',      msg: 'Bitte geben Sie Ihren Namen ein.' },
+      { id: 'email',     errorId: 'email-error',     msg: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' },
+      { id: 'kundentyp', errorId: 'kundentyp-error', msg: 'Bitte wählen Sie Privat oder Gewerblich.' },
+      { id: 'message',   errorId: 'message-error',   msg: 'Bitte schreiben Sie eine Nachricht.' },
     ];
 
     fields.forEach(({ id, errorId, msg }) => {
@@ -650,9 +651,10 @@ if (form) {
     }
   });
 
-  // Live validation on blur
-  form.querySelectorAll('input, textarea').forEach(input => {
-    input.addEventListener('blur', () => {
+  // Live validation on blur (inputs/textarea) and change (selects)
+  form.querySelectorAll('input, textarea, select').forEach(input => {
+    const evt = input.tagName === 'SELECT' ? 'change' : 'blur';
+    input.addEventListener(evt, () => {
       if (input.classList.contains('invalid') && input.value.trim()) {
         input.classList.remove('invalid');
         const errorEl = document.getElementById(input.id + '-error');
