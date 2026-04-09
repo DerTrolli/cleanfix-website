@@ -245,6 +245,45 @@ function escHtml(s) {
   });
 })();
 
+// Bonus card prices — localStorage only, falls back to static HTML
+(function () {
+  try {
+    var raw = localStorage.getItem('cleanfix-preise-bonus');
+    if (!raw) return;
+    var d = JSON.parse(raw);
+    if (!d || !d.cards) return;
+
+    function parsePriceNumber(str) {
+      if (typeof str !== 'string') return NaN;
+      var m = str.replace(/\./g, '').match(/(\d+(?:,\d+)?)/);
+      if (!m) return NaN;
+      return parseFloat(m[1].replace(',', '.'));
+    }
+
+    Object.keys(d.cards).forEach(function (id) {
+      var entry = d.cards[id];
+      if (!entry || typeof entry !== 'object') return;
+      var card = document.querySelector('.bonus-card[data-bonus-id="' + id + '"]');
+      if (!card) return;
+      var priceEl    = card.querySelector('.bonus-price');
+      var perShirtEl = card.querySelector('.bonus-per-shirt');
+      if (priceEl && typeof entry.preis === 'string' && entry.preis.trim()) {
+        priceEl.textContent = entry.preis.trim();
+      }
+      if (perShirtEl) {
+        var perHemd = (typeof entry.perHemd === 'string' && entry.perHemd.trim()) ? entry.perHemd.trim() : '';
+        if (!perHemd) {
+          var strongEl = card.querySelector('.bonus-shirt-count strong');
+          var count = strongEl ? parseInt(strongEl.textContent, 10) : NaN;
+          var n = parsePriceNumber(entry.preis);
+          if (isFinite(n) && count) perHemd = (n / count).toFixed(2).replace('.', ',') + ' € pro Hemd';
+        }
+        if (perHemd) perShirtEl.textContent = perHemd;
+      }
+    });
+  } catch (e) {}
+})();
+
 // ── Sticky nav: shrink on scroll-down, grow on scroll-up ──────────
 // Hysteresis: only commit a state change after 12px of consistent
 // movement, so micro-oscillations on trackpads never trigger the toggle.
