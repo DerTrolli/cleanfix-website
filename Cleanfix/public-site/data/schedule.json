@@ -22,5 +22,20 @@
       "title": "20% auf Jacken und Mäntel",
       "desc": "Nur für diesen Monat!"
     }
+  },
+  {
+    "id": "odo7fqhjpbbk",
+    "type": "deal",
+    "startDate": "2026-04-10",
+    "endDate": "2026-04-10",
+    "data": {
+      "badge": "",
+      "icon": "👖",
+      "title": "Hoseeee",
+      "price": "10€",
+      "priceUnit": "pro hose",
+      "desc": "Ja",
+      "highlight": true
+    }
   }
 ]
