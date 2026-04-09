@@ -226,7 +226,7 @@
       margin: 0 auto;
       padding: 32px 24px;
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: 220px minmax(0, 1fr);
       gap: 28px;
       align-items: start;
     }
@@ -916,7 +916,7 @@
     /* ── MOBILE ────────────────────────────────────────────────── */
     @media (max-width: 900px) {
       .admin-body {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         padding: 16px;
         gap: 16px;
       }
