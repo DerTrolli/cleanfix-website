@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get the price data from webhook body\nconst webhookData = $('Webhook').first().json;\nconst body = webhookData.body || webhookData;\n\nconst files = [\n  { path: 'Cleanfix/public-site/data/preise-reinigung.json', data: body.reinigung },\n  { path: 'Cleanfix/public-site/data/preise-buegeln.json',   data: body.buegeln },\n  { path: 'Cleanfix/public-site/data/preise-waesche.json',   data: body.waesche }\n];\n\n// Output one item per file to commit\nreturn files.map(f => ({\n  json: {\n    filePath: f.path,\n    content: Buffer.from(JSON.stringify(f.data, null, 2), 'utf8').toString('base64')\n  }\n}));"
+        "jsCode": "// Get the price data from webhook body\nconst webhookData = $('Webhook').first().json;\nconst body = webhookData.body || webhookData;\n\nconst files = [\n  { path: 'Cleanfix/public-site/data/preise-reinigung.json', data: body.reinigung },\n  { path: 'Cleanfix/public-site/data/preise-buegeln.json',   data: body.buegeln },\n  { path: 'Cleanfix/public-site/data/preise-waesche.json',   data: body.waesche },\n  { path: 'Cleanfix/public-site/data/preise-bonus.json',     data: body.bonus }\n].filter(f => f.data != null);\n\n// Output one item per file to commit\nreturn files.map(f => ({\n  json: {\n    filePath: f.path,\n    content: Buffer.from(JSON.stringify(f.data, null, 2), 'utf8').toString('base64')\n  }\n}));"
       },
       "id": "prepare-files",
       "name": "Prepare Files",

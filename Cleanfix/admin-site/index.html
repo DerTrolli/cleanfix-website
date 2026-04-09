@@ -1250,6 +1250,7 @@
             <button class="price-sub-tab active" data-price-tab="reinigung">Reinigung</button>
             <button class="price-sub-tab" data-price-tab="buegeln">Nur Bügeln</button>
             <button class="price-sub-tab" data-price-tab="waesche">Wäsche &amp; Mangeln</button>
+            <button class="price-sub-tab" data-price-tab="bonus">Bonuskarten</button>
           </div>
 
           <div class="price-sub-panel active" id="price-panel-reinigung">
@@ -1269,6 +1270,12 @@
             <div style="margin-top:10px;">
               <button class="btn-add" onclick="addGroup('waesche')">＋ Gruppe hinzufügen</button>
             </div>
+          </div>
+          <div class="price-sub-panel" id="price-panel-bonus">
+            <p class="admin-section-desc" style="margin-bottom:12px;">
+              Preise der vier Bonuskarten. „Pro Hemd" wird automatisch aus dem Gesamtpreis berechnet — das Feld kann bei Bedarf aber überschrieben werden.
+            </p>
+            <div id="bonus-price-editor"></div>
           </div>
 
           <div class="admin-actions">
@@ -1667,8 +1674,17 @@
         { artikel: 'Kiloware (ab 10 kg)', preis: '9,50 €', preis2: '—' },
         { artikel: 'Stärken', preis: 'inkl.', preis2: '0,80 €' }
       ]}
-    ]}
+    ]},
+    preiseBonus: {
+      cards: {
+        bonus:   { label: 'Hemden-Bonus-Karte',   count: 11, preis: '37,50 €',  perHemd: '3,41 € pro Hemd' },
+        finish:  { label: 'Hemden-Finish-Karte',  count: 22, preis: '69,00 €',  perHemd: '3,14 € pro Hemd' },
+        premium: { label: 'Hemden-Premium-Karte', count: 30, preis: '93,75 €',  perHemd: '3,13 € pro Hemd' },
+        vip:     { label: 'Hemden-VIP-Karte',     count: 65, preis: '187,50 €', perHemd: '2,88 € pro Hemd' }
+      }
+    }
   };
+  var BONUS_ORDER = ['bonus', 'finish', 'premium', 'vip'];
 
   // ═══════════════════════════════════════════════════════════════
   //  (Aktionen section removed — unified into Zeitplan)
@@ -2450,16 +2466,18 @@
   // (Deals section removed — unified into Zeitplan)
 
   // ── PRICES ─────────────────────────────────────────────────────
-  var priceData = { reinigung: null, buegeln: null, waesche: null };
+  var priceData = { reinigung: null, buegeln: null, waesche: null, bonus: null };
 
   function initPreise() {
     priceData.reinigung = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-reinigung') || DEFAULTS.preiseReinigung));
     priceData.buegeln   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-buegeln')   || DEFAULTS.preiseBuegeln));
     priceData.waesche   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-waesche')   || DEFAULTS.preiseWaesche));
+    priceData.bonus     = mergeBonus(lsGet('cleanfix-preise-bonus'));
 
     renderPriceGroups('reinigung');
     renderPriceGroups('buegeln');
     renderPriceGroups('waesche');
+    renderBonusEditor();
 
     document.querySelectorAll('.price-sub-tab').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -2474,33 +2492,39 @@
       collectPrices('reinigung');
       collectPrices('buegeln');
       collectPrices('waesche');
+      collectBonusPrices();
       var ok = lsSet('cleanfix-preise-reinigung', priceData.reinigung) &&
                lsSet('cleanfix-preise-buegeln',   priceData.buegeln)   &&
-               lsSet('cleanfix-preise-waesche',   priceData.waesche);
+               lsSet('cleanfix-preise-waesche',   priceData.waesche)   &&
+               lsSet('cleanfix-preise-bonus',     priceData.bonus);
       if (ok) {
         toast('Preise gespeichert.');
         apiSave('save-preise', {
           reinigung: priceData.reinigung,
           buegeln:   priceData.buegeln,
-          waesche:   priceData.waesche
+          waesche:   priceData.waesche,
+          bonus:     priceData.bonus
         });
       }
     });
 
     document.getElementById('btn-reset-preise').addEventListener('click', function () {
       if (!confirm('Alle Preise auf Standard zurücksetzen?')) return;
-      ['cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche'].forEach(lsDel);
+      ['cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche','cleanfix-preise-bonus'].forEach(lsDel);
       priceData.reinigung = JSON.parse(JSON.stringify(DEFAULTS.preiseReinigung));
       priceData.buegeln   = JSON.parse(JSON.stringify(DEFAULTS.preiseBuegeln));
       priceData.waesche   = JSON.parse(JSON.stringify(DEFAULTS.preiseWaesche));
+      priceData.bonus     = JSON.parse(JSON.stringify(DEFAULTS.preiseBonus));
       renderPriceGroups('reinigung');
       renderPriceGroups('buegeln');
       renderPriceGroups('waesche');
+      renderBonusEditor();
       toast('Preise zurückgesetzt.');
       apiSave('save-preise', {
         reinigung: priceData.reinigung,
         buegeln:   priceData.buegeln,
-        waesche:   priceData.waesche
+        waesche:   priceData.waesche,
+        bonus:     priceData.bonus
       });
     });
 
@@ -2728,13 +2752,108 @@
     priceData[tab] = { groups: groups };
   }
 
+  // ── BONUS CARDS ────────────────────────────────────────────────
+  // Merge a loaded bonus object with defaults so renaming a card in code
+  // or adding a new card keeps the editor functional even if the user's
+  // localStorage copy is older.
+  function mergeBonus(loaded) {
+    var out = JSON.parse(JSON.stringify(DEFAULTS.preiseBonus));
+    if (!loaded || !loaded.cards) return out;
+    BONUS_ORDER.forEach(function (id) {
+      var src = loaded.cards[id];
+      if (src && typeof src === 'object') {
+        if (typeof src.preis === 'string')   out.cards[id].preis   = src.preis;
+        if (typeof src.perHemd === 'string') out.cards[id].perHemd = src.perHemd;
+      }
+    });
+    return out;
+  }
+
+  // Parse a German-formatted price like "37,50 €" into a number (37.5).
+  // Returns NaN if the string has no parseable numeric core.
+  function parsePriceNumber(str) {
+    if (typeof str !== 'string') return NaN;
+    var m = str.replace(/\./g, '').match(/(\d+(?:,\d+)?)/);
+    if (!m) return NaN;
+    return parseFloat(m[1].replace(',', '.'));
+  }
+
+  // Format a per-shirt price based on total price and shirt count.
+  function computePerHemd(preisStr, count) {
+    var n = parsePriceNumber(preisStr);
+    if (!isFinite(n) || !count) return '';
+    var v = n / count;
+    return v.toFixed(2).replace('.', ',') + ' € pro Hemd';
+  }
+
+  function renderBonusEditor() {
+    var container = document.getElementById('bonus-price-editor');
+    if (!container) return;
+    container.innerHTML = '';
+    BONUS_ORDER.forEach(function (id) {
+      var c = priceData.bonus.cards[id];
+      if (!c) return;
+      var block = document.createElement('div');
+      block.className = 'price-group-editor';
+      block.setAttribute('data-bonus-id', id);
+      block.innerHTML =
+        '<div class="price-group-header-row">' +
+          '<span class="price-group-label-badge">' + esc(c.label) + '</span>' +
+          '<span style="color:var(--neutral-500);font-size:0.85rem;">' + esc(String(c.count)) + ' Hemden</span>' +
+        '</div>' +
+        '<div class="group-rows">' +
+          '<div class="price-row-editor">' +
+            '<label style="flex:1;display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:var(--neutral-600);">Gesamtpreis' +
+              '<input class="price-row-preis bonus-preis" value="' + esc(c.preis) + '" placeholder="z. B. 37,50 €" />' +
+            '</label>' +
+            '<label style="flex:1;display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:var(--neutral-600);">Pro Hemd (Anzeige)' +
+              '<input class="price-row-preis bonus-perhemd" value="' + esc(c.perHemd) + '" placeholder="wird automatisch berechnet" />' +
+            '</label>' +
+          '</div>' +
+        '</div>';
+      container.appendChild(block);
+    });
+
+    // Auto-fill "pro Hemd" when the Gesamtpreis changes, unless the user has
+    // manually edited it (mark a 'dirty' flag on manual input).
+    container.querySelectorAll('[data-bonus-id]').forEach(function (block) {
+      var id = block.getAttribute('data-bonus-id');
+      var preisInput   = block.querySelector('.bonus-preis');
+      var perHemdInput = block.querySelector('.bonus-perhemd');
+      var count        = priceData.bonus.cards[id].count;
+
+      perHemdInput.addEventListener('input', function () {
+        perHemdInput.dataset.dirty = '1';
+      });
+      preisInput.addEventListener('input', function () {
+        if (perHemdInput.dataset.dirty === '1') return;
+        var auto = computePerHemd(preisInput.value, count);
+        if (auto) perHemdInput.value = auto;
+      });
+    });
+  }
+
+  function collectBonusPrices() {
+    var container = document.getElementById('bonus-price-editor');
+    if (!container) return;
+    container.querySelectorAll('[data-bonus-id]').forEach(function (block) {
+      var id = block.getAttribute('data-bonus-id');
+      var card = priceData.bonus.cards[id];
+      if (!card) return;
+      var preis   = block.querySelector('.bonus-preis').value.trim();
+      var perHemd = block.querySelector('.bonus-perhemd').value.trim();
+      card.preis   = preis;
+      card.perHemd = perHemd || computePerHemd(preis, card.count) || card.perHemd;
+    });
+  }
+
   // ── DATA / EXPORT / IMPORT ─────────────────────────────────────
   function initData() {
     document.getElementById('btn-export').addEventListener('click', function () {
       var allKeys = [
         'cleanfix-schedule',
         'cleanfix-monatsangebot','cleanfix-banner','cleanfix-deals',
-        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche'
+        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche','cleanfix-preise-bonus'
       ];
       var out = {};
       allKeys.forEach(function (k) {
@@ -2780,7 +2899,7 @@
       var allKeys = [
         'cleanfix-schedule',
         'cleanfix-monatsangebot','cleanfix-banner','cleanfix-deals',
-        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche'
+        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche','cleanfix-preise-bonus'
       ];
       allKeys.forEach(lsDel);
       toast('Alle Daten gelöscht. Seite wird neu geladen…');

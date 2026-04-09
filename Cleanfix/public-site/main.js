@@ -294,6 +294,67 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
   });
 })();
 
+// Bonus card prices — fetch JSON first, localStorage fallback, else keep HTML defaults
+(function () {
+  var BONUS_KEY  = 'cleanfix-preise-bonus';
+  var BONUS_FILE = 'preise-bonus';
+
+  // Parse a German-formatted price like "37,50 €" into a number.
+  function parsePriceNumber(str) {
+    if (typeof str !== 'string') return NaN;
+    var m = str.replace(/\./g, '').match(/(\d+(?:,\d+)?)/);
+    if (!m) return NaN;
+    return parseFloat(m[1].replace(',', '.'));
+  }
+
+  function computePerHemd(preisStr, count) {
+    var n = parsePriceNumber(preisStr);
+    if (!isFinite(n) || !count) return '';
+    return (n / count).toFixed(2).replace('.', ',') + ' € pro Hemd';
+  }
+
+  function applyBonusPrices(d) {
+    if (!d || !d.cards) return;
+    Object.keys(d.cards).forEach(function (id) {
+      var entry = d.cards[id];
+      if (!entry || typeof entry !== 'object') return;
+      var card = document.querySelector('.bonus-card[data-bonus-id="' + id + '"]');
+      if (!card) return;
+      var priceEl    = card.querySelector('.bonus-price');
+      var perShirtEl = card.querySelector('.bonus-per-shirt');
+      if (priceEl && typeof entry.preis === 'string' && entry.preis.trim()) {
+        priceEl.textContent = entry.preis.trim();
+      }
+      if (perShirtEl) {
+        var perHemd = (typeof entry.perHemd === 'string' && entry.perHemd.trim()) ? entry.perHemd.trim() : '';
+        if (!perHemd) {
+          // Auto-compute from shirt count in the DOM.
+          var strongEl = card.querySelector('.bonus-shirt-count strong');
+          var count = strongEl ? parseInt(strongEl.textContent, 10) : NaN;
+          perHemd = computePerHemd(entry.preis, count);
+        }
+        if (perHemd) perShirtEl.textContent = perHemd;
+      }
+    });
+  }
+
+  function loadFromLocalStorage() {
+    try {
+      var raw = localStorage.getItem(BONUS_KEY);
+      if (!raw) return;
+      applyBonusPrices(JSON.parse(raw));
+    } catch (e) {}
+  }
+
+  fetch(DATA_BASE + '/' + BONUS_FILE + '.json')
+    .then(function (res) {
+      if (!res.ok) throw new Error(res.status);
+      return res.json();
+    })
+    .then(applyBonusPrices)
+    .catch(loadFromLocalStorage);
+})();
+
 // ── Sticky nav: shrink on scroll-down, grow on scroll-up ──────────
 // Hysteresis: only commit a state change after 12px of consistent
 // movement, so micro-oscillations on trackpads never trigger the toggle.
