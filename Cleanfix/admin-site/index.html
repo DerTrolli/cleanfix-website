@@ -226,7 +226,7 @@
       margin: 0 auto;
       padding: 32px 24px;
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: 220px minmax(0, 1fr);
       gap: 28px;
       align-items: start;
     }
@@ -914,9 +914,14 @@
     }
 
     /* ── MOBILE ────────────────────────────────────────────────── */
+    /* Override the public site's mobile root font-size bump so the
+       admin panel keeps its existing 16px sizing on phones. */
+    @media (max-width: 640px) {
+      html { font-size: 16px; }
+    }
     @media (max-width: 900px) {
       .admin-body {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         padding: 16px;
         gap: 16px;
       }

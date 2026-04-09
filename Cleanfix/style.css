@@ -1133,6 +1133,10 @@ address { font-style: normal; }
 }
 
 @media (max-width: 640px) {
+  /* Bump root font-size on phones so all rem-based text scales up
+     for easier reading. The admin panel overrides this back to 16px
+     in its own inline styles. */
+  html { font-size: 18px; }
   .section { padding: 64px 0; }
   .hero { padding: 64px 0 56px; }
   .hero-actions { flex-direction: column; }
