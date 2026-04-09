@@ -1146,8 +1146,13 @@ address { font-style: normal; }
   .footer-nav { gap: 28px; }
   .branches-grid { grid-template-columns: 1fr; }
   .pickup-banner { flex-direction: column; text-align: center; }
+  /* Price tables: pull cell text/padding back down so rows fit the
+     viewport after the html font-size bump above. */
+  .price-table th,
+  .price-table td { padding: 12px 12px; font-size: 0.78rem; }
+  .price-val { font-size: 0.82rem; }
   .price-table th:first-child,
-  .price-table td:first-child { min-width: 140px; }
+  .price-table td:first-child { min-width: 110px; }
 }
 
 @media (max-width: 440px) {
