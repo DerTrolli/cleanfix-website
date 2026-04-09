@@ -93,7 +93,7 @@
 [data-theme="dark"] .footer-bottom { border-top-color: rgba(255,255,255,0.06); }
 
 /* Dark mode: price table header stays gradient (already works), rows need dark bg */
-[data-theme="dark"] .price-table-wrapper { background: var(--neutral-100); }
+[data-theme="dark"] .price-table-wrapper { --table-bg: var(--neutral-100); }
 [data-theme="dark"] .price-table td { border-bottom-color: var(--neutral-200); }
 [data-theme="dark"] .price-table tbody tr:hover { background: var(--blue-light); }
 
@@ -597,7 +597,8 @@ address { font-style: normal; }
 }
 
 .price-table-wrapper {
-  background: var(--white);
+  --table-bg: var(--white);
+  background: var(--table-bg);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -1186,11 +1187,30 @@ address { font-style: normal; }
   .footer-nav { gap: 28px; }
   .branches-grid { grid-template-columns: 1fr; }
   .pickup-banner { flex-direction: column; text-align: center; }
-  /* Price tables: pull cell text/padding back down so rows fit the
-     viewport after the html font-size bump above. */
+
+  /* Price tables on phones: enable horizontal swipe-scrolling on the
+     wrapper so wider tables (Wäsche & Mangeln has three columns) can
+     reveal all columns by swiping sideways. A right-edge shadow hints
+     that more content exists; it disappears once you scroll to the end
+     (background-attachment: local trick). */
+  .price-table-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    background:
+      linear-gradient(to right, var(--table-bg), var(--table-bg)) left center / 24px 100% no-repeat local,
+      linear-gradient(to left,  var(--table-bg), var(--table-bg)) right center / 24px 100% no-repeat local,
+      linear-gradient(to right, rgba(0,0,0,0.14), rgba(0,0,0,0)) left center / 14px 100% no-repeat scroll,
+      linear-gradient(to left,  rgba(0,0,0,0.14), rgba(0,0,0,0)) right center / 14px 100% no-repeat scroll;
+    background-color: var(--table-bg);
+  }
+  /* Force the 3-column table wide enough that the last column cannot
+     collapse into the previous one, so the wrapper actually scrolls. */
+  .price-table--multi { min-width: 460px; }
+
   .price-table th,
-  .price-table td { padding: 12px 12px; font-size: 0.78rem; }
-  .price-val { font-size: 0.82rem; }
+  .price-table td { padding: 11px 10px; font-size: 0.74rem; }
+  .price-val { font-size: 0.78rem; }
   .price-table th:first-child,
   .price-table td:first-child { min-width: 110px; }
 }
