@@ -307,10 +307,15 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
     return parseFloat(m[1].replace(',', '.'));
   }
 
+  function stripPerHemdSuffix(str) {
+    if (typeof str !== 'string') return '';
+    return str.replace(/\s*pro\s+Hemd\s*$/i, '').trim();
+  }
+
   function computePerHemd(preisStr, count) {
     var n = parsePriceNumber(preisStr);
     if (!isFinite(n) || !count) return '';
-    return (n / count).toFixed(2).replace('.', ',') + ' € pro Hemd';
+    return (n / count).toFixed(2).replace('.', ',') + ' €';
   }
 
   function applyBonusPrices(d) {
@@ -326,14 +331,14 @@ var API_BASE  = 'https://cleanfix-api.thetrolli.com/webhook';
         priceEl.textContent = entry.preis.trim();
       }
       if (perShirtEl) {
-        var perHemd = (typeof entry.perHemd === 'string' && entry.perHemd.trim()) ? entry.perHemd.trim() : '';
+        var perHemd = (typeof entry.perHemd === 'string' && entry.perHemd.trim()) ? stripPerHemdSuffix(entry.perHemd) : '';
         if (!perHemd) {
           // Auto-compute from shirt count in the DOM.
           var strongEl = card.querySelector('.bonus-shirt-count strong');
           var count = strongEl ? parseInt(strongEl.textContent, 10) : NaN;
           perHemd = computePerHemd(entry.preis, count);
         }
-        if (perHemd) perShirtEl.textContent = perHemd;
+        if (perHemd) perShirtEl.textContent = perHemd + ' pro Hemd';
       }
     });
   }
