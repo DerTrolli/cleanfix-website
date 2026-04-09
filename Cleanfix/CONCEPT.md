@@ -137,7 +137,7 @@ Claude-Website/
     │   ├── impressum.html
     │   ├── datenschutz.html
     │   ├── favicon.png
-    │   ├── Logo-Cleanfix Transparent.png
+    │   ├── Logo Cleanfix JH.png
     │   └── data/
     │       ├── schedule.json
     │       ├── preise-reinigung.json
@@ -387,7 +387,7 @@ Die Dateien müssen in zwei separate Ordner aufgeteilt werden: `public-site/` (f
 1. Erstelle `Cleanfix/public-site/` und verschiebe dorthin:
    - `index.html`, `style.css`, `main.js`
    - `impressum.html`, `datenschutz.html`
-   - `favicon.png`, `Logo-Cleanfix Transparent.png`
+   - `favicon.png`, `Logo Cleanfix JH.png`
    - `Monatsangebot.txt` (Legacy-Fallback)
 2. Erstelle `Cleanfix/public-site/data/` mit leeren Initial-Dateien:
    - `schedule.json` → `[]`

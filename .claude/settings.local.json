@@ -7,7 +7,7 @@
       "Bash(cp admin.html admin-site/index.html)",
       "Bash(cp style.css admin-site/style.css)",
       "Bash(cp favicon.png admin-site/favicon.png)",
-      "Bash(cp \"Logo-Cleanfix Transparent.png\" \"admin-site/Logo-Cleanfix Transparent.png\")",
+      "Bash(cp \"Logo Cleanfix JH.png\" \"admin-site/Logo Cleanfix JH.png\")",
       "Bash(node --check \"C:/Users/troll/StudioProjects/cleanfix-website/Cleanfix/public-site/main.js\")",
       "Bash(for f:*)",
       "Bash(do echo:*)",
@@ -35,7 +35,10 @@
       "Bash(node --check _tmp.js)",
       "Bash(rm _tmp.js)",
       "Bash(ls README*)",
-      "Bash(ls Cleanfix/README*)"
+      "Bash(ls Cleanfix/README*)",
+      "Bash(sed -i 's/Logo-Cleanfix Transparent\\\\.png/Logo Cleanfix JH.png/g' index.html datenschutz.html impressum.html admin.html)",
+      "Bash(sed -i 's/Logo-Cleanfix Transparent\\\\.png/Logo Cleanfix JH.png/g' public-site/index.html public-site/datenschutz.html public-site/impressum.html)",
+      "Bash(sed -i 's/Logo-Cleanfix Transparent\\\\.png/Logo Cleanfix JH.png/g' admin-site/index.html)"
     ]
   }
 }
