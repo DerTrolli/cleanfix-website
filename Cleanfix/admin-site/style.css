@@ -80,7 +80,8 @@
 
 /* Dark mode: form inputs */
 [data-theme="dark"] .form-group input,
-[data-theme="dark"] .form-group textarea {
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select {
   background: var(--neutral-100);
   border-color: var(--neutral-300);
   color: var(--neutral-900);
@@ -93,7 +94,7 @@
 [data-theme="dark"] .footer-bottom { border-top-color: rgba(255,255,255,0.06); }
 
 /* Dark mode: price table header stays gradient (already works), rows need dark bg */
-[data-theme="dark"] .price-table-wrapper { background: var(--neutral-100); }
+[data-theme="dark"] .price-table-wrapper { --table-bg: var(--neutral-100); }
 [data-theme="dark"] .price-table td { border-bottom-color: var(--neutral-200); }
 [data-theme="dark"] .price-table tbody tr:hover { background: var(--blue-light); }
 
@@ -108,7 +109,7 @@
 /* Dark mode: smooth transition on everything */
 body, .site-header, .service-card, .branch-card, .bonus-card,
 .contact-detail, .newsletter-box, .pickup-banner,
-.form-group input, .form-group textarea,
+.form-group input, .form-group textarea, .form-group select,
 .price-table-wrapper, .hours-row {
   transition: background var(--transition), border-color var(--transition), color var(--transition), box-shadow var(--transition);
 }
@@ -151,6 +152,11 @@ body {
   background: var(--white);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  /* Prevent browser scroll-anchoring from compensating when the sticky
+     header shrinks/grows — it would otherwise produce synthetic scroll
+     events that fight the .scrolled toggle and cause an expand/contract
+     loop. See sticky-nav handler in main.js. */
+  overflow-anchor: none;
 }
 
 img, svg { display: block; max-width: 100%; }
@@ -555,7 +561,11 @@ address { font-style: normal; }
   border-color: transparent;
   box-shadow: 0 4px 14px rgba(8,48,221,0.3);
 }
-.tab-btn--active:hover {
+.tab-btn--active:hover,
+.tab-btn--active:focus,
+.tab-btn--active:focus-visible {
+  color: var(--white);
+  border-color: transparent;
   transform: translateY(-2px);
   box-shadow: 0 8px 22px rgba(8,48,221,0.4);
 }
@@ -588,7 +598,8 @@ address { font-style: normal; }
 }
 
 .price-table-wrapper {
-  background: var(--white);
+  --table-bg: var(--white);
+  background: var(--table-bg);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);
@@ -736,7 +747,46 @@ address { font-style: normal; }
   letter-spacing: 0.04em;
 }
 
-/* Permanent deals grid */
+/* Monatsangebot placeholder state (no active offer) */
+.monatsangebot-card--placeholder {
+  background: linear-gradient(135deg, var(--neutral-100) 0%, var(--neutral-200) 100%);
+  box-shadow: var(--shadow-md);
+  color: var(--neutral-900);
+}
+.monatsangebot-card--placeholder .monatsangebot-tag {
+  background: rgba(8,48,221,0.08);
+  border-color: rgba(8,48,221,0.18);
+  color: var(--blue);
+}
+.monatsangebot-card--placeholder .monatsangebot-month {
+  opacity: 1;
+  color: var(--blue);
+}
+.monatsangebot-card--placeholder .monatsangebot-headline {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  color: var(--neutral-600);
+}
+.monatsangebot-card--placeholder .monatsangebot-body {
+  opacity: 1;
+  color: var(--neutral-500);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder {
+  background: linear-gradient(135deg, var(--neutral-800) 0%, var(--neutral-900) 100%);
+  color: var(--neutral-100);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder .monatsangebot-tag {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+  color: var(--blue-mid);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder .monatsangebot-headline {
+  color: var(--neutral-400);
+}
+[data-theme="dark"] .monatsangebot-card--placeholder .monatsangebot-body {
+  color: var(--neutral-500);
+}
+
+/* Deals grid */
 .deals-heading {
   font-size: 1.15rem;
   font-weight: 700;
@@ -973,7 +1023,8 @@ address { font-style: normal; }
 .form-group label span { color: var(--pink); }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
   padding: 11px 14px;
   border: 1.5px solid var(--neutral-300);
   border-radius: var(--radius-sm);
@@ -985,13 +1036,33 @@ address { font-style: normal; }
   resize: vertical;
 }
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(8,48,221,0.12);
   outline: none;
 }
 .form-group input.invalid,
-.form-group textarea.invalid { border-color: #DC2626; }
+.form-group textarea.invalid,
+.form-group select.invalid { border-color: #DC2626; }
+/* Give the select a native-feeling chevron so it reads as a dropdown */
+.form-group select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23334155' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+  cursor: pointer;
+}
+[data-theme="dark"] .form-group select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23CBD5E1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 12px 8px;
+}
 .field-error { font-size: 0.8rem; color: #DC2626; min-height: 18px; }
 
 .form-note { font-size: 0.82rem; color: var(--neutral-400); line-height: 1.5; }
@@ -1125,6 +1196,10 @@ address { font-style: normal; }
 }
 
 @media (max-width: 640px) {
+  /* Bump root font-size on phones so all rem-based text scales up
+     for easier reading. The admin panel overrides this back to 16px
+     in its own inline styles. */
+  html { font-size: 18px; }
   .section { padding: 64px 0; }
   .hero { padding: 64px 0 56px; }
   .hero-actions { flex-direction: column; }
@@ -1134,8 +1209,32 @@ address { font-style: normal; }
   .footer-nav { gap: 28px; }
   .branches-grid { grid-template-columns: 1fr; }
   .pickup-banner { flex-direction: column; text-align: center; }
+
+  /* Price tables on phones: enable horizontal swipe-scrolling on the
+     wrapper so wider tables (Wäsche & Mangeln has three columns) can
+     reveal all columns by swiping sideways. A right-edge shadow hints
+     that more content exists; it disappears once you scroll to the end
+     (background-attachment: local trick). */
+  .price-table-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    background:
+      linear-gradient(to right, var(--table-bg), var(--table-bg)) left center / 24px 100% no-repeat local,
+      linear-gradient(to left,  var(--table-bg), var(--table-bg)) right center / 24px 100% no-repeat local,
+      linear-gradient(to right, rgba(0,0,0,0.14), rgba(0,0,0,0)) left center / 14px 100% no-repeat scroll,
+      linear-gradient(to left,  rgba(0,0,0,0.14), rgba(0,0,0,0)) right center / 14px 100% no-repeat scroll;
+    background-color: var(--table-bg);
+  }
+  /* Force the 3-column table wide enough that the last column cannot
+     collapse into the previous one, so the wrapper actually scrolls. */
+  .price-table--multi { min-width: 460px; }
+
+  .price-table th,
+  .price-table td { padding: 11px 10px; font-size: 0.74rem; }
+  .price-val { font-size: 0.78rem; }
   .price-table th:first-child,
-  .price-table td:first-child { min-width: 140px; }
+  .price-table td:first-child { min-width: 110px; }
 }
 
 @media (max-width: 440px) {
