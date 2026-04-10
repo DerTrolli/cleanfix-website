@@ -1809,6 +1809,39 @@
 
   var TYPE_LABELS = { monatsangebot: 'Monatsangebot', banner: 'Banner', deal: 'Angebot' };
   var TYPE_CSS    = { monatsangebot: 'type-badge--ma', banner: 'type-badge--banner', deal: 'type-badge--deal' };
+  // Types that only allow one active entry at a time on the public site
+  var SINGLE_VALUE_TYPES = ['monatsangebot', 'banner'];
+
+  /**
+   * Check if a new/edited entry's date range overlaps with any existing
+   * entry of the same single-value type. Deals are excluded — multiple
+   * deals can run concurrently without conflict.
+   *
+   * @param {string} type - 'monatsangebot' | 'banner' | 'deal'
+   * @param {string} startDate - ISO date or '' (permanent)
+   * @param {string} endDate   - ISO date or '' (permanent)
+   * @param {string} [excludeId] - entry ID to skip (for inline edits)
+   * @returns {object|null} - the conflicting entry, or null if no overlap
+   */
+  function findOverlap(type, startDate, endDate, excludeId) {
+    if (SINGLE_VALUE_TYPES.indexOf(type) < 0) return null;
+    var schedule = getSchedule();
+    for (var i = 0; i < schedule.length; i++) {
+      var e = schedule[i];
+      if (e.type !== type) continue;
+      if (excludeId && e.id === excludeId) continue;
+      // Skip expired entries — they can't conflict
+      if (e.endDate && e.endDate < TODAY) continue;
+      // Two ranges overlap unless one ends before the other starts.
+      // Permanent (no dates) overlaps with everything.
+      var aStart = startDate || '0000-01-01';
+      var aEnd   = endDate   || '9999-12-31';
+      var bStart = e.startDate || '0000-01-01';
+      var bEnd   = e.endDate   || '9999-12-31';
+      if (aStart <= bEnd && bStart <= aEnd) return e;
+    }
+    return null;
+  }
 
   function statusChip(status) {
     var map = {
@@ -2005,9 +2038,23 @@
       });
     }
     formEl.querySelector('.ef-save-btn').addEventListener('click', function () {
+      var editStart = formEl.querySelector('.ef-start').value || '';
+      var editEnd   = formEl.querySelector('.ef-end').value   || '';
+
+      // Prevent overlapping single-value types (MA / Banner)
+      var conflict = findOverlap(entry.type, editStart, editEnd, entry.id);
+      if (conflict) {
+        var cLabel = fmtDate(conflict.startDate) || 'Dauerhaft';
+        var cEnd   = conflict.endDate ? ' – ' + fmtDate(conflict.endDate) : '';
+        toast('Zeitraum-Konflikt: es gibt bereits ein ' + TYPE_LABELS[entry.type] +
+          ' im Zeitraum ' + cLabel + cEnd +
+          '. Bitte den bestehenden Eintrag zuerst löschen oder den Zeitraum anpassen.', 'error');
+        return;
+      }
+
       var updated = Object.assign({}, entry, {
-        startDate: formEl.querySelector('.ef-start').value || '',
-        endDate:   formEl.querySelector('.ef-end').value   || ''
+        startDate: editStart,
+        endDate:   editEnd
       });
       if (entry.type === 'monatsangebot') {
         updated.data = {
@@ -2419,11 +2466,25 @@
             if (!data.title) { toast('Titel ist ein Pflichtfeld.', 'error'); return; }
           }
 
+          var newStart = (nfFields.querySelector('.ef-start') || {}).value || '';
+          var newEnd   = (nfFields.querySelector('.ef-end')   || {}).value || '';
+
+          // Prevent overlapping single-value types (MA / Banner)
+          var conflict = findOverlap(type, newStart, newEnd);
+          if (conflict) {
+            var cLabel = fmtDate(conflict.startDate) || 'Dauerhaft';
+            var cEnd   = conflict.endDate ? ' – ' + fmtDate(conflict.endDate) : '';
+            toast('Zeitraum-Konflikt: es gibt bereits ein ' + TYPE_LABELS[type] +
+              ' im Zeitraum ' + cLabel + cEnd +
+              '. Bitte den bestehenden Eintrag zuerst löschen oder den Zeitraum anpassen.', 'error');
+            return;
+          }
+
           var entry = {
             id:        generateId(),
             type:      type,
-            startDate: (nfFields.querySelector('.ef-start') || {}).value || '',
-            endDate:   (nfFields.querySelector('.ef-end')   || {}).value || '',
+            startDate: newStart,
+            endDate:   newEnd,
             data:      data
           };
           var schedule = getSchedule();
