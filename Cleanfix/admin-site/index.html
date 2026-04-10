@@ -3116,13 +3116,17 @@
     // response arrives. The dirty-tracking snapshot is reset to the
     // server state so new local edits still show in the publish bar.
     fetchServerSchedule().then(function (result) {
-      if (result.applied && result.arr.length) {
-        renderScheduleList();
-        renderTimeline();
+      if (result.applied) {
+        if (result.arr.length) {
+          renderScheduleList();
+          renderTimeline();
+        }
+        // Only reset the snapshot when server data was actually applied.
+        // If the user already started editing (applied=false), leave the
+        // snapshot as-is so dirty tracking and "Verwerfen" still work
+        // against the original clean state.
+        takeSnapshot();
       }
-      // Reset snapshot to current localStorage state so dirty tracking
-      // starts clean relative to whatever the UI now shows.
-      takeSnapshot();
     });
 
     fetchServerPreise().then(function (results) {
