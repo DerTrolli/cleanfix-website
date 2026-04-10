@@ -37,5 +37,20 @@
       "desc": "Ja",
       "highlight": true
     }
+  },
+  {
+    "id": "7bcj45uw57hd",
+    "type": "deal",
+    "startDate": "2026-04-11",
+    "endDate": "2026-04-11",
+    "data": {
+      "badge": "10.04.2026",
+      "icon": "🚀",
+      "title": "ARTEMIS II LANDUNG",
+      "price": "HEUTE NACHT IS ARTEMIS II WIEDER GELANDET",
+      "priceUnit": "",
+      "desc": "",
+      "highlight": true
+    }
   }
 ]
