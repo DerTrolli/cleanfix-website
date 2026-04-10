@@ -2041,6 +2041,12 @@
       var editStart = formEl.querySelector('.ef-start').value || '';
       var editEnd   = formEl.querySelector('.ef-end').value   || '';
 
+      // End date must not be before start date
+      if (editStart && editEnd && editEnd < editStart) {
+        toast('Das Enddatum (' + fmtDate(editEnd) + ') liegt vor dem Startdatum (' + fmtDate(editStart) + ').', 'error');
+        return;
+      }
+
       // Prevent overlapping single-value types (MA / Banner)
       var conflict = findOverlap(entry.type, editStart, editEnd, entry.id);
       if (conflict) {
@@ -2468,6 +2474,12 @@
 
           var newStart = (nfFields.querySelector('.ef-start') || {}).value || '';
           var newEnd   = (nfFields.querySelector('.ef-end')   || {}).value || '';
+
+          // End date must not be before start date
+          if (newStart && newEnd && newEnd < newStart) {
+            toast('Das Enddatum (' + fmtDate(newEnd) + ') liegt vor dem Startdatum (' + fmtDate(newStart) + ').', 'error');
+            return;
+          }
 
           // Prevent overlapping single-value types (MA / Banner)
           var conflict = findOverlap(type, newStart, newEnd);
@@ -3104,13 +3116,17 @@
     // response arrives. The dirty-tracking snapshot is reset to the
     // server state so new local edits still show in the publish bar.
     fetchServerSchedule().then(function (result) {
-      if (result.applied && result.arr.length) {
-        renderScheduleList();
-        renderTimeline();
+      if (result.applied) {
+        if (result.arr.length) {
+          renderScheduleList();
+          renderTimeline();
+        }
+        // Only reset the snapshot when server data was actually applied.
+        // If the user already started editing (applied=false), leave the
+        // snapshot as-is so dirty tracking and "Verwerfen" still work
+        // against the original clean state.
+        takeSnapshot();
       }
-      // Reset snapshot to current localStorage state so dirty tracking
-      // starts clean relative to whatever the UI now shows.
-      takeSnapshot();
     });
 
     fetchServerPreise().then(function (results) {
