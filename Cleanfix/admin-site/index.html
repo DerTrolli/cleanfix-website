@@ -2041,6 +2041,12 @@
       var editStart = formEl.querySelector('.ef-start').value || '';
       var editEnd   = formEl.querySelector('.ef-end').value   || '';
 
+      // End date must not be before start date
+      if (editStart && editEnd && editEnd < editStart) {
+        toast('Das Enddatum (' + fmtDate(editEnd) + ') liegt vor dem Startdatum (' + fmtDate(editStart) + ').', 'error');
+        return;
+      }
+
       // Prevent overlapping single-value types (MA / Banner)
       var conflict = findOverlap(entry.type, editStart, editEnd, entry.id);
       if (conflict) {
@@ -2468,6 +2474,12 @@
 
           var newStart = (nfFields.querySelector('.ef-start') || {}).value || '';
           var newEnd   = (nfFields.querySelector('.ef-end')   || {}).value || '';
+
+          // End date must not be before start date
+          if (newStart && newEnd && newEnd < newStart) {
+            toast('Das Enddatum (' + fmtDate(newEnd) + ') liegt vor dem Startdatum (' + fmtDate(newStart) + ').', 'error');
+            return;
+          }
 
           // Prevent overlapping single-value types (MA / Banner)
           var conflict = findOverlap(type, newStart, newEnd);
