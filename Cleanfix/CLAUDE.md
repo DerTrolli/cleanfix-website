@@ -22,12 +22,24 @@ node -e "const fs=require('fs');const h=fs.readFileSync('admin.html','utf8');con
 
 ## File Structure
 
+These paths are relative to `Cleanfix/` (the project root inside the repo). The public site and admin site each have their own deploy directory, but the file roles are the same.
+
+**Public site** (`public-site/`):
 - `index.html` — Main single-page site. Sections in order: nav, hero, promo banner, leistungen, angebote, preise (tabs), filialen, newsletter, kontakt, footer
-- `style.css` — All styles; single file, no preprocessor. Also imported by `admin.html` for CSS tokens and live preview rendering.
+- `style.css` — All styles; single file, no preprocessor. Also copied into `admin-site/` for shared tokens and live preview rendering.
 - `main.js` — All public-site interactivity; vanilla JS, no ES modules
-- `admin.html` — Self-contained management panel; all admin JS/CSS is inline in the file
 - `impressum.html` — Legal imprint (§5 DDG)
 - `datenschutz.html` — GDPR privacy policy
+- `data/schedule.json` — Server-side schedule state (committed by n8n via GitHub API)
+- `data/preise-reinigung.json`, `data/preise-buegeln.json`, `data/preise-waesche.json`, `data/preise-bonus.json` — Server-side price state
+
+**Admin site** (`admin-site/`):
+- `index.html` — Entire admin app (HTML + inline CSS + inline JS). Password-protected. This is the actively deployed and maintained admin panel.
+- `style.css` — Copy of `public-site/style.css` for shared tokens / live previews. **Must be kept in sync** with the public version.
+
+**Shared / root-level files:**
+- `admin.html` — Legacy single-file admin panel (kept for reference, **not deployed**)
+- `index.html` — Legacy copy of the public site (not deployed to production)
 - `Monatsangebot.txt` — Legacy fallback monthly offer data file; read at runtime by JS only when no schedule entry exists
 - `Preise.xlsx` — Source of truth for all prices; update this file when prices change, then reflect changes in the HTML price tables and admin.html DEFAULTS object
 - `Logo Cleanfix JH.png` — Logo used in nav/footer (must stay PNG — transparency required)
@@ -42,7 +54,53 @@ Brand colors: `--blue: #0830DD`, `--pink: #F508B8`.
 
 Dark mode exceptions (components that need explicit dark overrides rather than relying purely on token inheritance) are grouped near the top of `style.css`.
 
-`admin.html` imports `style.css` to reuse tokens and to render live previews of the promo banner and monatsangebot card using their actual production CSS.
+The admin site's `style.css` is a copy of the public site's `style.css`, used for shared tokens and live preview rendering. **Both files must be kept in sync** — when editing styling, apply the same change to both `public-site/style.css` and `admin-site/style.css`.
+
+#### Key CSS tokens (`:root` in `style.css`)
+```css
+/* Colors */
+--blue: #0830DD;  --blue-dark: #061FA8;  --blue-deeper: #04156E;
+--blue-light: #E8EDFF;  --blue-mid: #C0CCFF;
+--pink: #F508B8;  --pink-dark: #C2018F;  --pink-light: #FFE0F7;
+/* Neutrals (swapped in dark mode to create inverted contrast) */
+--neutral-900: #0F1117;  --neutral-700: #374151;  --neutral-600: #4B5563;
+--neutral-400: #9CA3AF;  --neutral-300: #D1D5DB;  --neutral-200: #E5E7EB;
+--neutral-100: #F8F9FB;  --white: #FFFFFF;
+/* Gradients, shadows, radii */
+--gradient: linear-gradient(135deg, var(--blue), var(--pink));
+--shadow-sm / --shadow-md / --shadow-lg  /* blue-tinted in light, pure black in dark */
+--radius-sm: 8px;  --radius-md: 14px;  --radius-lg: 22px;  --radius-xl: 32px;
+/* Typography & motion */
+--font: 'Inter', system-ui, -apple-system, sans-serif;
+--transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+#### Dark mode strategy
+Dark mode swaps the neutral scale in `:root` (e.g. `--white` becomes `#111318`, `--neutral-900` becomes `#EEF0F6`). Most components just inherit and automatically look correct. Components that need explicit dark overrides (header backdrop, mobile nav, form inputs, price table rows, footer) are grouped at the top of `style.css` with `[data-theme="dark"]` selectors.
+
+#### Component-level CSS variables
+- `.price-table-wrapper` uses `--table-bg: var(--white)` (overridden in dark mode to `var(--neutral-100)`) so the mobile scroll-shadow gradient trick works in both themes.
+
+#### Mobile-specific overrides (≤640px)
+```css
+html { font-size: 18px; }  /* Bumps all rem-based text for older readers */
+```
+The admin panel's inline `<style>` overrides this back to `16px` so admin UI keeps its normal sizing.
+
+#### Mobile price tables (≤640px)
+On phones, the `.price-table-wrapper` enables horizontal swipe scrolling via `overflow-x: auto` with a `background-attachment: local` scroll-shadow trick. Four gradient layers (two themed covers as `local`, two dark shadows as `scroll`) create edge shadows that appear/disappear based on scroll position, hinting that more columns exist. The 3-column table (`.price-table--multi`, used by Wäsche & Mangeln) gets `min-width: 460px` to force the wrapper to actually scroll on narrow viewports.
+
+#### Form field styling
+All form inputs, textareas, and selects share the same visual treatment:
+```css
+.form-group input,
+.form-group textarea,
+.form-group select { /* same padding, border, radius, focus ring */ }
+```
+The `.invalid` class + `.field-error` span pattern is used for client-side validation errors. Dark mode overrides exist for input backgrounds and borders.
+
+#### Admin panel CSS override
+The admin site's `index.html` has an inline `<style>` block that overrides the public site's mobile root font-size bump (`html { font-size: 16px; }` at ≤640px) so the admin panel keeps its normal sizing on phones. All admin-only component styles (`.admin-body`, `.admin-nav`, `.sched-entry`, publish bar, etc.) live in this inline block.
 
 ### JavaScript Blocks in `main.js` (sequential, no ES modules)
 1. **Dark mode IIFE** — reads `localStorage`, sets `data-theme` on `<html>` before paint
@@ -116,14 +174,24 @@ Every entry has this shape:
 ### Priority Rule for MA and Banner (single-value types)
 When multiple active entries exist for the same type, the **dated entry beats permanent**; among equals, **highest array index (last saved) wins**. This is implemented in `getBestActive(type)` in both `admin.html` JS and `main.js`.
 
-### How `main.js` applies schedule entries
-1. Load `cleanfix-schedule` from localStorage
-2. Filter by `isActive(entry)` (date check against today's ISO date)
-3. **MA**: apply best active monatsangebot entry, else fall back to `cleanfix-monatsangebot` legacy key, else fetch `Monatsangebot.txt` (HTTP only)
-4. **Banner**: apply best active banner entry, else fall back to `cleanfix-banner` legacy key (supports both `{icon,title,desc}` new format and `{text:...}` very old HTML-blob format)
-5. **Deals**: apply all active deal entries as an array, else fall back to `cleanfix-deals` legacy array
+### Server-side data (`data/schedule.json`)
+The schedule is persisted server-side as a committed JSON file. When the admin publishes, the n8n workflow commits the full schedule array to `Cleanfix/public-site/data/schedule.json` via the GitHub API, triggering a Cloudflare Pages redeploy.
 
-MA hardcoded defaults are applied immediately on page load (before any async ops) so the card is never visually empty.
+### How `main.js` applies schedule entries
+1. Show MA placeholder immediately (card never empty)
+2. Fetch `/data/schedule.json` from the server (primary source of truth)
+3. If fetch succeeds, filter by `isActive(entry)` (date check against today's ISO date)
+4. If fetch fails (offline, 404, etc.), fall back to `cleanfix-schedule` in localStorage
+5. **MA**: apply best active monatsangebot entry, else fall back to `cleanfix-monatsangebot` legacy key, else fetch `Monatsangebot.txt` (HTTP only)
+6. **Banner**: apply best active banner entry, else fall back to `cleanfix-banner` legacy key (supports both `{icon,title,desc}` new format and `{text:...}` very old HTML-blob format)
+7. **Deals**: apply all active deal entries as an array, else fall back to `cleanfix-deals` legacy array
+
+### Admin panel server sync (cross-device consistency)
+On every admin load, `initAdmin()` fires two async fetches:
+- `fetchServerSchedule()` — fetches `schedule.json`, writes to localStorage, re-renders schedule list + timeline, resets dirty-tracking snapshot. Includes a race-condition guard: if the user has already made local edits (localStorage differs from snapshot), the server write is skipped to avoid clobbering in-progress work.
+- `fetchServerPreise()` — fetches all four price JSON files (`preise-reinigung`, `preise-buegeln`, `preise-waesche`, `preise-bonus`), writes to localStorage, re-renders all price editors.
+
+The UI renders immediately from localStorage (may be stale), then updates in the background once the server response arrives. This ensures the admin always shows the latest published state, even when opened on a different device.
 
 ### Legacy key migration
 `admin.html` runs `migrateData()` on every admin load. It reads the three old keys (`cleanfix-monatsangebot`, `cleanfix-banner`, `cleanfix-deals`), lifts them into schedule entries (type=permanent, no dates), appends them to the schedule array, and deletes the old keys. This is idempotent after first run.
@@ -132,20 +200,24 @@ MA hardcoded defaults are applied immediately on page load (before any async ops
 
 ## Data Flow: Prices
 
-`Preise.xlsx` is the source of truth. Prices are also hardcoded in three `localStorage` keys written by the admin panel:
+`Preise.xlsx` is the source of truth. Prices are stored in four `localStorage` keys written by the admin panel:
 - `cleanfix-preise-reinigung` → `{ groups: [{ label, rows: [{artikel, preis}] }] }`
 - `cleanfix-preise-buegeln` → same structure
 - `cleanfix-preise-waesche` → same structure, rows have `preis` and `preis2`
+- `cleanfix-preise-bonus` → `{ cards: [...] }` — bonus/loyalty card data
 
-`main.js` reads these keys and re-renders the tbody elements (`#tbody-reinigung`, `#tbody-buegeln`, `#tbody-waesche`). If a key is absent, the HTML hardcoded in `index.html` is shown as-is.
+Prices are also persisted server-side as committed JSON files under `data/`:
+- `data/preise-reinigung.json`, `data/preise-buegeln.json`, `data/preise-waesche.json`, `data/preise-bonus.json`
 
-The `DEFAULTS` object in `admin.html` JS contains the canonical price data. When updating prices: edit `Preise.xlsx`, update `DEFAULTS.preiseReinigung/preiseBuegeln/preiseWaesche` in `admin.html`, and also update the hardcoded rows in `index.html`.
+`main.js` fetches these JSON files first (server = truth), falls back to localStorage, then to hardcoded HTML in `index.html`.
+
+The `DEFAULTS` object in `admin-site/index.html` JS contains the canonical price data. When updating prices: edit `Preise.xlsx`, update `DEFAULTS.preiseReinigung/preiseBuegeln/preiseWaesche` in the admin, and also update the hardcoded rows in `index.html`.
 
 ---
 
-## Admin Panel Architecture (`admin.html`)
+## Admin Panel Architecture (`admin-site/index.html`)
 
-All admin JS lives in a single large IIFE (`'use strict'`) at the bottom of the file. All admin CSS is in an inline `<style>` block in `<head>`.
+The actively deployed admin panel. All admin JS lives in a single large IIFE (`'use strict'`) at the bottom of the file. All admin CSS is in an inline `<style>` block in `<head>`. The legacy `admin.html` in the project root is kept for reference only and is **not deployed**.
 
 ### Authentication
 - Login checks the entered password against its SHA-256 hash via `crypto.subtle.digest`
@@ -202,9 +274,10 @@ All keys the system uses — any new key must be added to the export/clear-all `
 | Key | Written by | Read by | Content |
 |-----|-----------|---------|---------|
 | `cleanfix-schedule` | admin.html | admin.html, main.js | Unified schedule array (MA, banner, deal entries) |
-| `cleanfix-preise-reinigung` | admin.html | main.js | Price data JSON for Reinigung tab |
-| `cleanfix-preise-buegeln` | admin.html | main.js | Price data JSON for Nur Bugeln tab |
-| `cleanfix-preise-waesche` | admin.html | main.js | Price data JSON for Wasche & Mangeln tab |
+| `cleanfix-preise-reinigung` | admin | main.js | Price data JSON for Reinigung tab |
+| `cleanfix-preise-buegeln` | admin | main.js | Price data JSON for Nur Bügeln tab |
+| `cleanfix-preise-waesche` | admin | main.js | Price data JSON for Wäsche & Mangeln tab |
+| `cleanfix-preise-bonus` | admin | main.js | Bonus/loyalty card data |
 | `cleanfix-monatsangebot` | legacy (migrated) | main.js fallback | Old single MA object |
 | `cleanfix-banner` | legacy (migrated) | main.js fallback | Old single banner object |
 | `cleanfix-deals` | legacy (migrated) | main.js fallback | Old deals array |
@@ -257,7 +330,8 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 - **Bonus cards**: Each card has a `.bonus-shirt-grid` with individual `<span class="shirt-cross">` elements — one per shirt. Update count manually when changing shirt numbers.
 - **Price group headers**: Use `<tr class="price-group-header"><td colspan="N">Label</td></tr>` — styled as a subtle section divider inside tables.
 - **Tabs**: The price tab system uses `hidden` attribute on inactive panels and `aria-selected` on buttons — both must be updated together in JS when switching tabs. The search tab (`#tab-suche`, `#btn-suche`) is the first tab but not the default active one.
-- **Forms**: No backend connected yet. Contact and newsletter forms show a success state client-side only. Real submission requires a webhook (n8n via Cloudflare Tunnel is planned).
+- **Contact form**: Posts JSON to `API_BASE + '/contact-form'` (n8n webhook). Fields: `name` (required), `email` (required), `kundentyp` (required, `'privat'` or `'gewerblich'` — mandatory `<select>` dropdown), `subject` (optional), `message` (required). The n8n workflow (`n8n-workflows/contact-form.json`) sends email from `noreply@cleanfix-mg.de` to `info@cleanfix-mg.de` with the visitor's address as `Reply-To`. **Currently blocked on SMTP setup** — see `CONTACT-FORM-SETUP.md` at the repo root for the full handoff guide.
+- **Newsletter form**: Client-side only, not yet wired to a backend. UWG requires double opt-in — see Future Work in `README.md`.
 - **Next Gen mode**: When toggling off, the IIFE cleans up by calling `obs.disconnect()` on all observers in `activeObservers[]` and running all `cleanupFunctions[]` (scroll/mouse listeners). Always push new observers/listeners into these arrays when adding motion effects.
 - **`esc()` vs `escHtml()`**: `admin.html` uses `esc()` (defined at top of its IIFE). `main.js` uses `escHtml()` (defined as a global before the schedule IIFE). They are identical in implementation — do not confuse them.
 - **Saving a new entry always creates a new schedule entry** — it never overwrites an existing one. To update an existing entry, use inline edit in the schedule list, or load it as a template via the "load existing" dropdown. Dated entries expire naturally.

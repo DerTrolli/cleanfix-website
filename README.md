@@ -19,8 +19,9 @@ There is **no build step, no package.json, no framework, no dependencies** other
 ```
 .
 ├── README.md                      ← you are here
+├── CONTACT-FORM-SETUP.md          ← handoff guide for wiring the contact form (SMTP setup)
 ├── .claude/                       ← shared Claude Code config (committed)
-│   ├── launch.json                ← `preview_start` config for the admin dev server
+│   ├── launch.json                ← `preview_start` config for dev servers
 │   └── settings.local.json        ← Bash permission allow-list (no secrets)
 ├── Cleanfix/
 │   ├── CLAUDE.md                  ← deep architecture reference for Claude / contributors
@@ -40,7 +41,8 @@ There is **no build step, no package.json, no framework, no dependencies** other
 │   │       ├── schedule.json
 │   │       ├── preise-reinigung.json
 │   │       ├── preise-buegeln.json
-│   │       └── preise-waesche.json
+│   │       ├── preise-waesche.json
+│   │       └── preise-bonus.json
 │   ├── admin-site/                ← password-protected management panel
 │   │   ├── index.html             ← entire admin app, single file (HTML + inline CSS + inline JS)
 │   │   ├── style.css              ← copy of public-site style.css for shared tokens / live previews
@@ -48,9 +50,9 @@ There is **no build step, no package.json, no framework, no dependencies** other
 │   └── admin.html                 ← legacy single-file admin (kept for reference, not deployed)
 └── n8n-workflows/                 ← workflow JSON exports for the n8n instance
     ├── save-schedule.json         ← writes Cleanfix/public-site/data/schedule.json via GitHub API
-    ├── save-preise.json           ← writes the three preise-*.json files
+    ├── save-preise.json           ← writes the four preise-*.json files
     ├── newsletter-sub.json        ← (not yet wired)
-    └── contact-form.json          ← (not yet imported — see Future Work)
+    └── contact-form.json          ← contact form → email (not yet imported — see CONTACT-FORM-SETUP.md)
 ```
 
 ---
@@ -247,25 +249,43 @@ This repo is set up so that Claude Code can collaborate on it remotely. The rele
 
 ### 2. Wire up the contact form (currently blocked on SMTP)
 
-The contact form HTML and client-side JS exist in `Cleanfix/public-site/`, and a workflow template lives at `n8n-workflows/contact-form.json` (not imported). The plan is **Cloudflare Turnstile + honeypot in front of an n8n workflow that sends an email**. Full step-by-step plan:
+The contact form HTML and client-side JS are done — fields include Name, E-Mail, Art der Anfrage (Privat/Gewerblich dropdown), Betreff, and Nachricht. The form POSTs JSON to the n8n webhook. A workflow template lives at `n8n-workflows/contact-form.json` (not yet imported into n8n).
 
-1. Add Turnstile site key + widget to the contact form HTML
+The remaining work is **anti-spam + SMTP setup:**
+
+1. Add Cloudflare Turnstile site key + widget to the contact form HTML
 2. Add a hidden honeypot field
 3. Update the form submit JS to send the Turnstile token + honeypot
 4. Update the n8n workflow to verify the token server-side and bail silently if the honeypot is filled
-5. Configure SMTP credentials in n8n (Brevo free tier or Gmail app-password)
+5. Configure SMTP credentials in n8n (for `noreply@cleanfix-mg.de`)
 6. Import the workflow and test end-to-end
 7. Add Turnstile disclosure to `datenschutz.html`
 
-**Currently blocked on:** no SMTP / email account exists for `cleanfix-mg.de` yet. Pick this back up once email is set up.
+**Currently blocked on:** SMTP credentials for `cleanfix-mg.de`. The IT admin is creating a `noreply@cleanfix-mg.de` mailbox at All-Inkl. See **`CONTACT-FORM-SETUP.md`** at the repo root for the full step-by-step handoff guide including what to ask the admin, how to configure n8n, and alternative transactional email providers.
 
 ### 3. Newsletter double opt-in
 
-UWG requires double opt-in for newsletters. The HTML form, the n8n workflow, and the storage layer are all unimplemented. Lower priority than auth and contact form.
+UWG requires double opt-in for newsletters. The HTML form, the n8n workflow, and the storage layer are all unimplemented. The existing newsletter provider is **Cleverreach** (used by the current WordPress site). Lower priority than auth and contact form.
 
 ### 4. Server-side validation for all admin save endpoints
 
 Right now the n8n save-* workflows trust the JSON payload from the admin UI completely. After the auth rework above, also add schema validation (Zod-style) inside each workflow so a compromised or buggy admin can't write malformed JSON to `data/schedule.json`.
+
+### 5. Photo/video carousel (Leistungen or standalone section)
+
+Requested by business owner: a visual carousel/slider showing photos and/or short video clips of the store, the cleaning process, finished garments, etc. Think a horizontally scrollable gallery or auto-playing slideshow. No design finalised yet — should be visually consistent with the existing card-based layout (rounded corners, brand gradients, `var(--shadow-md)` etc.).
+
+Implementation considerations:
+- Pure CSS + vanilla JS (no Swiper/Slick — keep the no-dependency principle)
+- Lazy-load images and defer video loading for performance
+- Touch-swipe support on mobile (same `overflow-x: auto` + `-webkit-overflow-scrolling: touch` pattern used for the price tables)
+- Responsive: full-width on mobile, maybe 2-3 visible items on desktop
+- Images should be optimised (WebP with PNG/JPG fallback) and served from the same static host (no external CDN dependency)
+- Consider intersection-observer-based autoplay for videos (play when visible, pause when not)
+
+### 6. Optional time-of-day scheduling
+
+Currently the schedule system only supports date ranges (start/end date). A future enhancement would add optional time-of-day fields (e.g. "only visible from 12:30 to 18:00") for more granular control over banners, monthly offers, and deals. The `isActive()` function in both `main.js` and the admin panel would need to compare `HH:MM` in addition to `YYYY-MM-DD`. Use `Europe/Berlin` timezone (not UTC) for the comparison since the business and all its customers are in Germany.
 
 ---
 
