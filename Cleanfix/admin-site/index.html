@@ -1364,16 +1364,21 @@
         return res.json();
       })
       .then(function (arr) {
-        if (!Array.isArray(arr)) return [];
-        // Always sync: server is the source of truth after publish.
-        // This ensures opening the admin on a different device shows
-        // the latest published state, not stale localStorage.
+        if (!Array.isArray(arr)) return { arr: [], applied: false };
+        // Guard: if the user has already started editing locally
+        // (localStorage differs from the snapshot taken at init),
+        // don't overwrite their in-progress work.
+        var currentLocal = JSON.stringify(getSchedule());
+        if (_cleanSnapshot !== null && currentLocal !== _cleanSnapshot) {
+          console.warn('[fetchServerSchedule] Skipped: local edits in progress');
+          return { arr: arr, applied: false };
+        }
         saveSchedule(arr);
-        return arr;
+        return { arr: arr, applied: true };
       })
       .catch(function (err) {
         console.error('[fetchServerSchedule]', err);
-        return [];
+        return { arr: [], applied: false };
       });
   }
 
@@ -1385,7 +1390,8 @@
     var tabs = [
       { file: 'preise-reinigung', key: 'cleanfix-preise-reinigung' },
       { file: 'preise-buegeln',   key: 'cleanfix-preise-buegeln' },
-      { file: 'preise-waesche',   key: 'cleanfix-preise-waesche' }
+      { file: 'preise-waesche',   key: 'cleanfix-preise-waesche' },
+      { file: 'preise-bonus',     key: 'cleanfix-preise-bonus' }
     ];
     return Promise.all(tabs.map(function (tab) {
       return fetch(PUBLIC_SITE + '/data/' + tab.file + '.json', { cache: 'no-store' })
@@ -1394,7 +1400,7 @@
           return res.json();
         })
         .then(function (data) {
-          if (data && data.groups) {
+          if (data && (data.groups || data.cards)) {
             lsSet(tab.key, data);
           }
           return data;
@@ -3036,26 +3042,28 @@
     // from localStorage (may be stale), then refreshes once the server
     // response arrives. The dirty-tracking snapshot is reset to the
     // server state so new local edits still show in the publish bar.
-    fetchServerSchedule().then(function (arr) {
-      if (arr.length) {
+    fetchServerSchedule().then(function (result) {
+      if (result.applied && result.arr.length) {
         renderScheduleList();
         renderTimeline();
       }
-      // Reset snapshot to the (now server-synced) localStorage state,
-      // even if the fetch returned [] — so dirty tracking starts clean.
+      // Reset snapshot to current localStorage state so dirty tracking
+      // starts clean relative to whatever the UI now shows.
       takeSnapshot();
     });
 
     fetchServerPreise().then(function (results) {
-      var anyUpdated = results.some(function (r) { return r && r.groups; });
+      var anyUpdated = results.some(function (r) { return r && (r.groups || r.cards); });
       if (anyUpdated) {
         // Re-read from updated localStorage and re-render
         priceData.reinigung = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-reinigung') || DEFAULTS.preiseReinigung));
         priceData.buegeln   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-buegeln')   || DEFAULTS.preiseBuegeln));
         priceData.waesche   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-waesche')   || DEFAULTS.preiseWaesche));
+        priceData.bonus     = mergeBonus(lsGet('cleanfix-preise-bonus'));
         renderPriceGroups('reinigung');
         renderPriceGroups('buegeln');
         renderPriceGroups('waesche');
+        renderBonusEditor();
       }
     });
   }
