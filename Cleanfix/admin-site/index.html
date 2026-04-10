@@ -1353,7 +1353,8 @@
 
   /**
    * Fetch schedule.json from the live public site.
-   * Only writes to localStorage if local is empty (never overwrites local changes).
+   * Always writes server data to localStorage so the admin stays in sync
+   * across devices (server = published truth after "Veröffentlichen").
    * Returns a promise resolving to the schedule array (or [] on failure).
    */
   function fetchServerSchedule() {
@@ -1364,17 +1365,45 @@
       })
       .then(function (arr) {
         if (!Array.isArray(arr)) return [];
-        // Only seed localStorage when completely empty — never overwrite local edits
-        var local = getSchedule();
-        if (!local.length && arr.length) {
-          saveSchedule(arr);
-        }
+        // Always sync: server is the source of truth after publish.
+        // This ensures opening the admin on a different device shows
+        // the latest published state, not stale localStorage.
+        saveSchedule(arr);
         return arr;
       })
       .catch(function (err) {
         console.error('[fetchServerSchedule]', err);
         return [];
       });
+  }
+
+  /**
+   * Fetch price JSON files from the live public site.
+   * Same principle: server = truth after "Preise speichern".
+   */
+  function fetchServerPreise() {
+    var tabs = [
+      { file: 'preise-reinigung', key: 'cleanfix-preise-reinigung' },
+      { file: 'preise-buegeln',   key: 'cleanfix-preise-buegeln' },
+      { file: 'preise-waesche',   key: 'cleanfix-preise-waesche' }
+    ];
+    return Promise.all(tabs.map(function (tab) {
+      return fetch(PUBLIC_SITE + '/data/' + tab.file + '.json', { cache: 'no-store' })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (data && data.groups) {
+            lsSet(tab.key, data);
+          }
+          return data;
+        })
+        .catch(function (err) {
+          console.error('[fetchServerPreise] ' + tab.file + ':', err);
+          return null;
+        });
+    }));
   }
 
   /**
@@ -3001,15 +3030,34 @@
       try { fn(); }
       catch (e) { console.error('[admin] ' + fn.name + ' failed:', e); }
     });
-    // If localStorage has no schedule, fetch from server in background and reload
-    if (!getSchedule().length) {
-      fetchServerSchedule().then(function (arr) {
-        if (arr.length) {
-          toast('Daten vom Server geladen. Seite wird aktualisiert…', 'success');
-          setTimeout(function () { location.reload(); }, 1200);
-        }
-      });
-    }
+
+    // Always fetch the latest published state from the server so the
+    // admin stays in sync across devices. The UI renders immediately
+    // from localStorage (may be stale), then refreshes once the server
+    // response arrives. The dirty-tracking snapshot is reset to the
+    // server state so new local edits still show in the publish bar.
+    fetchServerSchedule().then(function (arr) {
+      if (arr.length) {
+        renderScheduleList();
+        renderTimeline();
+      }
+      // Reset snapshot to the (now server-synced) localStorage state,
+      // even if the fetch returned [] — so dirty tracking starts clean.
+      takeSnapshot();
+    });
+
+    fetchServerPreise().then(function (results) {
+      var anyUpdated = results.some(function (r) { return r && r.groups; });
+      if (anyUpdated) {
+        // Re-read from updated localStorage and re-render
+        priceData.reinigung = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-reinigung') || DEFAULTS.preiseReinigung));
+        priceData.buegeln   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-buegeln')   || DEFAULTS.preiseBuegeln));
+        priceData.waesche   = JSON.parse(JSON.stringify(lsGet('cleanfix-preise-waesche')   || DEFAULTS.preiseWaesche));
+        renderPriceGroups('reinigung');
+        renderPriceGroups('buegeln');
+        renderPriceGroups('waesche');
+      }
+    });
   }
 
   // ── AUTO-LOGIN (runs after all declarations) ────────────────
