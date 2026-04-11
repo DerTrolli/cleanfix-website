@@ -3341,9 +3341,13 @@
         if (d.text)    introEl.value  = d.text;
         if (!subjectEl.value && d.monat) subjectEl.value = 'Unser Angebot im ' + d.monat + ' 🎉';
       } else if (entry.type === 'deal') {
-        if (d.title)  titleEl.value  = d.title;
-        if (d.desc)   offerEl.value  = (d.icon ? d.icon + ' ' : '') + (d.title || '') + (d.price ? ' — ' + d.price + (d.priceUnit || '') : '');
-        if (d.highlight) introEl.value = d.highlight;
+        if (d.title) titleEl.value = d.title;
+        var offerParts = [];
+        if (d.icon)  offerParts.push(d.icon);
+        if (d.title) offerParts.push(d.title);
+        if (d.price) offerParts.push('— ' + d.price + (d.priceUnit || ''));
+        if (offerParts.length) offerEl.value = offerParts.join(' ');
+        if (d.desc)  introEl.value = d.desc;
         if (!subjectEl.value && d.title) subjectEl.value = 'Sonderangebot: ' + d.title;
       }
       updatePreview();
