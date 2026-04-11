@@ -271,17 +271,87 @@ UWG requires double opt-in for newsletters. The HTML form, the n8n workflow, and
 
 Right now the n8n save-* workflows trust the JSON payload from the admin UI completely. After the auth rework above, also add schema validation (Zod-style) inside each workflow so a compromised or buggy admin can't write malformed JSON to `data/schedule.json`.
 
-### 5. Photo/video carousel (Leistungen or standalone section)
+### 5. Photo gallery / carousel with R2-backed media library
 
-Requested by business owner: a visual carousel/slider showing photos and/or short video clips of the store, the cleaning process, finished garments, etc. Think a horizontally scrollable gallery or auto-playing slideshow. No design finalised yet — should be visually consistent with the existing card-based layout (rounded corners, brand gradients, `var(--shadow-md)` etc.).
+Requested by the business owner: a visual gallery showing photos of the store, the cleaning process, finished garments, team at work, etc. Lives as an **inline section on the main public page**, not a subpage. Visually consistent with the existing card layout (rounded corners, brand gradients, `var(--shadow-md)`, etc.). **Images only for v1 — videos deferred to a later iteration** because of the extra complexity (poster frames, preload strategy, autoplay policies, codec fallbacks, much larger files).
 
-Implementation considerations:
-- Pure CSS + vanilla JS (no Swiper/Slick — keep the no-dependency principle)
-- Lazy-load images and defer video loading for performance
-- Touch-swipe support on mobile (same `overflow-x: auto` + `-webkit-overflow-scrolling: touch` pattern used for the price tables)
-- Responsive: full-width on mobile, maybe 2-3 visible items on desktop
-- Images should be optimised (WebP with PNG/JPG fallback) and served from the same static host (no external CDN dependency)
-- Consider intersection-observer-based autoplay for videos (play when visible, pause when not)
+**Storage: Cloudflare R2 (free tier)**
+
+- One R2 bucket `cleanfix-media` with a custom domain `media.cleanfix.thetrolli.com` (free CNAME in Cloudflare)
+- Two prefixes inside the bucket:
+  - `staging/{uuid}.webp` + `staging/{uuid}-thumb.webp` — uploads that haven't been published yet
+  - `live/{uuid}.webp` + `live/{uuid}-thumb.webp` — published, referenced by the public site
+- R2 lifecycle rule: auto-delete anything in `staging/` older than 24 hours (catches orphans from closed tabs or failed publishes)
+- R2 is only for media. Website code stays on Cloudflare Pages from GitHub, exactly as today.
+- Free tier: 10 GB storage, 1M Class A ops/month, 10M Class B ops/month, free egress. A gallery of a few dozen photos is well under 1 GB — **€0/month**.
+
+**Upload flow: client-side compression**
+
+Browser does all the image processing. No server-side image pipeline. No Cloudflare Images (€5/month). No n8n sharp nodes receiving megabyte-sized originals.
+
+1. Admin opens the Medien section in the admin panel, drops files into the upload zone (or uses a file picker).
+2. For each file, the admin's browser uses the canvas API to produce **two** WebP variants:
+   - **Full**: max 1600px wide, quality ~0.82 (~200–400 KB typical)
+   - **Thumb**: max 400px wide, quality ~0.75 (~20–40 KB typical)
+3. Admin panel calls an n8n webhook `POST /webhook/media-presign` → returns two short-lived presigned PUT URLs, one for the full and one for the thumb, targeting `staging/`.
+4. Browser PUTs both blobs directly to R2 using those URLs.
+5. Entry gets added to a local `media.json` in `localStorage` and shows up in the publish bar as "N Medien-Änderungen ausstehend".
+
+Compression takes a few seconds per file on the admin's device, which is fine — it's an admin panel used occasionally by one person, not a public upload form.
+
+**Admin panel UI**
+
+New "Medien" tab in the admin, alongside Zeitplan and Preise:
+
+- **Upload zone** at the top: drag-and-drop + file picker, accepts multiple files at once, shows per-file progress
+- **Thumbnail grid** below: tiles show the thumb image, filename, and an "Alt-Text" input on each tile (manual entry — see below)
+- **Drag-to-reorder**: same interaction model as the existing schedule list, stores `order` as an integer on each entry
+- **Per-tile actions**: edit alt text inline, delete (flows through the publish bar, can be reverted)
+- **Publish bar integration**: all additions, reorders, alt-text edits, and deletions are staged until the user clicks "Änderungen veröffentlichen". Revert wipes staged R2 uploads and restores `media.json` from the clean snapshot, same dirty-tracking pattern as the schedule.
+- **Alt text is entered manually** by the admin. Not auto-generated. AI-generated alt text was considered (local Ollama + moondream on the n8n box) but rejected for consistency — for business-critical accessibility copy in German, the owner prefers to write or paste it (e.g. from Gemini) rather than trust unreviewed model output.
+
+**Data shape: `Cleanfix/public-site/data/media.json`**
+
+```json
+[
+  {
+    "id": "abc123",
+    "src":   "https://media.cleanfix.thetrolli.com/live/abc123.webp",
+    "thumb": "https://media.cleanfix.thetrolli.com/live/abc123-thumb.webp",
+    "width": 1600,
+    "height": 1067,
+    "alt": "Mitarbeiterin bügelt ein weißes Hemd an einer Dampfbügelstation.",
+    "order": 0
+  }
+]
+```
+
+Committed to the repo via the same GitHub API flow as `schedule.json` and `preise-*.json`.
+
+**n8n workflows (two new ones)**
+
+- `media-presign.json`: webhook receives `{ filename, contentType }`, generates two R2 presigned PUT URLs (one for full, one for thumb) targeting `staging/`, returns them to the admin. Uses the R2 S3-compatible API with credentials stored as n8n credentials. Short TTL (e.g. 5 min) on each URL.
+- `save-media.json`: webhook receives the full pending `media.json` payload plus lists of `{ promote: [...ids], delete: [...ids] }`. Workflow: copy staged objects to `live/`, delete their `staging/` siblings, delete any `live/` objects flagged for deletion, then commit the new `media.json` to `Cleanfix/public-site/data/media.json` via the GitHub API. Same pattern as `save-schedule.json`.
+
+**Public site rendering**
+
+New `<section id="galerie">` in `index.html`, rendered in `main.js`:
+
+- Fetches `data/media.json` on page load, sorted by `order`
+- Renders as a horizontally scrollable strip on mobile (`overflow-x: auto` + the same scroll-shadow trick used for the price tables) and a responsive grid / carousel on desktop (2–3 visible items)
+- `<img loading="lazy" decoding="async" srcset="...thumb.webp 400w, ....webp 1600w">` for each tile
+- Click/tap a tile → lightweight lightbox that swaps to the full-resolution `src`
+- Pure CSS + vanilla JS, no Swiper/Slick (keep the no-dependency principle)
+- Design tokens: reuse `var(--shadow-md)`, `var(--radius-lg)`, `var(--gradient-primary)` to match the rest of the site
+
+**Why this design**
+
+- **Free**: R2 free tier + client-side compression means zero recurring cost.
+- **Current setup unchanged**: website code still ships via Pages from GitHub, admin still publishes via n8n + GitHub API, publish bar still handles dirty tracking. R2 is an *add-on*, not a rewrite.
+- **R2 stays small**: only compressed WebPs ever land in the bucket, originals are never uploaded.
+- **Fast on mobile**: 20–40 KB thumbs above-the-fold, full resolution only on lightbox open.
+- **Safe revert semantics**: staging prefix + lifecycle rule means a cancelled upload leaves zero garbage behind within 24h.
+- **Accessibility under owner control**: alt text is written by a human, not guessed by a model.
 
 ### 6. Optional time-of-day scheduling
 
