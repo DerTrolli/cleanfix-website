@@ -42,7 +42,11 @@
       "Bash(git -C /c/Users/troll/StudioProjects/cleanfix-website log --oneline -15)",
       "WebFetch(domain:www.cleverreach.com)",
       "WebFetch(domain:support.cleverreach.com)",
-      "WebFetch(domain:rest.cleverreach.com)"
+      "WebFetch(domain:rest.cleverreach.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:django-cleverreach.readthedocs.io)",
+      "WebFetch(domain:tray.io)"
     ]
   }
 }
