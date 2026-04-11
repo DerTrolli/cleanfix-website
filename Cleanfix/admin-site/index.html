@@ -1349,6 +1349,7 @@
   //  API CONFIG
   // ═══════════════════════════════════════════════════════════════
   var API_BASE = 'https://cleanfix-api.thetrolli.com/webhook';
+  var AUTH_BASE = 'https://cleanfix-auth.trollojunior.workers.dev';
   var PUBLIC_SITE = 'https://cleanfix.thetrolli.com';
 
   /**
@@ -1417,9 +1418,10 @@
    * Returns a promise. Never throws — errors are shown as toasts.
    */
   function apiSave(endpoint, payload) {
+    var token = sessionStorage.getItem('cleanfix-admin-token') || '';
     return fetch(API_BASE + '/' + endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify(payload)
     })
     .then(function (res) {
@@ -1460,20 +1462,12 @@
     return 'active';
   }
 
-  // ── PASSWORD ───────────────────────────────────────────────────
-  const PASS_HASH = 'a6a09412391de115838de28058aecdbb6c6a410ea69ba4dbbb5c0bda94b6f847';
-
-  async function hashPassword(pw) {
-    if (!crypto || !crypto.subtle) return null;
-    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-
-  const loginScreen = document.getElementById('login-screen');
-  const adminApp    = document.getElementById('admin-app');
-  const loginBtn    = document.getElementById('login-btn');
-  const pwInput     = document.getElementById('admin-password');
-  const loginError  = document.getElementById('login-error');
+  // ── AUTH (server-side via cleanfix-auth Worker) ────────────────
+  var loginScreen = document.getElementById('login-screen');
+  var adminApp    = document.getElementById('admin-app');
+  var loginBtn    = document.getElementById('login-btn');
+  var pwInput     = document.getElementById('admin-password');
+  var loginError  = document.getElementById('login-error');
 
   function showApp() {
     loginScreen.style.display = 'none';
@@ -1481,33 +1475,47 @@
     initAdmin();
   }
 
-  // Store a fingerprint of the password hash so that changing PASS_HASH
-  // automatically invalidates any existing session on next page load.
-  var PASS_FINGERPRINT = PASS_HASH.slice(0, 12);
-
   function checkAuth() {
-    return sessionStorage.getItem('cleanfix-admin-auth') === 'ok' &&
-           sessionStorage.getItem('cleanfix-admin-fp') === PASS_FINGERPRINT;
+    // JWT present and not obviously expired (we let the Worker validate properly on API calls)
+    var token = sessionStorage.getItem('cleanfix-admin-token');
+    if (!token) return false;
+    try {
+      var parts = token.split('.');
+      if (parts.length !== 3) return false;
+      var payload = JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+      return payload.exp && (Date.now() / 1000) < payload.exp;
+    } catch (e) { return false; }
   }
 
   // Auth check deferred to end of IIFE so DEFAULTS and all functions are initialized first
 
   loginBtn.addEventListener('click', async function () {
-    const pw = pwInput.value;
-    let ok = false;
+    var pw = pwInput.value;
+    loginBtn.disabled = true;
+    loginBtn.textContent = '…';
     try {
-      const hash = await hashPassword(pw);
-      ok = hash === PASS_HASH;
-    } catch (e) {}
-    if (ok) {
-      sessionStorage.setItem('cleanfix-admin-auth', 'ok');
-      sessionStorage.setItem('cleanfix-admin-fp', PASS_FINGERPRINT);
-      loginError.classList.remove('visible');
-      showApp();
-    } else {
+      var res = await fetch(AUTH_BASE + '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      var data = await res.json();
+      if (res.ok && data.token) {
+        sessionStorage.setItem('cleanfix-admin-token', data.token);
+        loginError.classList.remove('visible');
+        showApp();
+      } else {
+        loginError.textContent = data.error || 'Falsches Passwort';
+        loginError.classList.add('visible');
+        pwInput.value = '';
+        pwInput.focus();
+      }
+    } catch (e) {
+      loginError.textContent = 'Server nicht erreichbar';
       loginError.classList.add('visible');
-      pwInput.value = '';
-      pwInput.focus();
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Anmelden';
     }
   });
 
@@ -1516,7 +1524,7 @@
   });
 
   document.getElementById('logout-btn').addEventListener('click', function () {
-    sessionStorage.removeItem('cleanfix-admin-auth');
+    sessionStorage.removeItem('cleanfix-admin-token');
     location.reload();
   });
 
