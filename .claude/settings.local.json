@@ -39,7 +39,10 @@
       "Bash(sed -i 's/Logo-Cleanfix Transparent\\\\.png/Logo Cleanfix JH.png/g' index.html datenschutz.html impressum.html admin.html)",
       "Bash(sed -i 's/Logo-Cleanfix Transparent\\\\.png/Logo Cleanfix JH.png/g' public-site/index.html public-site/datenschutz.html public-site/impressum.html)",
       "Bash(sed -i 's/Logo-Cleanfix Transparent\\\\.png/Logo Cleanfix JH.png/g' admin-site/index.html)",
-      "Bash(git -C /c/Users/troll/StudioProjects/cleanfix-website log --oneline -15)"
+      "Bash(git -C /c/Users/troll/StudioProjects/cleanfix-website log --oneline -15)",
+      "WebFetch(domain:www.cleverreach.com)",
+      "WebFetch(domain:support.cleverreach.com)",
+      "WebFetch(domain:rest.cleverreach.com)"
     ]
   }
 }

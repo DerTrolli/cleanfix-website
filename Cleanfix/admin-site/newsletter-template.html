@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Cleanfix Newsletter</title>
+  <!--
+    CleverReach editable regions are marked with HTML comments:
+    {{{BODY}}} marks the content block CleverReach fills per-send.
+    data-editable attributes mark regions editable in the CR editor.
+
+    CSS notes for email clients:
+    - No CSS variables (not supported) — hex values used directly
+    - No flexbox/grid — table layout for Outlook compatibility
+    - Inline styles for Gmail/Yahoo (CleverReach auto-inlines on send)
+    - Web font with system fallback (Inter → system-ui → sans-serif)
+  -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    /* Reset */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0; mso-table-rspace: 0; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { margin: 0 !important; padding: 0 !important; width: 100% !important; background-color: #F8F9FB; }
+
+    /* Layout */
+    .email-wrapper { width: 100%; background-color: #F8F9FB; padding: 32px 16px; }
+    .email-container { max-width: 600px; margin: 0 auto; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(8,48,221,0.10); }
+
+    /* Header gradient */
+    .email-header {
+      background: linear-gradient(135deg, #0830DD, #F508B8);
+      padding: 40px 40px 36px;
+      text-align: center;
+    }
+    .email-logo { height: 48px; width: auto; }
+    .email-header-tagline {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      margin-top: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Offer badge */
+    .offer-badge-wrap { background: linear-gradient(135deg, #0830DD, #F508B8); padding: 2px; margin: 0 32px; border-radius: 12px; }
+    .offer-badge {
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 28px 32px;
+      text-align: center;
+    }
+    .offer-badge-label {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #0830DD;
+      margin-bottom: 8px;
+    }
+    .offer-badge-month {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: #0F1117;
+      margin-bottom: 4px;
+    }
+    .offer-badge-title {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    /* Body */
+    .email-body { padding: 32px 40px; }
+    .email-body h2 {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #0F1117;
+      margin-bottom: 12px;
+      margin-top: 0;
+    }
+    .email-body p {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #374151;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+
+    /* Highlight box */
+    .highlight-box {
+      background: #E8EDFF;
+      border-left: 4px solid #0830DD;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+    .highlight-box p {
+      font-size: 15px;
+      font-weight: 600;
+      color: #061FA8;
+      margin: 0;
+    }
+
+    /* CTA Button */
+    .cta-wrap { text-align: center; margin: 28px 0; }
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #0830DD, #F508B8);
+      color: #FFFFFF !important;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 50px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Locations */
+    .locations-title {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #9CA3AF;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .location-item {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 13px;
+      color: #4B5563;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    /* Divider */
+    .divider { height: 1px; background: #E5E7EB; margin: 24px 0; }
+
+    /* Footer */
+    .email-footer {
+      background: #0F1117;
+      padding: 28px 40px;
+      text-align: center;
+    }
+    .email-footer p {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      color: #9CA3AF;
+      margin: 0 0 6px;
+      line-height: 1.6;
+    }
+    .email-footer a { color: #A3B4FF; text-decoration: none; }
+
+    /* Mobile */
+    @media only screen and (max-width: 480px) {
+      .email-body { padding: 24px 24px !important; }
+      .email-header { padding: 28px 24px !important; }
+      .offer-badge-wrap { margin: 0 16px !important; }
+      .email-footer { padding: 24px !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center">
+<div class="email-container">
+
+  <!-- HEADER -->
+  <div class="email-header">
+    <div style="display:inline-block;background:#FFFFFF;border-radius:14px;padding:12px 24px;margin-bottom:12px;">
+      <img src="https://cleanfix.thetrolli.com/Logo%20Cleanfix%20JH.png" alt="Cleanfix" class="email-logo" style="margin-bottom:0;" />
+    </div>
+    <div class="email-header-tagline">Newsletter</div>
+  </div>
+
+  <!-- MONATSANGEBOT BADGE (editable in CR) -->
+  <!-- {{{OFFER_BADGE}}} -->
+  <div style="height:24px;"></div>
+  <div class="offer-badge-wrap">
+    <div class="offer-badge">
+      <div class="offer-badge-label">Monatsangebot</div>
+      <div class="offer-badge-month" data-editable="offer_month">April 2026</div>
+      <div class="offer-badge-title" data-editable="offer_title">Titel des Angebots</div>
+    </div>
+  </div>
+  <div style="height:24px;"></div>
+
+  <!-- BODY -->
+  <div class="email-body">
+
+    <h2 data-editable="headline">Betreff / Überschrift</h2>
+
+    <p data-editable="intro_text">
+      Sehr geehrte Damen und Herren,<br /><br />
+      hier kommt der Einleitungstext des Newsletters. Schreiben Sie hier eine kurze, freundliche Begrüßung und erklären Sie das aktuelle Angebot.
+    </p>
+
+    <!-- Highlight box for the core offer -->
+    <div class="highlight-box">
+      <p data-editable="offer_text">🎯 Das Angebot: z. B. 20 % Rabatt auf Hemden im April</p>
+    </div>
+
+    <p data-editable="body_text">
+      Nutzen Sie dieses Angebot bis zum Ende des Monats in einer unserer Filialen. Einfach diesen Newsletter vorzeigen oder beim Abgeben erwähnen.
+    </p>
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a href="https://cleanfix.thetrolli.com" class="cta-btn" data-editable="cta_url">Jetzt Filiale besuchen →</a>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Locations -->
+    <div class="locations-title">Unsere Filialen</div>
+    <div class="location-item">📍 Mönchengladbach-Rheydt · Limitenstraße 22</div>
+    <div class="location-item">📍 Mönchengladbach · Lüpertzender Str. 23</div>
+    <div class="location-item">📍 Mönchengladbach · Bismarckstraße 43</div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="email-footer">
+    <p>Cleanfix Reinigen und Waschen · Mönchengladbach</p>
+    <p><a href="https://cleanfix.thetrolli.com/impressum.html">Impressum</a> &nbsp;·&nbsp; <a href="https://cleanfix.thetrolli.com/datenschutz.html">Datenschutz</a> &nbsp;·&nbsp; <a href="{{{UNSUBSCRIBE_LINK}}}">Abmelden</a></p>
+    <p style="margin-top:10px;font-size:11px;">Sie erhalten diese E-Mail, weil Sie sich für den Cleanfix-Newsletter angemeldet haben.</p>
+  </div>
+
+</div>
+</td></tr>
+</table>
+</div>
+</body>
+</html>

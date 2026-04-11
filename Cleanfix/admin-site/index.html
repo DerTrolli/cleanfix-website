@@ -913,6 +913,113 @@
       color: var(--neutral-400);
     }
 
+    /* ── NEWSLETTER SECTION ─────────────────────────────────────── */
+    .nl-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .nl-form-group { display: flex; flex-direction: column; gap: 6px; }
+    .nl-form-group.full { grid-column: 1 / -1; }
+    .nl-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--neutral-700);
+      letter-spacing: 0.03em;
+    }
+    .nl-input, .nl-select, .nl-textarea {
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-family: var(--font);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--neutral-900);
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    .nl-input:focus, .nl-select:focus, .nl-textarea:focus { border-color: var(--blue); }
+    .nl-textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+    .nl-editor-wrap {
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .nl-editor-toolbar {
+      display: flex;
+      gap: 4px;
+      padding: 8px 10px;
+      background: var(--neutral-100);
+      border-bottom: 1px solid var(--neutral-200);
+      flex-wrap: wrap;
+    }
+    .nl-editor-btn {
+      padding: 4px 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: var(--white);
+      border: 1px solid var(--neutral-200);
+      border-radius: 5px;
+      cursor: pointer;
+      color: var(--neutral-700);
+      font-family: var(--font);
+      transition: background 0.15s;
+    }
+    .nl-editor-btn:hover { background: var(--neutral-200); }
+    .nl-editor {
+      min-height: 160px;
+      padding: 14px 16px;
+      font-size: 0.95rem;
+      font-family: var(--font);
+      line-height: 1.7;
+      color: var(--neutral-900);
+      background: var(--white);
+      outline: none;
+    }
+    .nl-preview-frame {
+      width: 100%;
+      height: 580px;
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+    }
+    .nl-send-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      background: var(--neutral-100);
+      border-top: 1px solid var(--neutral-200);
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+      flex-wrap: wrap;
+    }
+    .nl-send-bar-info {
+      flex: 1;
+      font-size: 0.88rem;
+      color: var(--neutral-600);
+      line-height: 1.5;
+    }
+    .nl-send-bar-info strong { color: var(--neutral-900); }
+    .nl-status {
+      display: none;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-top: 12px;
+    }
+    .nl-status.success { display: block; background: #D1FAE5; color: #065F46; }
+    .nl-status.error   { display: block; background: #FEE2E2; color: #991B1B; }
+    [data-theme="dark"] .nl-input,
+    [data-theme="dark"] .nl-select,
+    [data-theme="dark"] .nl-textarea,
+    [data-theme="dark"] .nl-editor { background: var(--neutral-100); border-color: var(--neutral-300); }
+    [data-theme="dark"] .nl-editor-wrap { border-color: var(--neutral-300); }
+    [data-theme="dark"] .nl-editor-toolbar { background: var(--neutral-200); border-color: var(--neutral-300); }
+    [data-theme="dark"] .nl-editor-btn { background: var(--neutral-100); border-color: var(--neutral-300); color: var(--neutral-700); }
+    [data-theme="dark"] .nl-send-bar { background: var(--neutral-200); border-color: var(--neutral-300); }
+
     /* ── MOBILE ────────────────────────────────────────────────── */
     /* Override the public site's mobile root font-size bump so the
        admin panel keeps its existing 16px sizing on phones. */
@@ -1185,6 +1292,9 @@
       <button class="admin-nav-item" data-section="preise">
         <span class="admin-nav-icon">💶</span> Preise
       </button>
+      <button class="admin-nav-item" data-section="newsletter">
+        <span class="admin-nav-icon">📧</span> Newsletter
+      </button>
       <button class="admin-nav-item" data-section="daten">
         <span class="admin-nav-icon">💾</span> Daten
       </button>
@@ -1293,6 +1403,107 @@
             <input type="file" id="excel-import-file" accept=".xlsx,.xls,.csv" style="display:none;" />
           </div>
         </div>
+      </section>
+
+      <!-- ── NEWSLETTER ───────────────────────────────────── -->
+      <section class="admin-section" id="section-newsletter">
+        <h1 class="admin-section-title">Newsletter</h1>
+        <p class="admin-section-desc">Newsletter erstellen und via CleverReach an alle Abonnenten senden oder planen.</p>
+
+        <!-- Compose card -->
+        <div class="admin-card">
+          <div class="admin-card-title">Newsletter verfassen</div>
+
+          <div class="nl-form-grid">
+            <!-- Subject -->
+            <div class="nl-form-group full">
+              <label class="nl-label" for="nl-subject">Betreffzeile</label>
+              <input type="text" id="nl-subject" class="nl-input" placeholder="z. B. Unser Angebot im April 🎉" />
+            </div>
+
+            <!-- Month + Title (pre-filled from Monatsangebot if available) -->
+            <div class="nl-form-group">
+              <label class="nl-label" for="nl-offer-month">Angebotsmonat</label>
+              <input type="text" id="nl-offer-month" class="nl-input" placeholder="z. B. April 2026" />
+            </div>
+            <div class="nl-form-group">
+              <label class="nl-label" for="nl-offer-title">Angebotstitel</label>
+              <input type="text" id="nl-offer-title" class="nl-input" placeholder="z. B. 20 % auf Hemden" />
+            </div>
+
+            <!-- Intro text -->
+            <div class="nl-form-group full">
+              <label class="nl-label" for="nl-intro">Einleitungstext</label>
+              <textarea id="nl-intro" class="nl-textarea" placeholder="Sehr geehrte Damen und Herren, ..."></textarea>
+            </div>
+
+            <!-- Highlight / offer text -->
+            <div class="nl-form-group full">
+              <label class="nl-label" for="nl-offer-text">Angebot (Highlight-Box)</label>
+              <input type="text" id="nl-offer-text" class="nl-input" placeholder="z. B. 🎯 20 % Rabatt auf alle Hemden im April" />
+            </div>
+
+            <!-- Body text -->
+            <div class="nl-form-group full">
+              <label class="nl-label">Haupttext</label>
+              <div class="nl-editor-wrap">
+                <div class="nl-editor-toolbar">
+                  <button class="nl-editor-btn" data-cmd="bold"><b>B</b></button>
+                  <button class="nl-editor-btn" data-cmd="italic"><i>I</i></button>
+                  <button class="nl-editor-btn" data-cmd="underline"><u>U</u></button>
+                  <button class="nl-editor-btn" data-cmd="insertUnorderedList">• Liste</button>
+                  <button class="nl-editor-btn" data-cmd="insertOrderedList">1. Liste</button>
+                  <button class="nl-editor-btn" data-cmd="removeFormat">✕ Format</button>
+                </div>
+                <div id="nl-body" class="nl-editor" contenteditable="true">
+                  Nutzen Sie dieses Angebot bis zum Ende des Monats in einer unserer Filialen. Einfach diesen Newsletter vorzeigen oder beim Abgeben erwähnen.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto-fill from current Monatsangebot -->
+          <button class="btn-add" id="nl-autofill" style="margin-bottom:16px;">
+            ✨ Aus aktuellem Monatsangebot befüllen
+          </button>
+
+          <div id="nl-status" class="nl-status"></div>
+        </div>
+
+        <!-- Schedule + Send card -->
+        <div class="admin-card" style="margin-top:0;">
+          <div class="admin-card-title">Senden / Planen</div>
+
+          <div class="nl-form-grid">
+            <div class="nl-form-group">
+              <label class="nl-label" for="nl-send-mode">Versandzeitpunkt</label>
+              <select id="nl-send-mode" class="nl-select">
+                <option value="now">Jetzt sofort senden</option>
+                <option value="scheduled">Geplant senden</option>
+              </select>
+            </div>
+            <div class="nl-form-group" id="nl-schedule-wrap" style="display:none;">
+              <label class="nl-label" for="nl-schedule-dt">Datum &amp; Uhrzeit</label>
+              <input type="datetime-local" id="nl-schedule-dt" class="nl-input" />
+            </div>
+          </div>
+
+          <div class="nl-send-bar">
+            <div class="nl-send-bar-info">
+              Newsletter wird via <strong>CleverReach</strong> an alle aktiven Abonnenten gesendet.<br />
+              Unsubscribes werden automatisch von CleverReach verwaltet.
+            </div>
+            <button class="btn-save" id="nl-send-btn">📧 Newsletter senden</button>
+          </div>
+        </div>
+
+        <!-- Preview card -->
+        <div class="admin-card" style="margin-top:0;">
+          <div class="admin-card-title">Vorschau</div>
+          <p style="font-size:0.88rem;color:var(--neutral-600);margin-bottom:12px;">Zeigt das Newsletter-Template mit Ihren aktuellen Eingaben. Wird automatisch aktualisiert.</p>
+          <iframe id="nl-preview-frame" class="nl-preview-frame" title="Newsletter Vorschau"></iframe>
+        </div>
+
       </section>
 
       <!-- ── DATEN ─────────────────────────────────────────── -->
@@ -3109,10 +3320,181 @@
     });
   }
 
+  // ── NEWSLETTER ─────────────────────────────────────────────────
+  function initNewsletter() {
+    var subjectEl   = document.getElementById('nl-subject');
+    var monthEl     = document.getElementById('nl-offer-month');
+    var titleEl     = document.getElementById('nl-offer-title');
+    var introEl     = document.getElementById('nl-intro');
+    var offerEl     = document.getElementById('nl-offer-text');
+    var bodyEl      = document.getElementById('nl-body');
+    var sendModeEl  = document.getElementById('nl-send-mode');
+    var schedWrap   = document.getElementById('nl-schedule-wrap');
+    var schedDtEl   = document.getElementById('nl-schedule-dt');
+    var sendBtn     = document.getElementById('nl-send-btn');
+    var statusEl    = document.getElementById('nl-status');
+    var previewFrame = document.getElementById('nl-preview-frame');
+
+    // Set default datetime to tomorrow 08:00
+    (function () {
+      var d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0);
+      schedDtEl.value = d.toISOString().slice(0, 16);
+    })();
+
+    // Show/hide schedule date picker
+    sendModeEl.addEventListener('change', function () {
+      schedWrap.style.display = this.value === 'scheduled' ? '' : 'none';
+    });
+
+    // Toolbar buttons for rich text editor
+    document.querySelectorAll('.nl-editor-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.execCommand(btn.getAttribute('data-cmd'), false, null);
+        bodyEl.focus();
+      });
+    });
+
+    // Build preview HTML from template + current inputs
+    function buildPreviewHtml() {
+      var month    = monthEl.value   || 'Monat Jahr';
+      var title    = titleEl.value   || 'Angebotstitel';
+      var offer    = offerEl.value   || '🎯 Das Angebot';
+      var intro    = (introEl.value  || '').replace(/\n/g, '<br>');
+      var body     = bodyEl.innerHTML || '';
+
+      return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">' +
+        '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+        '<style>body{margin:0;padding:16px;background:#F8F9FB;font-family:Inter,system-ui,sans-serif;}' +
+        '.wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(8,48,221,.1);}' +
+        '.hdr{background:linear-gradient(135deg,#0830DD,#F508B8);padding:32px;text-align:center;}' +
+        '.logo-box{display:inline-block;background:#fff;border-radius:12px;padding:10px 20px;margin-bottom:10px;}' +
+        '.logo-box img{height:40px;}' +
+        '.tagline{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);}' +
+        '.badge-wrap{background:linear-gradient(135deg,#0830DD,#F508B8);padding:2px;margin:0 24px;border-radius:12px;}' +
+        '.badge{background:#fff;border-radius:10px;padding:22px 24px;text-align:center;}' +
+        '.badge-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0830DD;margin-bottom:6px;}' +
+        '.badge-month{font-size:20px;font-weight:800;color:#0F1117;margin-bottom:4px;}' +
+        '.badge-title{font-size:14px;font-weight:600;color:#374151;}' +
+        '.body{padding:28px 32px;}' +
+        '.body h2{font-size:19px;font-weight:700;color:#0F1117;margin:0 0 10px;}' +
+        '.body p{font-size:14px;line-height:1.7;color:#374151;margin:0 0 14px;}' +
+        '.hbox{background:#E8EDFF;border-left:4px solid #0830DD;border-radius:8px;padding:14px 18px;margin:18px 0;}' +
+        '.hbox p{font-size:14px;font-weight:600;color:#061FA8;margin:0;}' +
+        '.ftr{background:#0F1117;padding:22px 32px;text-align:center;}' +
+        '.ftr p{font-size:11px;color:#9CA3AF;margin:0 0 4px;}' +
+        '.ftr a{color:#A3B4FF;text-decoration:none;}' +
+        '</style></head><body><div class="wrap">' +
+        '<div class="hdr"><div class="logo-box"><img src="https://cleanfix.thetrolli.com/Logo%20Cleanfix%20JH.png" alt="Cleanfix"></div>' +
+        '<div class="tagline">Newsletter</div></div>' +
+        '<div style="height:20px"></div>' +
+        '<div class="badge-wrap"><div class="badge">' +
+        '<div class="badge-lbl">Monatsangebot</div>' +
+        '<div class="badge-month">' + esc(month) + '</div>' +
+        '<div class="badge-title">' + esc(title) + '</div>' +
+        '</div></div>' +
+        '<div style="height:20px"></div>' +
+        '<div class="body">' +
+        '<p>' + intro + '</p>' +
+        '<div class="hbox"><p>' + esc(offer) + '</p></div>' +
+        body +
+        '</div>' +
+        '<div class="ftr"><p>Cleanfix Reinigen und Waschen &middot; M&ouml;nchengladbach</p>' +
+        '<p><a href="#">Impressum</a> &nbsp;&middot;&nbsp; <a href="#">Datenschutz</a> &nbsp;&middot;&nbsp; <a href="#">Abmelden</a></p></div>' +
+        '</div></body></html>';
+    }
+
+    function updatePreview() {
+      var doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+      doc.open(); doc.write(buildPreviewHtml()); doc.close();
+    }
+
+    // Update preview on any input change
+    [subjectEl, monthEl, titleEl, introEl, offerEl].forEach(function (el) {
+      el.addEventListener('input', updatePreview);
+    });
+    bodyEl.addEventListener('input', updatePreview);
+
+    // Initial preview render
+    updatePreview();
+
+    // Auto-fill from current active Monatsangebot
+    document.getElementById('nl-autofill').addEventListener('click', function () {
+      var schedule = getSchedule();
+      var today = new Date().toISOString().slice(0, 10);
+      var active = schedule.filter(function (e) {
+        if (e.type !== 'monatsangebot') return false;
+        var s = e.startDate, en = e.endDate;
+        if (en && today > en) return false;
+        if (s && today < s) return false;
+        return true;
+      });
+      if (!active.length) { toast('Kein aktives Monatsangebot gefunden.', 'error'); return; }
+      var best = active[active.length - 1].data;
+      if (best.monat)   monthEl.value  = best.monat;
+      if (best.titel)   titleEl.value  = best.titel;
+      if (best.angebot) offerEl.value  = '🎯 ' + best.angebot + (best.auf ? ' — ' + best.auf : '');
+      if (best.text)    introEl.value  = best.text;
+      if (!subjectEl.value && best.monat) subjectEl.value = 'Unser Angebot im ' + best.monat + ' 🎉';
+      updatePreview();
+      toast('Monatsangebot übernommen.');
+    });
+
+    // Send button
+    sendBtn.addEventListener('click', async function () {
+      var subject = subjectEl.value.trim();
+      if (!subject) { toast('Bitte eine Betreffzeile eingeben.', 'error'); subjectEl.focus(); return; }
+
+      var scheduled = sendModeEl.value === 'scheduled';
+      var sendAt = scheduled ? schedDtEl.value : null;
+      if (scheduled && !sendAt) { toast('Bitte Datum und Uhrzeit angeben.', 'error'); schedDtEl.focus(); return; }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = '⏳ Wird gesendet…';
+      statusEl.className = 'nl-status';
+
+      var payload = {
+        subject:    subject,
+        month:      monthEl.value.trim(),
+        offerTitle: titleEl.value.trim(),
+        offerText:  offerEl.value.trim(),
+        intro:      introEl.value.trim(),
+        body:       bodyEl.innerHTML,
+        scheduled:  scheduled,
+        sendAt:     sendAt,
+        html:       buildPreviewHtml()
+      };
+
+      try {
+        var token = sessionStorage.getItem('cleanfix-admin-token') || '';
+        var res = await fetch(API_BASE + '/send-newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+        if (res.ok) {
+          statusEl.className = 'nl-status success';
+          statusEl.textContent = scheduled
+            ? '✓ Newsletter geplant für ' + new Date(sendAt).toLocaleString('de-DE') + '.'
+            : '✓ Newsletter erfolgreich gesendet!';
+        } else {
+          throw new Error(data.error || 'HTTP ' + res.status);
+        }
+      } catch (err) {
+        statusEl.className = 'nl-status error';
+        statusEl.textContent = '✕ Fehler: ' + err.message;
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '📧 Newsletter senden';
+      }
+    });
+  }
+
   // ── INIT ───────────────────────────────────────────────────────
   function initAdmin() {
     migrateData();
-    var fns = [initNav, initZeitplan, initPreise, initData, initPublishBar];
+    var fns = [initNav, initZeitplan, initPreise, initData, initPublishBar, initNewsletter];
     fns.forEach(function (fn) {
       try { fn(); }
       catch (e) { console.error('[admin] ' + fn.name + ' failed:', e); }
