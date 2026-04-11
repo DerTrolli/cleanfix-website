@@ -113,7 +113,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"name\": {{ JSON.stringify($json.subject + ' (' + new Date().toISOString().slice(0,10) + ')') }},\n  \"subject\": {{ JSON.stringify($json.subject) }},\n  \"sender_name\": \"Cleanfix Reinigen und Waschen\",\n  \"sender_email\": \"newsletter@cleanfix-mg.de\",\n  \"reply_to\": \"info@cleanfix-mg.de\",\n  \"setup_v2\": true\n}",
+        "jsonBody": "={\n  \"name\": {{ JSON.stringify($json.subject + ' (' + new Date().toISOString().slice(0,10) + ')') }},\n  \"subject\": {{ JSON.stringify($json.subject) }},\n  \"sender_name\": \"Cleanfix Reinigen und Waschen\",\n  \"sender_email\": \"newsletter@cleanfix-mg.de\",\n  \"reply_to\": \"info@cleanfix-mg.de\",\n  \"setup_v2\": true,\n  \"receivers\": { \"groups\": [512059] }\n}",
         "options": {}
       },
       "id": "cr-create-mailing",
@@ -145,7 +145,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"html\": {{ JSON.stringify($json.html) }},\n  \"text\": {{ JSON.stringify('Bitte aktivieren Sie die HTML-Anzeige in Ihrem E-Mail-Client, um diesen Newsletter zu lesen.\\n\\nCleanfix Reinigen und Waschen\\nhttps://cleanfix.thetrolli.com') }}\n}",
+        "jsonBody": "={\n  \"content\": {\n    \"type\": \"html/text\",\n    \"html\": {{ JSON.stringify($json.html) }},\n    \"text\": {{ JSON.stringify('Bitte aktivieren Sie die HTML-Anzeige in Ihrem E-Mail-Client, um diesen Newsletter zu lesen.\\n\\nCleanfix Reinigen und Waschen\\nhttps://cleanfix.thetrolli.com') }}\n  }\n}",
         "options": {}
       },
       "id": "cr-set-content",
