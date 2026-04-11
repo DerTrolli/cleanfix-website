@@ -220,11 +220,10 @@ The `DEFAULTS` object in `admin-site/index.html` JS contains the canonical price
 The actively deployed admin panel. All admin JS lives in a single large IIFE (`'use strict'`) at the bottom of the file. All admin CSS is in an inline `<style>` block in `<head>`. The legacy `admin.html` in the project root is kept for reference only and is **not deployed**.
 
 ### Authentication
-- Login checks the entered password against its SHA-256 hash via `crypto.subtle.digest`
-- `PASS_HASH` in the source code is the SHA-256 hex digest of the admin password. **Never store the plaintext password in the code.**
-- Auth state: `sessionStorage.getItem('cleanfix-admin-auth') === 'ok'` — clears on tab close
-- A fingerprint of `PASS_HASH` is stored in sessionStorage so changing the hash automatically invalidates existing sessions
-- **When changing the password**: update `PASS_HASH` with the new SHA-256 digest. Compute it with: `node -e "require('crypto').subtle.digest('SHA-256',new TextEncoder().encode('NEW_PASSWORD')).then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))"`. Requires HTTPS or localhost (`crypto.subtle` needs a secure context).
+- Login POSTs the password to the `cleanfix-auth` Cloudflare Worker (`POST /login`). The Worker verifies it server-side against a bcrypt hash stored as a Worker secret (`PASS_HASH`) — no hash lives in the client code.
+- On success the Worker returns a signed JWT; the admin stores it in `sessionStorage` as `cleanfix-admin-token` (clears on tab close).
+- All subsequent API calls (`apiSave`) send `Authorization: Bearer <token>`; n8n verifies the token via `POST /verify` on the same Worker before writing to GitHub.
+- **When changing the password**: generate a new bcrypt hash (`node -e "const b=require('bcryptjs');b.hash('newpass',10).then(h=>console.log(h))"`) and update the `PASS_HASH` secret in Cloudflare Dashboard → Workers & Pages → cleanfix-auth → Settings → Variables → Secrets. No code change or redeploy needed.
 
 ### Sections (sidebar nav → section IDs)
 | Nav label | Section ID | Content |
@@ -346,5 +345,5 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 - **`\!` syntax bug**: A Python-based text replacement once escaped every `!` operator as `\!` in `admin.html`. Fixed by global replacement. If this recurs, run: `python -c "open('admin.html','w').write(open('admin.html').read().replace('\\\\!','!'))"` and re-validate with `node --check`.
 - **Stale localStorage causing broken admin**: Old `cleanfix-banner` stored as `{text: '<strong>...</strong>'}` (HTML blob). `migrateData()` and the fallback guard in the banner reader handle this. If something still breaks, open DevTools → Application → Storage → Clear all `cleanfix-*` keys to reset to DEFAULTS.
 - **Rich text editor removed**: The banner description was previously a `contenteditable` div with `execCommand` — it was unreliable. It was replaced with three plain text inputs (`banner-icon`, `banner-title`, `banner-desc`). Do not reintroduce `contenteditable` for this.
-- **Wrong password hash (Feb 2026)**: `PASS_HASH` was a fabricated value. Login only worked via the insecure plaintext fallback (`PASS_PLAIN`). Fixed by computing the real SHA-256 hash. The plaintext fallback (`PASS_PLAIN`) was removed entirely in Apr 2026 — authentication now relies solely on hash comparison. **Always recompute the hash when changing the password** — see Authentication section above.
+- **Wrong password hash (Feb 2026)**: `PASS_HASH` was a fabricated value in the old client-side auth. Superseded in Apr 2026 by server-side JWT auth via the cleanfix-auth Cloudflare Worker — no hash lives in the client code anymore.
 - **Export/Clear missing `cleanfix-schedule` (Feb 2026)**: The export and clear-all functions in `initData()` only listed legacy keys in their `allKeys` arrays, omitting `cleanfix-schedule`. This caused exports to silently lose all schedule data (MA, banner, deal entries) and "clear all" to leave schedule entries untouched. Fixed by adding `cleanfix-schedule` to both arrays. **When adding new localStorage keys, always update the `allKeys` arrays in `initData()`.**

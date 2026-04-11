@@ -1182,14 +1182,9 @@
     return 'active';
   }
 
-  // ── PASSWORD ───────────────────────────────────────────────────
-  const PASS_HASH = 'a6a09412391de115838de28058aecdbb6c6a410ea69ba4dbbb5c0bda94b6f847';
-
-  async function hashPassword(pw) {
-    if (!crypto || !crypto.subtle) return null;
-    const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
+  // ── AUTH ───────────────────────────────────────────────────────
+  // LEGACY FILE — not deployed. Auth is now handled server-side via
+  // the cleanfix-auth Cloudflare Worker. See admin-site/index.html.
 
   const loginScreen = document.getElementById('login-screen');
   const adminApp    = document.getElementById('admin-app');
@@ -1203,33 +1198,34 @@
     initAdmin();
   }
 
-  // Store a fingerprint of the password hash so that changing PASS_HASH
-  // automatically invalidates any existing session on next page load.
-  var PASS_FINGERPRINT = PASS_HASH.slice(0, 12);
-
   function checkAuth() {
-    return sessionStorage.getItem('cleanfix-admin-auth') === 'ok' &&
-           sessionStorage.getItem('cleanfix-admin-fp') === PASS_FINGERPRINT;
+    return !!sessionStorage.getItem('cleanfix-admin-token');
   }
 
   if (checkAuth()) { showApp(); }
 
   loginBtn.addEventListener('click', async function () {
-    const pw = pwInput.value;
-    let ok = false;
+    loginBtn.textContent = '…';
     try {
-      const hash = await hashPassword(pw);
-      ok = hash === PASS_HASH;
-    } catch (e) {}
-    if (ok) {
-      sessionStorage.setItem('cleanfix-admin-auth', 'ok');
-      sessionStorage.setItem('cleanfix-admin-fp', PASS_FINGERPRINT);
-      loginError.classList.remove('visible');
-      showApp();
-    } else {
+      var res = await fetch('https://cleanfix-auth.trollojunior.workers.dev/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pwInput.value })
+      });
+      var data = await res.json();
+      if (res.ok && data.token) {
+        sessionStorage.setItem('cleanfix-admin-token', data.token);
+        loginError.classList.remove('visible');
+        showApp();
+      } else {
+        loginError.classList.add('visible');
+        pwInput.value = '';
+        pwInput.focus();
+      }
+    } catch (e) {
       loginError.classList.add('visible');
-      pwInput.value = '';
-      pwInput.focus();
+    } finally {
+      loginBtn.textContent = 'Anmelden';
     }
   });
 
@@ -1238,7 +1234,7 @@
   });
 
   document.getElementById('logout-btn').addEventListener('click', function () {
-    sessionStorage.removeItem('cleanfix-admin-auth');
+    sessionStorage.removeItem('cleanfix-admin-token');
     location.reload();
   });
 

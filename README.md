@@ -146,30 +146,24 @@ The `_headers` file in `public-site/` adds permissive CORS to `/data/*` so the a
 
 ## Admin panel: authentication
 
-The admin uses **client-side SHA-256 hash comparison** for login. The plaintext password is **never stored in the repo** — only its SHA-256 hex digest in `PASS_HASH` (search `admin-site/index.html` for `PASS_HASH`). When you log in, the browser hashes what you typed via `crypto.subtle.digest` and compares to `PASS_HASH`. A successful match writes `cleanfix-admin-auth = 'ok'` to `sessionStorage` (clears on tab close).
+The admin uses **server-side JWT auth** via the `cleanfix-auth` Cloudflare Worker. No password hash lives in the client code.
 
-> ⚠️ **`crypto.subtle` requires a secure context.** It works on `https://` and `http://localhost`, but **not on plain `file://`** or `http://` over a LAN.
+**Login flow:**
+1. Browser POSTs the password to `https://cleanfix-auth.trollojunior.workers.dev/login`
+2. Worker verifies it against a bcrypt hash stored as a Worker secret (`PASS_HASH`) — never in the repo
+3. On success the Worker returns a signed JWT; stored in `sessionStorage` as `cleanfix-admin-token` (clears on tab close)
+4. All publish calls (`save-schedule`, `save-preise`) send `Authorization: Bearer <token>`; n8n verifies the token via `POST /verify` before writing to GitHub
 
 ### Changing the password
 
-1. Compute the new SHA-256 hex digest:
+1. Generate a new bcrypt hash:
    ```bash
-   node -e "require('crypto').subtle.digest('SHA-256', new TextEncoder().encode('NEW_PASSWORD')).then(b => console.log([...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('')))"
+   node -e "const b=require('bcryptjs');b.hash('NEW_PASSWORD',10).then(h=>console.log(h))"
    ```
-2. Replace the value of `PASS_HASH` in **`Cleanfix/admin-site/index.html`** (and the legacy `Cleanfix/admin.html` if you still use it).
-3. Commit and push. The first 12 hex chars are used as a session "fingerprint", so changing the hash automatically invalidates any open sessions on next page load.
-4. **Never commit the plaintext password anywhere** — not in code, not in commit messages, not in `.claude/settings.local.json`, not in this README.
+2. Update the `PASS_HASH` secret in **Cloudflare Dashboard → Workers & Pages → cleanfix-auth → Settings → Variables → Secrets**
+3. No code change or redeploy needed — existing sessions expire naturally when the JWT TTL runs out
 
-### Why this scheme is **not** strong, and what we want to do about it
-
-The current scheme is "secrets-by-obscurity-plus-a-hash". A bad actor can:
-1. Open DevTools on the admin URL, view-source, and read the SHA-256 hex digest.
-2. Run an offline dictionary / brute-force attack against the digest with no rate limit.
-3. Once they recover the plaintext, log in normally.
-
-It's a speed bump, not a lock. For now it's acceptable because (a) the admin URL isn't published anywhere, (b) all destructive actions go through n8n, which itself sits behind Cloudflare Tunnel and could be hardened independently, and (c) the threat model is "casual prodding", not "targeted attack". But it should be replaced.
-
-**See the [Future Work](#future-work) section below for the planned backend-verified auth.**
+**Never commit the plaintext password anywhere** — not in code, not in commit messages, not in this README.
 
 ---
 
@@ -220,28 +214,9 @@ This repo is set up so that Claude Code can collaborate on it remotely. The rele
 
 ## Future Work
 
-### 1. Replace client-side hash auth with a backend-verified login
+### 1. ~~Replace client-side hash auth with a backend-verified login~~ ✅ Done
 
-**Why:** the current `PASS_HASH` in `admin-site/index.html` is publicly readable. Anyone who finds the admin URL can grab the hash and run an offline brute-force / dictionary attack with unlimited tries. There is no rate limit, no logging, no lockout, and no way to revoke a leaked password without redeploying.
-
-**What we want instead:** a small backend endpoint (n8n workflow or Cloudflare Worker) that takes a plaintext password from the admin UI over HTTPS, compares it server-side against a hash that lives **only on the server**, and returns either a short-lived signed JWT or a session cookie. The admin UI then proves its identity to all subsequent webhook calls (`save-schedule`, `save-preise`, etc.) by sending that token.
-
-**Implementation sketch:**
-
-1. **Pick a host for the auth endpoint.** Two options:
-   - **n8n workflow `auth-login`** — easiest, reuses the existing tunnel/infra. Webhook node → Crypto node (SHA-256) → IF node → JWT/Set node. Add a **rate-limit** in front (e.g. an `n8n-nodes-base.wait` keyed by client IP, or Cloudflare's free rate-limiting rules on the tunnel hostname).
-   - **Cloudflare Worker** — slightly more code but better at rate-limiting and lives on the same edge as the static site.
-2. **Move `PASS_HASH` out of the admin HTML entirely.** Store it as an n8n credential / Worker secret. The admin HTML knows nothing about it.
-3. **Issue a token on success.** A signed JWT with a short TTL (e.g. 8 h) and a `sub` claim of `admin`. Sign with an HMAC secret that lives in the same n8n credential / Worker secret store.
-4. **Update all save-* workflows to require the JWT.** Add a JWT-verify node at the start of each. Reject anything without a valid token.
-5. **Store the JWT in `sessionStorage`** in the admin (replaces the current `cleanfix-admin-auth = 'ok'` flag). Clear on logout.
-6. **Add server-side rate limiting and logging:**
-   - Cloudflare WAF rule: ≤ 5 requests / minute per IP to `/webhook/auth-login`
-   - n8n logs every login attempt (success or fail) so we can spot brute-force attempts
-   - Optionally: lockout for 15 min after 5 consecutive failures from the same IP
-7. **Optional hardening:**
-   - Add a second factor (TOTP via `speakeasy` in n8n, or Cloudflare Access in front of the admin domain — **Cloudflare Access is by far the easiest and probably the right answer** if it's in budget)
-   - Rotate the JWT signing secret on a schedule
+Implemented via the `cleanfix-auth` Cloudflare Worker (Apr 2026). Password hash lives only in a Worker secret; the admin HTML has no credentials. All publish calls are JWT-gated in n8n.
 
 **Threat model after this change:** an attacker on the open internet sees a login form. They can guess passwords, but each guess hits a real server, gets rate-limited, and is logged. They never see the hash. Even with the right password, they need the rate-limit window. This moves us from "speed bump" to "actual lock".
 
