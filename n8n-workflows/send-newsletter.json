@@ -78,8 +78,8 @@
         "bodyParameters": {
           "parameters": [
             { "name": "grant_type",    "value": "client_credentials" },
-            { "name": "client_id",     "value": "={{ $env.CLEVERREACH_CLIENT_ID }}" },
-            { "name": "client_secret", "value": "={{ $env.CLEVERREACH_CLIENT_SECRET }}" }
+            { "name": "client_id",     "value": "YOUR_CLEVERREACH_CLIENT_ID" },
+            { "name": "client_secret", "value": "YOUR_CLEVERREACH_CLIENT_SECRET" }
           ]
         },
         "options": {}
@@ -92,7 +92,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Store token and pull the incoming newsletter payload\nconst token = $('CleverReach: Get Token').first().json.access_token;\nconst payload = $('Webhook').first().json.body;\n\nreturn [{\n  json: {\n    access_token: token,\n    subject:    payload.subject    || '(kein Betreff)',\n    month:      payload.month      || '',\n    offerTitle: payload.offerTitle || '',\n    offerText:  payload.offerText  || '',\n    intro:      payload.intro      || '',\n    body:       payload.body       || '',\n    html:       payload.html       || '',\n    scheduled:  payload.scheduled  || false,\n    sendAt:     payload.sendAt     || null\n  }\n}];"
+        "jsCode": "// Store token and pull the incoming newsletter payload\nconst token = $('CleverReach: Get Token').first().json.access_token;\nconst payload = $('Webhook').first().json.body;\n\nreturn [{\n  json: {\n    access_token: token,\n    subject:    payload.subject    || '(kein Betreff)',\n    month:      payload.month      || '',\n    offerTitle: payload.offerTitle || '',\n    offerText:  payload.offerText  || '',\n    intro:      payload.intro      || '',\n    body:       payload.body       || '',\n    html:       payload.html       || ''\n  }\n}];"
       },
       "id": "prepare",
       "name": "Prepare Data",
@@ -156,100 +156,29 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
-          "conditions": [
-            {
-              "id": "schedule-check",
-              "leftValue": "={{ $('Merge Mailing ID').first().json.scheduled }}",
-              "rightValue": "",
-              "operator": { "type": "boolean", "operation": "true" }
-            }
-          ],
-          "combinator": "and"
-        }
-      },
-      "id": "if-scheduled",
-      "name": "Scheduled?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [2000, 220]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://rest.cleverreach.com/v3/mailings/{{ $('Merge Mailing ID').first().json.mailing_id }}/release",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Merge Mailing ID').first().json.access_token }}" },
-            { "name": "Content-Type",  "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"scheduled\": {{ JSON.stringify($('Merge Mailing ID').first().json.sendAt) }}\n}",
-        "options": {}
-      },
-      "id": "cr-schedule",
-      "name": "CleverReach: Schedule",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [2220, 120]
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://rest.cleverreach.com/v3/mailings/{{ $('Merge Mailing ID').first().json.mailing_id }}/release",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "=Bearer {{ $('Merge Mailing ID').first().json.access_token }}" },
-            { "name": "Content-Type",  "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "{}",
-        "options": {}
-      },
-      "id": "cr-send-now",
-      "name": "CleverReach: Send Now",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [2220, 320]
-    },
-    {
-      "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"ok\": true,\n  \"mailing_id\": \"{{ $('Merge Mailing ID').first().json.mailing_id }}\",\n  \"scheduled\": {{ $('Merge Mailing ID').first().json.scheduled }},\n  \"sendAt\": {{ JSON.stringify($('Merge Mailing ID').first().json.sendAt) }}\n}",
+        "responseBody": "={\n  \"ok\": true,\n  \"mailing_id\": \"{{ $('Merge Mailing ID').first().json.mailing_id }}\"\n}",
         "options": { "responseCode": 200 }
       },
       "id": "respond-ok",
       "name": "Respond OK",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [2440, 220]
+      "position": [2000, 220]
     }
   ],
   "connections": {
-    "Webhook":                      { "main": [[{ "node": "Verify JWT",                "type": "main", "index": 0 }]] },
-    "Verify JWT":                   { "main": [[{ "node": "Auth OK?",                  "type": "main", "index": 0 }]] },
+    "Webhook":                      { "main": [[{ "node": "Verify JWT",                 "type": "main", "index": 0 }]] },
+    "Verify JWT":                   { "main": [[{ "node": "Auth OK?",                   "type": "main", "index": 0 }]] },
     "Auth OK?":                     { "main": [
       [{ "node": "CleverReach: Get Token",    "type": "main", "index": 0 }],
       [{ "node": "Respond 401",               "type": "main", "index": 0 }]
     ]},
-    "CleverReach: Get Token":       { "main": [[{ "node": "Prepare Data",              "type": "main", "index": 0 }]] },
-    "Prepare Data":                 { "main": [[{ "node": "CleverReach: Create Mailing","type": "main", "index": 0 }]] },
-    "CleverReach: Create Mailing":  { "main": [[{ "node": "Merge Mailing ID",          "type": "main", "index": 0 }]] },
-    "Merge Mailing ID":             { "main": [[{ "node": "CleverReach: Set Content",  "type": "main", "index": 0 }]] },
-    "CleverReach: Set Content":     { "main": [[{ "node": "Scheduled?",               "type": "main", "index": 0 }]] },
-    "Scheduled?":                   { "main": [
-      [{ "node": "CleverReach: Schedule",     "type": "main", "index": 0 }],
-      [{ "node": "CleverReach: Send Now",     "type": "main", "index": 0 }]
-    ]},
-    "CleverReach: Schedule":        { "main": [[{ "node": "Respond OK",               "type": "main", "index": 0 }]] },
-    "CleverReach: Send Now":        { "main": [[{ "node": "Respond OK",               "type": "main", "index": 0 }]] }
+    "CleverReach: Get Token":       { "main": [[{ "node": "Prepare Data",               "type": "main", "index": 0 }]] },
+    "Prepare Data":                 { "main": [[{ "node": "CleverReach: Create Mailing", "type": "main", "index": 0 }]] },
+    "CleverReach: Create Mailing":  { "main": [[{ "node": "Merge Mailing ID",           "type": "main", "index": 0 }]] },
+    "Merge Mailing ID":             { "main": [[{ "node": "CleverReach: Set Content",   "type": "main", "index": 0 }]] },
+    "CleverReach: Set Content":     { "main": [[{ "node": "Respond OK",                 "type": "main", "index": 0 }]] }
   },
   "settings": { "executionOrder": "v1" },
   "staticData": null,

@@ -1472,28 +1472,14 @@
 
         <!-- Schedule + Send card -->
         <div class="admin-card" style="margin-top:0;">
-          <div class="admin-card-title">Senden / Planen</div>
-
-          <div class="nl-form-grid">
-            <div class="nl-form-group">
-              <label class="nl-label" for="nl-send-mode">Versandzeitpunkt</label>
-              <select id="nl-send-mode" class="nl-select">
-                <option value="now">Jetzt sofort senden</option>
-                <option value="scheduled">Geplant senden</option>
-              </select>
-            </div>
-            <div class="nl-form-group" id="nl-schedule-wrap" style="display:none;">
-              <label class="nl-label" for="nl-schedule-dt">Datum &amp; Uhrzeit</label>
-              <input type="datetime-local" id="nl-schedule-dt" class="nl-input" />
-            </div>
-          </div>
+          <div class="admin-card-title">In CleverReach erstellen</div>
 
           <div class="nl-send-bar">
             <div class="nl-send-bar-info">
-              Newsletter wird via <strong>CleverReach</strong> an alle aktiven Abonnenten gesendet.<br />
-              Unsubscribes werden automatisch von CleverReach verwaltet.
+              Erstellt den Newsletter als Entwurf in <strong>CleverReach</strong>.<br />
+              Anschließend dort unter <em>E-Mails</em> prüfen und manuell versenden.
             </div>
-            <button class="btn-save" id="nl-send-btn">📧 Newsletter senden</button>
+            <button class="btn-save" id="nl-send-btn">📧 Entwurf erstellen</button>
           </div>
         </div>
 
@@ -3328,23 +3314,12 @@
     var introEl     = document.getElementById('nl-intro');
     var offerEl     = document.getElementById('nl-offer-text');
     var bodyEl      = document.getElementById('nl-body');
-    var sendModeEl  = document.getElementById('nl-send-mode');
-    var schedWrap   = document.getElementById('nl-schedule-wrap');
-    var schedDtEl   = document.getElementById('nl-schedule-dt');
     var sendBtn     = document.getElementById('nl-send-btn');
     var statusEl    = document.getElementById('nl-status');
     var previewFrame = document.getElementById('nl-preview-frame');
 
     // Set default datetime to tomorrow 08:00
-    (function () {
-      var d = new Date(); d.setDate(d.getDate() + 1); d.setHours(8, 0, 0, 0);
-      schedDtEl.value = d.toISOString().slice(0, 16);
-    })();
 
-    // Show/hide schedule date picker
-    sendModeEl.addEventListener('change', function () {
-      schedWrap.style.display = this.value === 'scheduled' ? '' : 'none';
-    });
 
     // Toolbar buttons for rich text editor
     document.querySelectorAll('.nl-editor-btn').forEach(function (btn) {
@@ -3445,12 +3420,8 @@
       var subject = subjectEl.value.trim();
       if (!subject) { toast('Bitte eine Betreffzeile eingeben.', 'error'); subjectEl.focus(); return; }
 
-      var scheduled = sendModeEl.value === 'scheduled';
-      var sendAt = scheduled ? schedDtEl.value : null;
-      if (scheduled && !sendAt) { toast('Bitte Datum und Uhrzeit angeben.', 'error'); schedDtEl.focus(); return; }
-
       sendBtn.disabled = true;
-      sendBtn.textContent = '⏳ Wird gesendet…';
+      sendBtn.textContent = '⏳ Wird erstellt…';
       statusEl.className = 'nl-status';
 
       var payload = {
@@ -3460,8 +3431,6 @@
         offerText:  offerEl.value.trim(),
         intro:      introEl.value.trim(),
         body:       bodyEl.innerHTML,
-        scheduled:  scheduled,
-        sendAt:     sendAt,
         html:       buildPreviewHtml()
       };
 
@@ -3475,9 +3444,7 @@
         var data = await res.json();
         if (res.ok) {
           statusEl.className = 'nl-status success';
-          statusEl.textContent = scheduled
-            ? '✓ Newsletter geplant für ' + new Date(sendAt).toLocaleString('de-DE') + '.'
-            : '✓ Newsletter erfolgreich gesendet!';
+          statusEl.textContent = '✓ Entwurf erstellt (ID: ' + (data.mailing_id || '–') + '). Jetzt in CleverReach unter E-Mails versenden.';
         } else {
           throw new Error(data.error || 'HTTP ' + res.status);
         }
