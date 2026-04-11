@@ -1295,9 +1295,6 @@
       <button class="admin-nav-item" data-section="newsletter">
         <span class="admin-nav-icon">📧</span> Newsletter
       </button>
-      <button class="admin-nav-item" data-section="daten">
-        <span class="admin-nav-icon">💾</span> Daten
-      </button>
     </aside>
 
     <!-- Main content -->
@@ -1462,10 +1459,13 @@
             </div>
           </div>
 
-          <!-- Auto-fill from current Monatsangebot -->
-          <button class="btn-add" id="nl-autofill" style="margin-bottom:16px;">
-            ✨ Aus aktuellem Monatsangebot befüllen
-          </button>
+          <!-- Import from schedule entry -->
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;">
+            <select id="nl-import-select" class="nl-select" style="flex:1;">
+              <option value="">— Aus Zeitplan übernehmen —</option>
+            </select>
+            <button class="btn-add" id="nl-autofill" style="white-space:nowrap;">✨ Übernehmen</button>
+          </div>
 
           <div id="nl-status" class="nl-status"></div>
         </div>
@@ -1492,33 +1492,6 @@
 
       </section>
 
-      <!-- ── DATEN ─────────────────────────────────────────── -->
-      <section class="admin-section" id="section-daten">
-        <h1 class="admin-section-title">Daten &amp; Export</h1>
-        <p class="admin-section-desc">Alle Änderungen werden im Browser-Cache (localStorage) gespeichert. Exportieren Sie die Daten, um sie auf einem anderen Gerät zu verwenden.</p>
-
-        <div class="admin-card">
-          <div class="admin-card-title">Export / Import</div>
-          <p style="font-size:0.9rem;color:var(--neutral-600);margin-bottom:20px;line-height:1.65;">
-            Da die Daten lokal gespeichert werden, sind sie gerätespezifisch. Mit dem Export können Sie alle Einstellungen als JSON-Datei sichern und auf einem anderen Gerät importieren.
-          </p>
-          <div class="data-tools">
-            <button class="btn-save" id="btn-export">⬇ Daten exportieren</button>
-            <label class="btn-add" style="cursor:pointer;">
-              ⬆ Daten importieren
-              <input type="file" id="import-file" accept=".json" style="display:none;" />
-            </label>
-          </div>
-        </div>
-
-        <div class="admin-card" style="margin-top:0;">
-          <div class="admin-card-title">Cache leeren</div>
-          <p style="font-size:0.9rem;color:var(--neutral-600);margin-bottom:20px;line-height:1.65;">
-            Setzt alle gespeicherten Änderungen zurück. Die Website zeigt dann wieder die Standard-Inhalte aus dem Code. Diese Aktion kann nicht rückgängig gemacht werden.
-          </p>
-          <button class="btn-delete" id="btn-clear-all" style="padding:10px 20px;font-size:0.9rem;">🗑 Alle gespeicherten Daten löschen</button>
-        </div>
-      </section>
 
     </main>
   </div>
@@ -3175,65 +3148,6 @@
     });
   }
 
-  // ── DATA / EXPORT / IMPORT ─────────────────────────────────────
-  function initData() {
-    document.getElementById('btn-export').addEventListener('click', function () {
-      var allKeys = [
-        'cleanfix-schedule',
-        'cleanfix-monatsangebot','cleanfix-banner','cleanfix-deals',
-        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche','cleanfix-preise-bonus'
-      ];
-      var out = {};
-      allKeys.forEach(function (k) {
-        var v = localStorage.getItem(k);
-        if (v) out[k] = JSON.parse(v);
-      });
-      var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
-      var url  = URL.createObjectURL(blob);
-      var a    = document.createElement('a');
-      var today = new Date().toISOString().slice(0,10);
-      a.href     = url;
-      a.download = 'cleanfix-backup-' + today + '.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      toast('Export erfolgreich.');
-    });
-
-    document.getElementById('import-file').addEventListener('change', function (e) {
-      var file = e.target.files[0];
-      if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function (ev) {
-        try {
-          var data = JSON.parse(ev.target.result);
-          var count = 0;
-          Object.keys(data).forEach(function (k) {
-            if (k.startsWith('cleanfix-')) {
-              localStorage.setItem(k, JSON.stringify(data[k]));
-              count++;
-            }
-          });
-          toast(count + ' Datensätze importiert. Seite wird neu geladen…');
-          setTimeout(function () { location.reload(); }, 1500);
-        } catch (err) {
-          toast('Fehler beim Import: Ungültige Datei.', 'error');
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    document.getElementById('btn-clear-all').addEventListener('click', function () {
-      if (!confirm('ACHTUNG: Alle gespeicherten Daten unwiderruflich löschen?\n\nDie Website zeigt dann wieder die Standard-Inhalte.')) return;
-      var allKeys = [
-        'cleanfix-schedule',
-        'cleanfix-monatsangebot','cleanfix-banner','cleanfix-deals',
-        'cleanfix-preise-reinigung','cleanfix-preise-buegeln','cleanfix-preise-waesche','cleanfix-preise-bonus'
-      ];
-      allKeys.forEach(lsDel);
-      toast('Alle Daten gelöscht. Seite wird neu geladen…');
-      setTimeout(function () { location.reload(); }, 1500);
-    });
-  }
 
   // ── DATA MIGRATION / CLEANUP ────────────────────────────────────
   // Clean up any stale / empty localStorage entries from previous sessions
@@ -3393,26 +3307,47 @@
     // Initial preview render
     updatePreview();
 
-    // Auto-fill from current active Monatsangebot
-    document.getElementById('nl-autofill').addEventListener('click', function () {
+    // Populate import dropdown with active schedule entries (monatsangebot + deal)
+    var importSel = document.getElementById('nl-import-select');
+    (function populateImportDropdown() {
       var schedule = getSchedule();
       var today = new Date().toISOString().slice(0, 10);
-      var active = schedule.filter(function (e) {
-        if (e.type !== 'monatsangebot') return false;
+      importSel.innerHTML = '<option value="">— Aus Zeitplan übernehmen —</option>';
+      schedule.forEach(function (e, idx) {
+        if (e.type !== 'monatsangebot' && e.type !== 'deal') return;
         var s = e.startDate, en = e.endDate;
-        if (en && today > en) return false;
-        if (s && today < s) return false;
-        return true;
+        if (en && today > en) return;
+        if (s && today < s) return;
+        var label = e.type === 'monatsangebot'
+          ? '📅 Monatsangebot: ' + (e.data.monat || e.data.titel || '(ohne Titel)')
+          : '🏷️ Angebot: ' + (e.data.title || e.data.titel || '(ohne Titel)');
+        var opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = label;
+        importSel.appendChild(opt);
       });
-      if (!active.length) { toast('Kein aktives Monatsangebot gefunden.', 'error'); return; }
-      var best = active[active.length - 1].data;
-      if (best.monat)   monthEl.value  = best.monat;
-      if (best.titel)   titleEl.value  = best.titel;
-      if (best.angebot) offerEl.value  = '🎯 ' + best.angebot + (best.auf ? ' — ' + best.auf : '');
-      if (best.text)    introEl.value  = best.text;
-      if (!subjectEl.value && best.monat) subjectEl.value = 'Unser Angebot im ' + best.monat + ' 🎉';
+    })();
+
+    document.getElementById('nl-autofill').addEventListener('click', function () {
+      var idx = importSel.value;
+      if (idx === '') { toast('Bitte zuerst einen Eintrag auswählen.', 'error'); return; }
+      var entry = getSchedule()[parseInt(idx, 10)];
+      if (!entry) { toast('Eintrag nicht gefunden.', 'error'); return; }
+      var d = entry.data;
+      if (entry.type === 'monatsangebot') {
+        if (d.monat)   monthEl.value  = d.monat;
+        if (d.titel)   titleEl.value  = d.titel;
+        if (d.angebot) offerEl.value  = '🎯 ' + d.angebot + (d.auf ? ' — ' + d.auf : '');
+        if (d.text)    introEl.value  = d.text;
+        if (!subjectEl.value && d.monat) subjectEl.value = 'Unser Angebot im ' + d.monat + ' 🎉';
+      } else if (entry.type === 'deal') {
+        if (d.title)  titleEl.value  = d.title;
+        if (d.desc)   offerEl.value  = (d.icon ? d.icon + ' ' : '') + (d.title || '') + (d.price ? ' — ' + d.price + (d.priceUnit || '') : '');
+        if (d.highlight) introEl.value = d.highlight;
+        if (!subjectEl.value && d.title) subjectEl.value = 'Sonderangebot: ' + d.title;
+      }
       updatePreview();
-      toast('Monatsangebot übernommen.');
+      toast('Eintrag übernommen.');
     });
 
     // Send button
@@ -3461,7 +3396,7 @@
   // ── INIT ───────────────────────────────────────────────────────
   function initAdmin() {
     migrateData();
-    var fns = [initNav, initZeitplan, initPreise, initData, initPublishBar, initNewsletter];
+    var fns = [initNav, initZeitplan, initPreise, initPublishBar, initNewsletter];
     fns.forEach(function (fn) {
       try { fn(); }
       catch (e) { console.error('[admin] ' + fn.name + ' failed:', e); }
