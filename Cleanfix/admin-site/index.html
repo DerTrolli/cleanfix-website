@@ -1418,43 +1418,21 @@
               <input type="text" id="nl-subject" class="nl-input" placeholder="z. B. Unser Angebot im April 🎉" />
             </div>
 
-            <!-- Month + Title (pre-filled from Monatsangebot if available) -->
-            <div class="nl-form-group">
-              <label class="nl-label" for="nl-offer-month">Angebotsmonat</label>
-              <input type="text" id="nl-offer-month" class="nl-input" placeholder="z. B. April 2026" />
-            </div>
-            <div class="nl-form-group">
-              <label class="nl-label" for="nl-offer-title">Angebotstitel</label>
-              <input type="text" id="nl-offer-title" class="nl-input" placeholder="z. B. 20 % auf Hemden" />
+            <!-- Optional offer badge -->
+            <div class="nl-form-group full">
+              <label class="nl-label" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="nl-show-badge" checked style="width:auto;margin:0;" />
+                Monatsangebot-Badge einblenden
+              </label>
+              <div id="nl-badge-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+                <input type="text" id="nl-offer-month" class="nl-input" placeholder="z. B. April" />
+                <input type="text" id="nl-offer-title" class="nl-input" placeholder="z. B. 20 % auf Hemden" />
+              </div>
             </div>
 
-            <!-- Intro text -->
+            <!-- Message body — the one text area for everything -->
             <div class="nl-form-group full">
-              <label class="nl-label" for="nl-intro">Einleitungstext</label>
-              <textarea id="nl-intro" class="nl-textarea" placeholder="Sehr geehrte Damen und Herren, ..."></textarea>
-            </div>
-
-            <!-- Highlight / offer text -->
-            <div class="nl-form-group full">
-              <label class="nl-label" for="nl-offer-text">Angebot (Highlight-Box)</label>
-              <input type="text" id="nl-offer-text" class="nl-input" placeholder="z. B. 🎯 20 % Rabatt auf alle Hemden im April" />
-            </div>
-
-            <!-- CTA button target -->
-            <div class="nl-form-group full">
-              <label class="nl-label" for="nl-cta-url">CTA-Button — Zielseite</label>
-              <select id="nl-cta-url" class="nl-select">
-                <option value="https://cleanfix.thetrolli.com">🌐 Zur Website</option>
-                <option value="https://cleanfix.thetrolli.com/#angebote">🏷️ Zum Monatsangebot</option>
-                <option value="https://cleanfix.thetrolli.com/#preise">💶 Zu den Preisen</option>
-                <option value="https://cleanfix.thetrolli.com/#filialen">📍 Zu den Filialen</option>
-                <option value="https://cleanfix.thetrolli.com/#kontakt">✉️ Kontakt aufnehmen</option>
-              </select>
-            </div>
-
-            <!-- Body text -->
-            <div class="nl-form-group full">
-              <label class="nl-label">Haupttext</label>
+              <label class="nl-label">Nachricht</label>
               <div class="nl-editor-wrap">
                 <div class="nl-editor-toolbar">
                   <button class="nl-editor-btn" data-cmd="bold"><b>B</b></button>
@@ -1464,10 +1442,24 @@
                   <button class="nl-editor-btn" data-cmd="insertOrderedList">1. Liste</button>
                   <button class="nl-editor-btn" data-cmd="removeFormat">✕ Format</button>
                 </div>
-                <div id="nl-body" class="nl-editor" contenteditable="true">
-                  Nutzen Sie dieses Angebot bis zum Ende des Monats in einer unserer Filialen. Einfach diesen Newsletter vorzeigen oder beim Abgeben erwähnen.
+                <div id="nl-body" class="nl-editor" contenteditable="true" style="min-height:180px;">
+                  <p>Liebe Kundinnen und Kunden,</p>
+                  <p>diesen Monat erhalten Sie <b>20 % Rabatt auf alle Hemden</b> in jeder unserer Filialen. Einfach vorbeikommen und diesen Newsletter vorzeigen oder beim Abgeben erw&auml;hnen.</p>
+                  <p>Wir freuen uns auf Ihren Besuch!</p>
                 </div>
               </div>
+            </div>
+
+            <!-- CTA button target -->
+            <div class="nl-form-group full">
+              <label class="nl-label" for="nl-cta-url">Button-Link</label>
+              <select id="nl-cta-url" class="nl-select">
+                <option value="https://cleanfix.thetrolli.com/#angebote">🏷️ Zum Monatsangebot</option>
+                <option value="https://cleanfix.thetrolli.com">🌐 Zur Website</option>
+                <option value="https://cleanfix.thetrolli.com/#preise">💶 Zu den Preisen</option>
+                <option value="https://cleanfix.thetrolli.com/#filialen">📍 Zu den Filialen</option>
+                <option value="https://cleanfix.thetrolli.com/#kontakt">✉️ Kontakt aufnehmen</option>
+              </select>
             </div>
           </div>
 
@@ -3238,17 +3230,23 @@
 
   // ── NEWSLETTER ─────────────────────────────────────────────────
   function initNewsletter() {
-    var subjectEl   = document.getElementById('nl-subject');
-    var monthEl     = document.getElementById('nl-offer-month');
-    var titleEl     = document.getElementById('nl-offer-title');
-    var introEl     = document.getElementById('nl-intro');
-    var offerEl     = document.getElementById('nl-offer-text');
-    var ctaUrlEl    = document.getElementById('nl-cta-url');
-    var bodyEl      = document.getElementById('nl-body');
-    var sendBtn     = document.getElementById('nl-send-btn');
-    var copyBtn     = document.getElementById('nl-copy-btn');
-    var statusEl    = document.getElementById('nl-status');
+    var subjectEl    = document.getElementById('nl-subject');
+    var showBadgeEl  = document.getElementById('nl-show-badge');
+    var badgeFields  = document.getElementById('nl-badge-fields');
+    var monthEl      = document.getElementById('nl-offer-month');
+    var titleEl      = document.getElementById('nl-offer-title');
+    var ctaUrlEl     = document.getElementById('nl-cta-url');
+    var bodyEl       = document.getElementById('nl-body');
+    var sendBtn      = document.getElementById('nl-send-btn');
+    var copyBtn      = document.getElementById('nl-copy-btn');
+    var statusEl     = document.getElementById('nl-status');
     var previewFrame = document.getElementById('nl-preview-frame');
+
+    // Toggle badge fields visibility
+    showBadgeEl.addEventListener('change', function () {
+      badgeFields.style.display = showBadgeEl.checked ? 'grid' : 'none';
+      updatePreview();
+    });
 
     // Set default datetime to tomorrow 08:00
 
@@ -3264,12 +3262,11 @@
 
     // Build preview HTML from template + current inputs
     function buildPreviewHtml() {
-      var month    = monthEl.value   || 'Monat Jahr';
-      var title    = titleEl.value   || 'Angebotstitel';
-      var offer    = offerEl.value   || '🎯 Das Angebot';
-      var intro    = (introEl.value  || '').replace(/\n/g, '<br>');
-      var body     = bodyEl.innerHTML || '';
-      var ctaUrl   = ctaUrlEl.value  || 'https://cleanfix.thetrolli.com';
+      var showBadge = showBadgeEl.checked;
+      var month     = monthEl.value.trim() || 'April';
+      var title     = titleEl.value.trim() || 'Angebot';
+      var body      = bodyEl.innerHTML || '';
+      var ctaUrl    = ctaUrlEl.value || 'https://cleanfix.thetrolli.com';
       var ctaLabels = {
         'https://cleanfix.thetrolli.com':           'Jetzt Filiale besuchen \u2192',
         'https://cleanfix.thetrolli.com/#angebote': 'Zum Monatsangebot \u2192',
@@ -3279,63 +3276,52 @@
       };
       var ctaLabel = ctaLabels[ctaUrl] || 'Jetzt besuchen \u2192';
 
+      // Badge section (optional)
+      var badgeHtml = '';
+      if (showBadge) {
+        badgeHtml =
+          '<div style="height:20px"></div>' +
+          '<a href="https://cleanfix.thetrolli.com/#angebote" style="background:linear-gradient(135deg,#0830DD,#F508B8);padding:2px;margin:0 24px;border-radius:12px;display:block;text-decoration:none;">' +
+          '<div style="background:#fff;border-radius:10px;padding:22px 24px;text-align:center;">' +
+          '<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0830DD;margin-bottom:6px;">Monatsangebot</div>' +
+          '<div style="font-size:20px;font-weight:800;color:#0F1117;margin-bottom:4px;">' + esc(month) + '</div>' +
+          '<div style="font-size:14px;font-weight:600;color:#374151;">' + esc(title) + '</div>' +
+          '</div></a>' +
+          '<div style="height:20px"></div>';
+      }
+
       return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">' +
+        '<meta name="viewport" content="width=device-width,initial-scale=1">' +
         '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
-        '<style>' +
-        'body{margin:0;padding:16px;background:#F8F9FB;font-family:Inter,system-ui,sans-serif;}' +
-        '.wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(8,48,221,.1);}' +
-        '.hdr{background:linear-gradient(135deg,#0830DD,#F508B8);padding:32px;text-align:center;}' +
-        '.logo-box{display:inline-block;background:#fff;border-radius:12px;padding:10px 20px;margin-bottom:10px;}' +
-        '.logo-box img{height:40px;}' +
-        '.tagline{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);}' +
-        '.badge-wrap{background:linear-gradient(135deg,#0830DD,#F508B8);padding:2px;margin:0 24px;border-radius:12px;display:block;text-decoration:none;}' +
-        '.badge{background:#fff;border-radius:10px;padding:22px 24px;text-align:center;}' +
-        '.badge-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0830DD;margin-bottom:6px;}' +
-        '.badge-month{font-size:20px;font-weight:800;color:#0F1117;margin-bottom:4px;}' +
-        '.badge-title{font-size:14px;font-weight:600;color:#374151;}' +
-        '.body{padding:28px 32px;}' +
-        '.body p{font-size:14px;line-height:1.7;color:#374151;margin:0 0 14px;}' +
-        '.hbox{background:#E8EDFF;border-left:4px solid #0830DD;border-radius:8px;padding:14px 18px;margin:18px 0;}' +
-        '.hbox p{font-size:14px;font-weight:600;color:#061FA8;margin:0;}' +
-        '.cta-wrap{text-align:center;margin:22px 0;}' +
-        '.cta-btn{display:inline-block;background:linear-gradient(135deg,#0830DD,#F508B8);color:#fff!important;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:50px;}' +
-        '.divider{height:1px;background:#E5E7EB;margin:20px 0;}' +
-        '.loc-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9CA3AF;text-align:center;margin-bottom:10px;}' +
-        '.loc-item{font-size:12px;color:#4B5563;text-align:center;margin-bottom:4px;}' +
-        '.ftr{background:#0F1117;padding:22px 32px;text-align:center;}' +
-        '.ftr p{font-size:11px;color:#9CA3AF;margin:0 0 4px;line-height:1.6;}' +
-        '.ftr a{color:#A3B4FF;text-decoration:none;}' +
-        '</style></head><body>' +
-        '<div class="wrap">' +
-        // Header — logo links to website
-        '<div class="hdr">' +
+        '<style>p{margin:0 0 14px;}b,strong{color:#0F1117;}</style>' +
+        '</head><body style="margin:0;padding:16px;background:#F8F9FB;font-family:Inter,system-ui,sans-serif;">' +
+        '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(8,48,221,.1);">' +
+        // Header
+        '<div style="background:linear-gradient(135deg,#0830DD,#F508B8);padding:32px;text-align:center;">' +
         '<a href="https://cleanfix.thetrolli.com" style="text-decoration:none;">' +
-        '<div class="logo-box"><img src="https://cleanfix.thetrolli.com/Logo%20Cleanfix%20JH.png" alt="Cleanfix"></div>' +
-        '</a>' +
-        '<div class="tagline">Newsletter</div>' +
-        '</div>' +
-        // Offer badge — links to #angebote
-        '<div style="height:20px"></div>' +
-        '<a href="https://cleanfix.thetrolli.com/#angebote" class="badge-wrap">' +
-        '<div class="badge">' +
-        '<div class="badge-lbl">Monatsangebot</div>' +
-        '<div class="badge-month">' + esc(month) + '</div>' +
-        '<div class="badge-title">' + esc(title) + '</div>' +
+        '<div style="display:inline-block;background:#fff;border-radius:12px;padding:10px 20px;margin-bottom:10px;">' +
+        '<img src="https://cleanfix.thetrolli.com/Logo%20Cleanfix%20JH.png" alt="Cleanfix" style="height:40px;display:block;">' +
         '</div></a>' +
-        '<div style="height:20px"></div>' +
-        // Body
-        '<div class="body">' +
-        '<p>' + intro + '</p>' +
-        '<div class="hbox"><p>' + esc(offer) + '</p></div>' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);">Newsletter</div>' +
+        '</div>' +
+        // Badge (optional)
+        badgeHtml +
+        // Body — user-written content
+        '<div style="padding:28px 32px;font-size:14px;line-height:1.7;color:#374151;">' +
         body +
         // CTA button
-        '<div class="cta-wrap"><a href="' + ctaUrl + '" class="cta-btn">' + ctaLabel + '</a></div>' +
+        '<div style="text-align:center;margin:28px 0 8px;">' +
+        '<a href="' + ctaUrl + '" style="display:inline-block;background:linear-gradient(135deg,#0830DD,#F508B8);color:#fff!important;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:50px;">' + ctaLabel + '</a>' +
         '</div>' +
-        // Footer with real links + CR unsubscribe tag
-        '<div class="ftr">' +
-        '<p>Cleanfix Reinigen und Waschen &middot; M&ouml;nchengladbach</p>' +
-        '<p><a href="https://cleanfix.thetrolli.com/impressum.html">Impressum</a> &nbsp;&middot;&nbsp; <a href="https://cleanfix.thetrolli.com/datenschutz.html">Datenschutz</a> &nbsp;&middot;&nbsp; <a href="{UNSUBSCRIBE}">Abmelden</a></p>' +
-        '<p style="margin-top:8px;font-size:10px;">Sie erhalten diese E-Mail, weil Sie sich f\u00FCr den Cleanfix-Newsletter angemeldet haben.</p>' +
+        '</div>' +
+        // Footer
+        '<div style="background:#0F1117;padding:22px 32px;text-align:center;">' +
+        '<p style="font-size:11px;color:#9CA3AF;margin:0 0 4px;line-height:1.6;">Cleanfix Reinigen und Waschen &middot; M\u00F6nchengladbach</p>' +
+        '<p style="font-size:11px;color:#9CA3AF;margin:0 0 4px;line-height:1.6;">' +
+        '<a href="https://cleanfix.thetrolli.com/impressum.html" style="color:#A3B4FF;text-decoration:none;">Impressum</a> &nbsp;&middot;&nbsp; ' +
+        '<a href="https://cleanfix.thetrolli.com/datenschutz.html" style="color:#A3B4FF;text-decoration:none;">Datenschutz</a> &nbsp;&middot;&nbsp; ' +
+        '<a href="{UNSUBSCRIBE}" style="color:#A3B4FF;text-decoration:none;">Abmelden</a></p>' +
+        '<p style="font-size:10px;color:#9CA3AF;margin:8px 0 0;line-height:1.6;">Sie erhalten diese E-Mail, weil Sie sich f\u00FCr den Cleanfix-Newsletter angemeldet haben.</p>' +
         '</div>' +
         '</div></body></html>';
     }
@@ -3346,7 +3332,7 @@
     }
 
     // Update preview on any input change
-    [subjectEl, monthEl, titleEl, introEl, offerEl].forEach(function (el) {
+    [subjectEl, monthEl, titleEl].forEach(function (el) {
       el.addEventListener('input', updatePreview);
     });
     bodyEl.addEventListener('input', updatePreview);
@@ -3383,20 +3369,34 @@
       if (!entry) { toast('Eintrag nicht gefunden.', 'error'); return; }
       var d = entry.data;
       if (entry.type === 'monatsangebot') {
-        if (d.monat)   monthEl.value  = d.monat;
-        if (d.titel)   titleEl.value  = d.titel;
-        if (d.angebot) offerEl.value  = '🎯 ' + d.angebot + (d.auf ? ' — ' + d.auf : '');
-        if (d.text)    introEl.value  = d.text;
+        showBadgeEl.checked = true;
+        badgeFields.style.display = 'grid';
+        if (d.monat) monthEl.value = d.monat;
+        if (d.titel) titleEl.value = d.titel;
         if (!subjectEl.value && d.monat) subjectEl.value = 'Unser Angebot im ' + d.monat + ' 🎉';
+        // Build a natural message from the schedule data
+        var parts = [];
+        parts.push('<p>Liebe Kundinnen und Kunden,</p>');
+        if (d.angebot && d.auf) {
+          parts.push('<p>diesen Monat erhalten Sie <b>' + esc(d.angebot) + ' auf ' + esc(d.auf) + '</b> in jeder unserer Filialen.</p>');
+        } else if (d.text) {
+          parts.push('<p>' + esc(d.text) + '</p>');
+        }
+        parts.push('<p>Einfach vorbeikommen und diesen Newsletter vorzeigen oder beim Abgeben erw\u00E4hnen.</p>');
+        parts.push('<p>Wir freuen uns auf Ihren Besuch!</p>');
+        bodyEl.innerHTML = parts.join('');
       } else if (entry.type === 'deal') {
-        if (d.title) titleEl.value = d.title;
-        var offerParts = [];
-        if (d.icon)  offerParts.push(d.icon);
-        if (d.title) offerParts.push(d.title);
-        if (d.price) offerParts.push('— ' + d.price + (d.priceUnit || ''));
-        if (offerParts.length) offerEl.value = offerParts.join(' ');
-        if (d.desc)  introEl.value = d.desc;
+        showBadgeEl.checked = false;
+        badgeFields.style.display = 'none';
         if (!subjectEl.value && d.title) subjectEl.value = 'Sonderangebot: ' + d.title;
+        var parts = [];
+        parts.push('<p>Liebe Kundinnen und Kunden,</p>');
+        var line = d.title || '';
+        if (d.price) line += ' \u2014 ' + d.price + (d.priceUnit || '');
+        if (line) parts.push('<p>wir haben ein besonderes Angebot f\u00FCr Sie: <b>' + esc(line) + '</b></p>');
+        if (d.desc) parts.push('<p>' + esc(d.desc) + '</p>');
+        parts.push('<p>Wir freuen uns auf Ihren Besuch!</p>');
+        bodyEl.innerHTML = parts.join('');
       }
       updatePreview();
       toast('Eintrag übernommen.');
@@ -3434,11 +3434,6 @@
 
       var payload = {
         subject:    subject,
-        month:      monthEl.value.trim(),
-        offerTitle: titleEl.value.trim(),
-        offerText:  offerEl.value.trim(),
-        intro:      introEl.value.trim(),
-        body:       bodyEl.innerHTML,
         html:       buildPreviewHtml()
       };
 
