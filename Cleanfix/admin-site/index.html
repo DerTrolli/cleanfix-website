@@ -1488,10 +1488,11 @@
 
           <div class="nl-send-bar">
             <div class="nl-send-bar-info">
-              Erstellt den Newsletter als Entwurf in <strong>CleverReach</strong>.<br />
-              Anschließend dort unter <em>E-Mails</em> prüfen und manuell versenden.
+              Kopiere den Newsletter-HTML und füge ihn in CleverReach unter<br />
+              <em>E-Mails → Neue E-Mail → Quellcode-Editor</em> ein.
             </div>
-            <button class="btn-save" id="nl-send-btn">📧 Entwurf erstellen</button>
+            <button class="btn-save" id="nl-copy-btn" style="background:linear-gradient(135deg,#0830DD,#061FA8);">📋 HTML kopieren</button>
+            <button class="btn-save" id="nl-send-btn">📧 Entwurf erstellen (API)</button>
           </div>
         </div>
 
@@ -3245,6 +3246,7 @@
     var ctaUrlEl    = document.getElementById('nl-cta-url');
     var bodyEl      = document.getElementById('nl-body');
     var sendBtn     = document.getElementById('nl-send-btn');
+    var copyBtn     = document.getElementById('nl-copy-btn');
     var statusEl    = document.getElementById('nl-status');
     var previewFrame = document.getElementById('nl-preview-frame');
 
@@ -3400,7 +3402,28 @@
       toast('Eintrag übernommen.');
     });
 
-    // Send button
+    // Copy HTML button
+    copyBtn.addEventListener('click', function () {
+      var html = buildPreviewHtml();
+      navigator.clipboard.writeText(html).then(function () {
+        copyBtn.textContent = '✓ Kopiert!';
+        toast('Newsletter-HTML in Zwischenablage kopiert.', 'success');
+        setTimeout(function () { copyBtn.textContent = '📋 HTML kopieren'; }, 2000);
+      }).catch(function () {
+        // Fallback: select from a temporary textarea
+        var ta = document.createElement('textarea');
+        ta.value = html;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        copyBtn.textContent = '✓ Kopiert!';
+        toast('Newsletter-HTML in Zwischenablage kopiert.', 'success');
+        setTimeout(function () { copyBtn.textContent = '📋 HTML kopieren'; }, 2000);
+      });
+    });
+
+    // Send button (API — may not preserve CTA/footer in CleverReach editor)
     sendBtn.addEventListener('click', async function () {
       var subject = subjectEl.value.trim();
       if (!subject) { toast('Bitte eine Betreffzeile eingeben.', 'error'); subjectEl.focus(); return; }
