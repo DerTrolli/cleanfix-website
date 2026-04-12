@@ -46,7 +46,12 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:django-cleverreach.readthedocs.io)",
-      "WebFetch(domain:tray.io)"
+      "WebFetch(domain:tray.io)",
+      "WebFetch(domain:eddytor.cleverreach.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:apitracker.io)",
+      "Bash(curl -s \"http://192.168.178.125:5678/rest/workflows/uj9P2Ri4zo4xDSKeDNSgl\" -H \"Accept: application/json\")",
+      "Bash(curl -s \"http://192.168.178.125:5678/api/v1/workflows\" -H \"Accept: application/json\")"
     ]
   }
 }
