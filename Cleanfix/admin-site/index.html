@@ -1608,7 +1608,10 @@
     })
     .then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
+      return res.text().then(function (t) {
+        try { return t ? JSON.parse(t) : {}; }
+        catch (_) { return {}; }
+      });
     })
     .then(function (data) {
       if (data && data.error) throw new Error(data.error);
@@ -3423,7 +3426,9 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify(payload)
         });
-        var data = await res.json();
+        var raw = await res.text();
+        var data;
+        try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = {}; }
         if (res.ok) {
           statusEl.className = 'nl-status success';
           statusEl.textContent = '✓ Entwurf erstellt (ID: ' + (data.mailing_id || '–') + '). Jetzt in CleverReach unter E-Mails versenden.';
