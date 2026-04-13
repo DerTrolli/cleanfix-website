@@ -17,13 +17,13 @@ off to the IT admin and then finish yourself. It is not a code reference
 | HTML form | `Cleanfix/public-site/index.html` (`#contact-form`) | ✅ Done — includes mandatory *Art der Anfrage* dropdown (Privat / Gewerblich), Name, E-Mail, Betreff, Nachricht |
 | Client-side validation + POST | `Cleanfix/public-site/main.js` | ✅ Done — posts JSON to `https://cleanfix-api.thetrolli.com/webhook/contact-form` |
 | n8n workflow template | `n8n-workflows/contact-form.json` | ⚠️ Exists in the repo but **not imported** into the running n8n instance |
-| SMTP credentials in n8n | n8n → Credentials | ❌ **Missing** — placeholder ID `SMTP_CRED_ID` in the workflow |
-| Sender mailbox on the domain | e.g. `noreply@cleanfix-mg.de` | ❌ **Does not exist yet** — this is the real blocker |
+| SMTP credentials in n8n | n8n → Credentials | ⚠️ Credentials received — must be entered in n8n UI |
+| Sender mailbox on the domain | `noreply@cleanfix-mg.de` | ✅ Created by IT admin (All-Inkl / KAS) |
 | Anti-spam (Turnstile + honeypot) | — | ⏳ Planned, not yet added |
 
-**Bottom line:** the front end is done. The back end is blocked on one
-thing: there is no email account on the `cleanfix-mg.de` domain yet.
-Once that exists, the rest is a 15-minute setup in n8n.
+**Bottom line:** the front end is done. The `noreply@cleanfix-mg.de`
+mailbox now exists (hosted at All-Inkl / KAS). The remaining step is
+to enter the SMTP credentials in n8n and import + activate the workflow.
 
 ---
 
@@ -76,26 +76,19 @@ their address.
 Hand him this list. These are the five values that go into an SMTP
 credential in n8n.
 
-1. **A new mailbox on the domain**, ideally `noreply@cleanfix-mg.de`.
-   This is the **From** address for all automated mails. It doesn't need
-   to be monitored — replies go to the visitor because of `Reply-To`.
-2. **SMTP host** — e.g. `smtp.cleanfix-mg.de`, or whatever the domain
-   hoster's outgoing mail server is. IONOS, Strato, All-Inkl, Google
-   Workspace and Microsoft 365 each have their own. The admin will
-   know.
-3. **SMTP port** — usually `587` with STARTTLS, sometimes `465` with
-   SSL/TLS.
-4. **Security / encryption** — STARTTLS (port 587) or SSL/TLS (port
-   465). The admin will tell you based on the port.
-5. **Username** — normally the full email address,
-   `noreply@cleanfix-mg.de`.
-6. **Password** — the mailbox password, **or an app password** if the
-   hoster enforces 2FA on web login. Google Workspace and Microsoft
-   365 both require app passwords for SMTP access when 2FA is on.
-7. **SPF / DKIM / DMARC DNS records** should already exist for the
-   domain. If not, ask the admin to add them — this is a one-time DNS
-   change, not per-mailbox. Without these, automated mails from
-   `noreply@` will land in spam.
+> **✅ Received (Apr 2026).** The IT admin provided the credentials:
+>
+> | Setting | Value |
+> |---------|-------|
+> | Mailbox | `noreply@cleanfix-mg.de` |
+> | SMTP Host | `w0179bc8.kasserver.com` (All-Inkl / KAS) |
+> | SMTP Port | `587` (STARTTLS) or `465` (SSL/TLS) |
+> | Username | `m07e4c7c` |
+> | Password | *(stored privately, not committed to repo)* |
+>
+> **SPF / DKIM / DMARC** DNS records should already exist for the
+> domain (All-Inkl typically sets these up). If automated mails land
+> in spam, ask the IT admin to verify these records.
 
 > ℹ️ You do **not** need login access to `info@cleanfix-mg.de` itself.
 > The workflow only *sends from* `noreply@` and uses the visitor's own
@@ -121,14 +114,14 @@ steps. Nothing here needs code changes in the repo.
 1. **Credentials → New → SMTP** (or "Send Email" — they use the same
    credential type).
 2. Fill in:
-   - **Host**: from the admin (e.g. `smtp.cleanfix-mg.de`)
-   - **Port**: `587` or `465`
-   - **User**: `noreply@cleanfix-mg.de`
-   - **Password**: the mailbox / app password
-   - **SSL/TLS**: toggle on for port 465, off for port 587 (with
-     STARTTLS enabled)
-3. **Save**. Name it something obvious like `Cleanfix SMTP`. n8n will
-   generate an internal credential ID.
+   - **Host**: `w0179bc8.kasserver.com`
+   - **Port**: `587`
+   - **User**: `m07e4c7c`
+   - **Password**: *(the password from the IT admin — not in this file)*
+   - **SSL/TLS**: off (port 587 uses STARTTLS, which n8n enables
+     automatically)
+3. **Save**. Name it `Cleanfix SMTP`. n8n will generate an internal
+   credential ID.
 
 ### 2. Import the workflow template
 
@@ -224,16 +217,16 @@ These are planned but not required to go live. See
 
 ## TL;DR
 
-1. Ask the IT admin for a mailbox `noreply@cleanfix-mg.de` and its
-   **SMTP host / port / security / username / password**.
-2. Ask him to confirm **SPF / DKIM / DMARC** DNS records exist for
-   the domain.
-3. In n8n: **Credentials → New → SMTP**, fill in the five values,
-   save.
+1. ~~Ask the IT admin for a mailbox `noreply@cleanfix-mg.de`~~ — ✅ Done.
+2. ~~Ask him to confirm **SPF / DKIM / DMARC** DNS records~~ — check
+   with admin if mails land in spam.
+3. In n8n: **Credentials → New → SMTP** → Host:
+   `w0179bc8.kasserver.com`, Port: `587`, User: `m07e4c7c`,
+   Password: *(from IT admin)*, SSL/TLS: off. Save as `Cleanfix SMTP`.
 4. In n8n: **Workflows → Import from File** →
    `n8n-workflows/contact-form.json`.
-5. Open the **Send Email** node, attach the SMTP credential you just
-   created, activate the workflow.
+5. Open the **Send Email** node, attach the `Cleanfix SMTP` credential,
+   activate the workflow.
 6. Submit the form on the live site and check that the mail arrives
    at `info@cleanfix-mg.de`.
 
