@@ -16,14 +16,15 @@ off to the IT admin and then finish yourself. It is not a code reference
 |-------|---------------|-------|
 | HTML form | `Cleanfix/public-site/index.html` (`#contact-form`) | ✅ Done — includes mandatory *Art der Anfrage* dropdown (Privat / Gewerblich), Name, E-Mail, Betreff, Nachricht |
 | Client-side validation + POST | `Cleanfix/public-site/main.js` | ✅ Done — posts JSON to `https://cleanfix-api.thetrolli.com/webhook/contact-form` |
-| n8n workflow template | `n8n-workflows/contact-form.json` | ⚠️ Exists in the repo but **not imported** into the running n8n instance |
-| SMTP credentials in n8n | n8n → Credentials | ⚠️ Credentials received — must be entered in n8n UI |
+| n8n workflow | n8n instance | ✅ Imported and active |
+| SMTP credentials in n8n | n8n → Credentials → `Cleanfix SMTP` | ✅ Configured and tested (All-Inkl / KAS) |
 | Sender mailbox on the domain | `noreply@cleanfix-mg.de` | ✅ Created by IT admin (All-Inkl / KAS) |
 | Anti-spam (Turnstile + honeypot) | — | ⏳ Planned, not yet added |
 
-**Bottom line:** the front end is done. The `noreply@cleanfix-mg.de`
-mailbox now exists (hosted at All-Inkl / KAS). The remaining step is
-to enter the SMTP credentials in n8n and import + activate the workflow.
+**Bottom line:** the contact form is fully functional. Form submissions
+are sent as emails from `noreply@cleanfix-mg.de` to `info@cleanfix-mg.de`
+via the n8n workflow through the Cloudflare Tunnel. Only anti-spam
+hardening (Turnstile + honeypot) remains as a future improvement.
 
 ---
 
