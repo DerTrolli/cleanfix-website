@@ -675,13 +675,65 @@ tabBtns.forEach(btn => {
   }
 })();
 
-// ── Contact form (client-side validation demo) ────────────────────
+// ── Contact form (validation + spam protection) ────────────────────
 const form        = document.getElementById('contact-form');
 const formSuccess = document.getElementById('form-success');
 
 if (form) {
-  form.addEventListener('submit', (e) => {
+  var submitBtn     = document.getElementById('contact-submit');
+  var COOLDOWN_SEC  = 60;   // seconds between submissions
+  var RATE_MAX      = 3;    // max submissions per window
+  var RATE_WINDOW   = 600000; // 10 minutes in ms
+  var cooldownTimer = null;
+
+  // ── Rate limit helpers (sessionStorage) ──
+  function getSubmitLog() {
+    try { return JSON.parse(sessionStorage.getItem('cf-contact-log') || '[]'); }
+    catch (e) { return []; }
+  }
+  function logSubmit() {
+    var log = getSubmitLog();
+    log.push(Date.now());
+    sessionStorage.setItem('cf-contact-log', JSON.stringify(log));
+  }
+  function isRateLimited() {
+    var cutoff = Date.now() - RATE_WINDOW;
+    var recent = getSubmitLog().filter(function (t) { return t > cutoff; });
+    return recent.length >= RATE_MAX;
+  }
+
+  // ── Cooldown countdown on the submit button ──
+  function startCooldown() {
+    var remaining = COOLDOWN_SEC;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Bitte warten (' + remaining + 's)';
+    cooldownTimer = setInterval(function () {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(cooldownTimer);
+        cooldownTimer = null;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Nachricht senden';
+      } else {
+        submitBtn.textContent = 'Bitte warten (' + remaining + 's)';
+      }
+    }, 1000);
+  }
+
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
+
+    // ── Honeypot check ──
+    var honeypot = document.getElementById('website');
+    if (honeypot && honeypot.value) return;
+
+    // ── Rate limit check ──
+    if (isRateLimited()) {
+      formSuccess.hidden = false;
+      formSuccess.textContent = 'Sie haben zu viele Nachrichten gesendet. Bitte versuchen Sie es später erneut.';
+      formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
 
     let valid = true;
 
@@ -730,16 +782,20 @@ if (form) {
       })
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        logSubmit();
         form.style.opacity = '';
         form.style.pointerEvents = '';
         formSuccess.hidden = false;
+        formSuccess.textContent = '\u2705 Vielen Dank! Ihre Nachricht wurde gesendet. Wir melden uns bald.';
         formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         form.reset();
+        startCooldown();
       })
       .catch(function () {
         form.style.opacity = '';
         form.style.pointerEvents = '';
         formSuccess.hidden = false;
+        formSuccess.textContent = '\u2705 Vielen Dank! Ihre Nachricht wurde gesendet. Wir melden uns bald.';
         formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
     }

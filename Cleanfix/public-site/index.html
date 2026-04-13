@@ -656,8 +656,13 @@
               <textarea id="message" name="message" rows="5" required placeholder="Ihre Nachricht…"></textarea>
               <span class="field-error" id="message-error" role="alert"></span>
             </div>
+            <!-- Honeypot — hidden from humans, bots auto-fill it -->
+            <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;height:0;width:0;overflow:hidden">
+              <label for="website">Website</label>
+              <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
             <p class="form-note">Pflichtfelder sind mit * gekennzeichnet. Ihre Daten werden nur zur Beantwortung Ihrer Anfrage verwendet. Weitere Informationen in unserer <a href="datenschutz.html">Datenschutzerklärung</a>.</p>
-            <button type="submit" class="btn btn-primary">Nachricht senden</button>
+            <button type="submit" class="btn btn-primary" id="contact-submit">Nachricht senden</button>
             <div class="form-success" id="form-success" hidden role="status">
               ✅ Vielen Dank! Ihre Nachricht wurde gesendet. Wir melden uns bald.
             </div>

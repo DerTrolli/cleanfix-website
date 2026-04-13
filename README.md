@@ -52,7 +52,7 @@ There is **no build step, no package.json, no framework, no dependencies** other
     ├── save-schedule.json         ← writes Cleanfix/public-site/data/schedule.json via GitHub API
     ├── save-preise.json           ← writes the four preise-*.json files
     ├── newsletter-sub.json        ← (not yet wired)
-    └── contact-form.json          ← contact form → email (not yet imported — see CONTACT-FORM-SETUP.md)
+    └── contact-form.json          ← contact form → email (✅ active in n8n)
 ```
 
 ---
@@ -182,7 +182,7 @@ To restore one of these workflows on a fresh n8n instance, do the reverse: **Wor
 | `save-schedule.json` | `POST /webhook/save-schedule` | Receives the unified schedule array from admin, commits it to `Cleanfix/public-site/data/schedule.json` via GitHub API | ✅ live |
 | `save-preise.json` | `POST /webhook/save-preise` | Receives one of the three price tabs, commits the matching `preise-*.json` | ✅ live |
 | `newsletter-sub.json` | `POST /webhook/newsletter-sub` | Newsletter double opt-in handler | ⚠️ workflow exists, not wired into UI |
-| `contact-form.json` | `POST /webhook/contact-form` | Contact form → email | ⚠️ workflow exists, not imported, blocked on SMTP — see Future Work |
+| `contact-form.json` | `POST /webhook/contact-form` | Contact form → email | ✅ Active — sends from `noreply@cleanfix-mg.de` to `info@cleanfix-mg.de` |
 
 The GitHub PAT used by the save-* workflows lives only in n8n credentials, never in this repo. If it leaks or expires, rotate it in GitHub → **Settings** → **Developer settings** → **Personal access tokens**, then update the n8n credential.
 
@@ -222,21 +222,20 @@ Implemented via the `cleanfix-auth` Cloudflare Worker (Apr 2026). Password hash 
 
 **When to do this:** any time before the admin URL leaks, ideally before adding any new sensitive features (e.g. customer data, payment info, personal data of newsletter subscribers).
 
-### 2. Wire up the contact form (currently blocked on SMTP)
+### 2. ~~Wire up the contact form~~ ✅ Done
 
-The contact form HTML and client-side JS are done — fields include Name, E-Mail, Art der Anfrage (Privat/Gewerblich dropdown), Betreff, and Nachricht. The form POSTs JSON to the n8n webhook. A workflow template lives at `n8n-workflows/contact-form.json` (not yet imported into n8n).
+The contact form is fully operational. Submissions are sent from
+`noreply@cleanfix-mg.de` to `info@cleanfix-mg.de` via the n8n workflow
+(SMTP via All-Inkl / KAS, Cloudflare Tunnel). Reply-To is set to the
+visitor's email address.
 
-The remaining work is **anti-spam + SMTP setup:**
+**Remaining anti-spam hardening (not blocking):**
 
 1. Add Cloudflare Turnstile site key + widget to the contact form HTML
 2. Add a hidden honeypot field
 3. Update the form submit JS to send the Turnstile token + honeypot
 4. Update the n8n workflow to verify the token server-side and bail silently if the honeypot is filled
-5. Configure SMTP credentials in n8n (for `noreply@cleanfix-mg.de`)
-6. Import the workflow and test end-to-end
-7. Add Turnstile disclosure to `datenschutz.html`
-
-**Currently blocked on:** SMTP credentials for `cleanfix-mg.de`. The IT admin is creating a `noreply@cleanfix-mg.de` mailbox at All-Inkl. See **`CONTACT-FORM-SETUP.md`** at the repo root for the full step-by-step handoff guide including what to ask the admin, how to configure n8n, and alternative transactional email providers.
+5. Add Turnstile disclosure to `datenschutz.html`
 
 ### 3. Newsletter double opt-in
 
