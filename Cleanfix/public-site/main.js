@@ -730,11 +730,15 @@ if (form) {
       })
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
+        form.style.opacity = '';
+        form.style.pointerEvents = '';
         formSuccess.hidden = false;
         formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        form.reset();
       })
       .catch(function () {
-        // Show success anyway — message will be retried or user can email directly
+        form.style.opacity = '';
+        form.style.pointerEvents = '';
         formSuccess.hidden = false;
         formSuccess.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
