@@ -26,13 +26,98 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $('Webhook').first().json;\nconst body = data.body || data;\nconst email = body.email || '';\n\nif (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n  throw new Error('Invalid email address');\n}\n\n// For now: log the subscription. \n// TODO: Connect to CleverReach or other mailing list provider.\nconsole.log('Newsletter subscription:', email);\n\nreturn [{ json: { success: true, email: email, message: 'Anmeldung erfolgreich' } }];"
+        "jsCode": "const data = $('Webhook').first().json;\nconst body = data.body || data;\nconst email = (body.email || '').trim().toLowerCase();\n\nif (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n  return [{ json: { success: false, message: 'Ungültige E-Mail-Adresse' } }];\n}\n\n// Forward headers for GDPR audit trail (DOI proof)\nconst headers = $('Webhook').first().json.headers || {};\nconst userIp = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || headers['x-real-ip'] || '';\nconst userAgent = headers['user-agent'] || '';\n\nreturn [{ json: { email, userIp, userAgent } }];"
       },
-      "id": "process-sub",
-      "name": "Process Subscription",
+      "id": "validate-email",
+      "name": "Validate Email",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rest.cleverreach.com/oauth/token.php",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{ \"grant_type\": \"client_credentials\" }",
+        "options": {}
+      },
+      "id": "get-token",
+      "name": "Get Access Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [710, 300],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "CLEVERREACH_BASIC_AUTH_ID",
+          "name": "CleverReach OAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rest.cleverreach.com/v3/groups/YOUR_GROUP_ID/receivers",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $('Validate Email').first().json.email, registered: Math.floor(Date.now() / 1000), activated: 0, source: 'cleanfix-mg.de Website' }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "add-subscriber",
+      "name": "Add Subscriber",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CLEVERREACH_BEARER_ID",
+          "name": "CleverReach Bearer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://rest.cleverreach.com/v3/forms/YOUR_FORM_ID/send/activate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $('Validate Email').first().json.email, doidata: { user_ip: $('Validate Email').first().json.userIp, referer: 'cleanfix-mg.de', user_agent: $('Validate Email').first().json.userAgent } }) }}",
+        "options": {}
+      },
+      "id": "send-doi",
+      "name": "Send DOI Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1170, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "CLEVERREACH_BEARER_ID",
+          "name": "CleverReach Bearer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { success: true, message: 'Bestätigungsmail gesendet' } }];"
+      },
+      "id": "response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 300]
     }
   ],
   "connections": {
@@ -40,7 +125,51 @@
       "main": [
         [
           {
-            "node": "Process Subscription",
+            "node": "Validate Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Email": {
+      "main": [
+        [
+          {
+            "node": "Get Access Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Access Token": {
+      "main": [
+        [
+          {
+            "node": "Add Subscriber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Subscriber": {
+      "main": [
+        [
+          {
+            "node": "Send DOI Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send DOI Email": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
             "type": "main",
             "index": 0
           }
