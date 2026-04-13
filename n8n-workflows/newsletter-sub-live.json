@@ -76,8 +76,8 @@
         "bodyParameters": {
           "parameters": [
             { "name": "grant_type",    "value": "client_credentials" },
-            { "name": "client_id",     "value": "YOUR_CLEVERREACH_CLIENT_ID" },
-            { "name": "client_secret", "value": "YOUR_CLEVERREACH_CLIENT_SECRET" }
+            { "name": "client_id",     "value": "SahmtXchMW" },
+            { "name": "client_secret", "value": "K17ndz7L7KAkEC81iSTgJTRsfy2UbBkS" }
           ]
         },
         "options": {}

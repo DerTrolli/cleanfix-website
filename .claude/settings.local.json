@@ -53,7 +53,8 @@
       "Bash(curl -s \"http://192.168.178.125:5678/rest/workflows/uj9P2Ri4zo4xDSKeDNSgl\" -H \"Accept: application/json\")",
       "Bash(curl -s \"http://192.168.178.125:5678/api/v1/workflows\" -H \"Accept: application/json\")",
       "Bash(node -e \"const fs=require\\('fs'\\);const h=fs.readFileSync\\('Cleanfix/admin-site/index.html','utf8'\\);const m=h.match\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/\\);fs.writeFileSync\\('_tmp.js',m[1]\\)\")",
-      "Bash(del _tmp.js)"
+      "Bash(del _tmp.js)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('n8n-workflows/newsletter-sub.json','utf8'\\)\\); console.log\\('Valid JSON'\\)\")"
     ]
   }
 }

@@ -12,13 +12,13 @@ double opt-in — **without using CleverReach's iframe embed**.
 |-------|---------------|-------|
 | HTML form | `Cleanfix/public-site/index.html` (`#newsletter-form`) | ✅ Done — email input + submit button |
 | Client-side validation + POST | `Cleanfix/public-site/main.js` | ✅ Done — posts JSON to `API_BASE + '/newsletter-sub'` |
-| n8n workflow template | `n8n-workflows/newsletter-sub.json` | ⚠️ Stub — validates email and logs it, does NOT call CleverReach yet |
-| CleverReach OAuth app | CleverReach account settings | ❌ Not created yet |
-| CleverReach API credentials in n8n | n8n → Credentials | ❌ Not configured |
+| n8n workflow | `n8n-workflows/newsletter-sub.json` | ✅ Done — validates email, adds subscriber, sends DOI email |
+| CleverReach DOI form | CleverReach → Formulare (ID: 426164) | ✅ Created — sends branded confirmation email |
+| CleverReach API credentials in n8n | n8n → same as send-newsletter | ⚠️ Need to copy client_id/secret into the workflow |
 
-**Bottom line:** the frontend is done. The n8n workflow needs to be
-extended to call the CleverReach REST API. You first need to create
-an OAuth app in CleverReach to get API credentials.
+**Bottom line:** the workflow is ready to import into n8n. Just copy
+the CleverReach client_id/secret from the send-newsletter workflow
+into the newsletter-sub workflow's "Get Token" node, then activate.
 
 ---
 
@@ -182,15 +182,16 @@ The access token expires after ~30 days. Options:
 
 | Value | Where to find it | Status |
 |-------|------------------|--------|
-| **Client ID** | CleverReach → Account → REST API / OAuth app | ❌ Not yet |
-| **Client Secret** | Same as above | ❌ Not yet |
-| **Group ID** | CleverReach → Empfänger → your list | ❌ Not yet |
-| **DOI Form ID** | CleverReach → Formulare → your DOI form | ❌ Not yet |
-| **Access Token** | Generated via OAuth token endpoint | ❌ Not yet |
+| **Client ID** | CleverReach → Account → REST API / OAuth app | ✅ Same as send-newsletter (already in live n8n) |
+| **Client Secret** | Same as above | ✅ Same as send-newsletter (already in live n8n) |
+| **Group ID** | CleverReach → Empfänger → "Neu" list | ✅ `512059` |
+| **DOI Form ID** | CleverReach → Formulare → "Cleanfix Newsletter Anmeldung" | ✅ `426164` |
+| **Access Token** | Generated via OAuth token endpoint | ✅ Fetched at runtime by workflow |
 
-Once you have all five values, the n8n workflow can be updated and
-activated. No code changes needed on the website — the frontend
-already POSTs to the right webhook endpoint.
+The n8n workflow (`newsletter-sub.json`) is ready. Import it into n8n,
+replace the `YOUR_CLEVERREACH_CLIENT_ID` / `YOUR_CLEVERREACH_CLIENT_SECRET`
+placeholders with the same values used in the `send-newsletter` workflow,
+and activate it.
 
 ---
 
