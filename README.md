@@ -239,7 +239,7 @@ visitor's email address.
 
 ### 3. Newsletter double opt-in
 
-UWG requires double opt-in for newsletters. The HTML form, the n8n workflow, and the storage layer are all unimplemented. The existing newsletter provider is **Cleverreach** (used by the current WordPress site). Lower priority than auth and contact form.
+UWG requires double opt-in for newsletters. The frontend form and n8n webhook stub are done. The existing newsletter provider is **CleverReach** (used by the current WordPress site). Integration uses the CleverReach REST API v3 (no iframe) — see **`NEWSLETTER-SETUP.md`** at the repo root for the full step-by-step guide including OAuth setup, required IDs, and n8n workflow configuration.
 
 ### 4. Server-side validation for all admin save endpoints
 
