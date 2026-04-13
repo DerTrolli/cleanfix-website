@@ -844,9 +844,13 @@ if (nlForm) {
     })
     .then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
+      nlForm.style.opacity = '';
+      nlForm.style.pointerEvents = '';
       nlSuccess.hidden = false;
     })
     .catch(function () {
+      nlForm.style.opacity = '';
+      nlForm.style.pointerEvents = '';
       // Show success anyway — subscription will be processed when API is available
       nlSuccess.hidden = false;
     });
