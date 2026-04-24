@@ -1,14 +1,14 @@
 # Going live on cleanfix-mg.de – migration guide
 
-This file explains **how we move the new website onto the real domain
-`cleanfix-mg.de`** without breaking email, and without needing access to
-the All-Inkl account (since Jörg hosts other domains on the same
-account, he'll do those steps himself).
+This file documents **exactly how we move the new website onto the real domain
+`cleanfix-mg.de`** without breaking email.
 
-It's written for someone with **no hosting background**. Each step
-explains *what* we're doing and *why*. At the end there's a clean
-checklist to forward to Jörg – he only has to execute those instructions
-in All-Inkl, nothing else.
+**Who does what:**
+- **Trolli** (you reading this) – owns the Cloudflare account and the GitHub repo.
+  Does all Cloudflare-side setup.
+- **Fabian** – Jörg's son, current IT contact, has access to the All-Inkl / KAS
+  panel. Does the one DNS change described in Section 5.
+- **Jörg** – owner of Cleanfix. No technical work needed from him.
 
 ---
 
@@ -23,36 +23,39 @@ Think of the domain as a **street address**:
 | Thing | Analogy |
 |-------|---------|
 | `cleanfix-mg.de` | The street address "Gladbacher Straße 30" |
-| Website hosting | The actual **shop building** standing at that address |
-| Email hosting | The **letterbox** mounted on the wall |
+| Website hosting | The **shop building** standing at that address |
+| Email hosting | The **letterbox** on the wall |
 | DNS records | The **entry in the phone book** that tells the world "here is the shop, and the post goes to this letterbox" |
+| Nameservers | **Which company runs the phone book** |
 
-Today, All-Inkl runs **all three**: the shop (WordPress), the letterbox
-(email via `w0179bc8.kasserver.com`), and the phone book entry (DNS).
+Today, All-Inkl runs everything: shop (WordPress), letterbox (email), and
+the phone book (DNS). **We are moving the phone book management to Cloudflare**
+(Option B) so that Trolli has full control over DNS from the Cloudflare
+dashboard – without needing Fabian to log in for future changes.
+Email stays 100 % at All-Inkl; only the tool that manages the DNS records moves.
 
-What we want to do is **move the shop to a new building** (Cloudflare
-Pages, where the new site already runs on `cleanfix.thetrolli.com`) –
-but leave the **letterbox exactly where it is**. Email must keep
-working the whole time. And we want to leave the phone book itself
-(All-Inkl's DNS service) alone, just update the one line that points
-people to the shop.
+### Why Option B (move the nameservers) and not Option A (just change a few records)?
 
-### Why Cloudflare Pages and not All-Inkl?
+Option A (keeping All-Inkl as the DNS manager) would require Fabian to log in
+and manually change specific A/CNAME records. That works, but:
+- Future DNS changes still need Fabian every time.
+- The apex domain (`cleanfix-mg.de` without `www`) can't use a CNAME in standard
+  DNS; Cloudflare's CNAME-flattening solves this automatically once they're the
+  nameserver.
 
-All-Inkl is great for WordPress and email, but the new site isn't
-WordPress – it's a modern static site backed by the admin panel and
-n8n automation. Cloudflare Pages hosts it **for free**, deploys
-automatically every time we push to GitHub, and provides free SSL
-(the little lock icon in the browser). There's no ongoing cost and no
-maintenance.
+Option B: **Cloudflare becomes the nameserver for `cleanfix-mg.de`**. Cloudflare
+already imported all the existing DNS records (MX, SPF, DKIM, DMARC, A, CNAME…)
+when you added the domain. Fabian's only job is to swap the two nameserver values
+in KAS – one change, done once, and from then on all DNS is managed through the
+Cloudflare dashboard.
 
-### Why don't we just change everything at once?
+### Why not worry about email?
 
-Because email is critical to the business. If we accidentally break the
-mail-forwarding records, `info@cleanfix-mg.de` goes silent and no one
-notices until a customer complains days later. The safe approach is:
-**change only the minimum number of DNS records, leave email
-records untouched.**
+Cloudflare imported a copy of every DNS record from All-Inkl, **including all the
+email records** (MX, SPF, DKIM, DMARC). Once those are verified to be correct in
+Cloudflare, the mailboxes themselves still live at All-Inkl and keep working as
+before – the only difference is that the pointer (DNS) is now managed in
+Cloudflare instead of KAS.
 
 ---
 
@@ -62,246 +65,223 @@ records untouched.**
 |-------|-------|-----------------|
 | Website visitors see | WordPress on All-Inkl | New static site on Cloudflare Pages |
 | Domain registrar | All-Inkl | **All-Inkl** (unchanged) |
-| DNS nameservers | All-Inkl | **All-Inkl** (unchanged) |
-| Email (`info@`, `noreply@`) | All-Inkl (KAS) | **All-Inkl** (unchanged) |
+| DNS nameservers | All-Inkl | **Cloudflare** (this is the one change) |
+| DNS records for email | All-Inkl | Same records, now managed in Cloudflare |
+| Email mailboxes | All-Inkl (KAS) | **All-Inkl** (unchanged – email itself never moves) |
 | Webmail login | All-Inkl | **All-Inkl** (unchanged) |
 | SSL certificate | All-Inkl's | Cloudflare's (free, auto-renewed) |
 | Contact form | Works via n8n + All-Inkl SMTP | **Same** (unchanged) |
-| Cost | All-Inkl hosting fees | Only domain + email fees at All-Inkl; hosting is €0 |
-
-Only **two DNS records change** – the ones that map the website name to
-the server. Everything else in the DNS zone (MX, SPF, DKIM, DMARC,
-autodiscover, webmail) stays exactly as-is.
+| Cost | All-Inkl hosting fees | Domain + email fees only at All-Inkl; hosting is €0 |
 
 ---
 
-## 3. The plan, in phases
+## 3. Current state in Cloudflare (what you've already done)
 
-### Phase A – Preparation (**you**, on Cloudflare side)
+You've already added `cleanfix-mg.de` to your Cloudflare account as a zone.
+Cloudflare scanned All-Inkl's DNS and auto-imported all records. Here is what
+it found, and what still needs to be fixed before flipping the nameservers:
 
-Before we ask Jörg to do anything at All-Inkl, we set up the new domain
-on Cloudflare so that the target exists.
+### Records confirmed correct ✅
 
-1. **Log into Cloudflare** → *Workers & Pages* → the `cleanfix`
-   project (the one already serving `cleanfix.thetrolli.com`).
-2. Open **Custom domains** → **Set up a custom domain** →
-   enter `cleanfix-mg.de`.
-3. Cloudflare will show you a **small box of DNS instructions**. Write
-   these down exactly – you'll forward them to Jörg. They'll look like
-   one of these two shapes:
+| Type | Name | Value | Note |
+|------|------|-------|------|
+| MX | `@` | `w0179bc8.kasserver.com` (prio 10) | DNS-only – email routing, looks correct |
+| TXT | `@` | `v=spf1 a mx include:spf.kasserver.com ~all` | DNS-only – SPF record, looks correct |
 
-   - **CNAME record for www:** `www` → `cleanfix.pages.dev` (or similar)
-   - **A record(s) for the root (apex):** `@` → one or more IP addresses
+### Records that need fixing before going live ⚠️
 
-   Cloudflare shows the exact values – copy them verbatim.
-4. Repeat step 2–3 for `www.cleanfix-mg.de` so both variants work.
-5. **Do not continue** until you have these exact values. Without them
-   Jörg has nothing to enter.
+#### 1. Wildcard A record must be DNS-only (not Proxied)
 
-### Phase B – Pre-flight (ask Jörg for the first small favour)
+Cloudflare set the `*` (wildcard) A record to **Proxied** (orange cloud).
+That breaks IMAP and SMTP – those protocols are not HTTP, so they can't go
+through Cloudflare's HTTP proxy. Mail clients like Outlook or Thunderbird would
+fail to connect.
 
-Before the big switch, Jörg does **one tiny preparatory step** that
-makes any rollback faster:
+**Fix:** In Cloudflare DNS → find the `* → 85.13.147.176` A record →
+click the orange cloud icon → switch it to **DNS only** (grey cloud). Save.
 
-> **Task for Jörg:** In KAS (All-Inkl admin panel), lower the TTL on
-> the existing A record(s) for `cleanfix-mg.de` (and `www`) to
-> **300 seconds**. Nothing else changes – just the TTL value.
+#### 2. DKIM record is at the wrong location
 
-Why: TTL is how long the phone book entry gets cached around the world.
-Default is often 1 day. If we need to roll back, we don't want to wait
-24 hours for the old entry to disappear from everyone's cache. 300 sec
-= 5 minutes. Do this **a day or two in advance** of the cutover so the
-low TTL has time to propagate.
+Cloudflare imported the DKIM TXT record at the domain root (`@` =
+`cleanfix-mg.de`). But DKIM records **must** live at the selector subdomain:
+`<selector>._domainkey.cleanfix-mg.de` – where `<selector>` is a short name
+like `default`, `mail`, `k1`, etc. (All-Inkl's KAS assigns this name; it's
+visible in the DNS zone there.)
 
-### Phase C – The cutover (hand-off checklist for Jörg)
+Without the correct selector name we can't place the record properly in
+Cloudflare. See Section 4 for what to ask Fabian.
 
-This is the list you actually send to Jörg. It's in Section 5 below,
-ready to copy-paste.
+**Interim fix:** Delete or ignore the wrongly-placed DKIM entry at `@`.
+Once Fabian sends you the correct selector name, create a new TXT record:
+- **Name:** `<selector>._domainkey` (e.g. `default._domainkey`)
+- **Content:** the full DKIM value starting with `v=DKIM1; k=rsa; p=…`
+- **Proxy status:** DNS only
 
-### Phase D – Verification (**you**, after Jörg confirms he's done)
+#### 3. DMARC record – check if it exists
 
-1. Wait ~5–10 minutes for DNS to propagate.
-2. Open `https://cleanfix-mg.de` – should show the new site with the
-   little lock icon. (Cloudflare auto-issues the SSL certificate within
-   a few minutes.)
+DMARC is a TXT record at `_dmarc.cleanfix-mg.de` that tells receiving mail
+servers what to do with emails that fail SPF/DKIM checks. It may or may not
+exist on the All-Inkl zone – Cloudflare's scan didn't import one, which either
+means it wasn't there or the scan missed it. Ask Fabian to check.
+
+If it doesn't exist yet, you can add a safe minimal one yourself after the switch:
+- **Name:** `_dmarc`
+- **Content:** `v=DMARC1; p=none; rua=mailto:info@cleanfix-mg.de`
+- **Proxy status:** DNS only
+
+(`p=none` means "monitor only, don't reject anything" – safe as a first step.)
+
+---
+
+## 4. What to ask Fabian before the nameserver switch
+
+Before you tell Fabian to swap the nameservers, you need two pieces of
+information from him (so you can fix the DKIM record in Cloudflare first):
+
+1. **The DKIM selector name** – in KAS → Domain → `cleanfix-mg.de` → DNS-Einstellungen,
+   look for a TXT record whose name looks like `something._domainkey.cleanfix-mg.de`.
+   The "something" part is the selector. Also copy the full TXT record value.
+2. **Whether a DMARC record exists** – same DNS view, look for a TXT record at
+   `_dmarc.cleanfix-mg.de`. If it exists, copy the full value.
+
+A ready-to-send German message for Fabian is in `MESSAGE-TO-FABIAN.md` at the
+repo root.
+
+---
+
+## 5. The full step-by-step plan
+
+### Phase A – Fix DNS records in Cloudflare (Trolli, before involving Fabian)
+
+1. Fix the wildcard proxy issue (Section 3 → item 1 above).
+2. Wait for Fabian's reply with the DKIM selector (see Section 4 / the message).
+3. In Cloudflare DNS:
+   - Delete the wrongly-placed DKIM TXT record at `@` (if it's there).
+   - Create a new TXT record: name = `<selector>._domainkey`, content = the
+     full DKIM value Fabian sends, proxy = DNS only.
+   - If DMARC doesn't exist, optionally add the `_dmarc` record (Section 3 → item 3).
+4. Attach `cleanfix-mg.de` as a custom domain to the Cloudflare Pages project:
+   - Cloudflare → Workers & Pages → `cleanfix` project → Custom domains
+   - Add `cleanfix-mg.de` and `www.cleanfix-mg.de`
+   - Cloudflare will automatically handle routing for both.
+
+### Phase B – Get Cloudflare's nameserver values (Trolli)
+
+In Cloudflare → your `cleanfix-mg.de` zone overview, find the two nameserver
+addresses that Cloudflare assigned. They look like:
+```
+<name>.ns.cloudflare.com
+<name>.ns.cloudflare.com
+```
+Write these down exactly – you'll send them to Fabian.
+
+### Phase C – Fabian swaps the nameservers in KAS (one task for Fabian)
+
+See the copy-paste German message in `MESSAGE-TO-FABIAN.md`.
+
+In KAS, Fabian goes to: **Domain → `cleanfix-mg.de` → Nameserver-Einstellungen**
+and replaces the two current All-Inkl nameservers with the two Cloudflare ones
+you send him. He saves. That's the entire change.
+
+**Important: he does not touch any DNS records** – those are already correctly
+set up in Cloudflare. He only changes where the world looks for the DNS records
+(the nameservers), not the records themselves.
+
+### Phase D – Wait for propagation and verify (Trolli, after Fabian confirms)
+
+DNS changes propagate globally within **24–48 hours** (often much faster, ~1–4 h).
+
+1. Check propagation status at `https://dnschecker.org/#NS/cleanfix-mg.de` –
+   wait until most nodes show Cloudflare's nameservers.
+2. Open `https://cleanfix-mg.de` – should show the new site with a lock icon.
+   (Cloudflare auto-issues SSL within minutes of the nameserver switch.)
 3. Open `https://www.cleanfix-mg.de` – same.
-4. Test **email is still working**:
-   - Send a test mail from your phone's email app (or Gmail) to
-     `info@cleanfix-mg.de`. Jörg should confirm it arrived.
-   - Reply to that mail from `info@cleanfix-mg.de` to yourself – confirm
-     outgoing mail still works.
-5. Test the contact form on the live domain:
-   - Fill out the form on `https://cleanfix-mg.de/#kontakt` and submit.
-   - Jörg should receive the email within a minute in
-     `info@cleanfix-mg.de`.
-6. Click around: `/impressum.html`, `/datenschutz.html`, and a few
-   deep links (`/#preise`, `/#filialen`) – all should work.
+4. **Test email is still working:**
+   - Send a test mail from your personal address to `info@cleanfix-mg.de`.
+     Fabian or Jörg should confirm it arrived in KAS webmail.
+   - Ask Fabian to reply from `info@cleanfix-mg.de` to you – confirm delivery.
+5. Test the contact form at `https://cleanfix-mg.de/#kontakt` – fill it out and
+   submit. `info@cleanfix-mg.de` should receive the notification within ~1 minute.
+6. Click through `/impressum.html`, `/datenschutz.html`, and anchors like
+   `/#preise`, `/#filialen` – all should work.
 
-### Phase E – Cleanup (a week or two later, once everything is stable)
+### Phase E – Cleanup (a week or two after go-live)
 
-Once we're confident the new site is solid:
+Once everything has been stable for a week:
 
-1. **Task for Jörg:** in KAS, disable or remove the WordPress
-   installation (and its database) that used to serve
-   `cleanfix-mg.de`. Important: this is the *website* at All-Inkl,
-   **not** the email – leave email alone.
-2. Update `README.md` in this repo to show `cleanfix-mg.de` as the
-   live URL instead of `cleanfix.thetrolli.com`.
-3. Optionally: decide whether to keep `cleanfix.thetrolli.com` as a
-   private staging URL or remove it from Cloudflare Pages.
+1. **Task for Fabian:** In KAS, disable or delete the old WordPress installation
+   (and its database) for `cleanfix-mg.de`. **Do not touch email** – the
+   mailboxes stay exactly as they are.
+2. Update `README.md` in this repo: change the "Live URL" to `cleanfix-mg.de`
+   instead of `cleanfix.thetrolli.com`.
+3. Decide whether to keep `cleanfix.thetrolli.com` as a private staging URL or
+   remove the custom domain from Cloudflare Pages.
 
 ---
 
-## 4. What happens if something breaks?
+## 6. What happens if something breaks?
 
-Because the TTL is low (from Phase B), we can revert within ~5 minutes.
-
-1. **Website is broken, but email still works** → tell Jörg to restore
-   the old A/CNAME records he changed. Email was never touched, so
-   it's unaffected during the broken window.
-2. **Email is broken** → this should not happen because we never touch
-   email records. If it does, Jörg verifies the MX, SPF, DKIM and
-   DMARC records are exactly the same values as the backup he took
-   before starting. (See task 0 in section 5.)
-3. **Cloudflare shows "SSL error" for a few minutes after the switch**
-   → normal. Cloudflare needs a few minutes to issue the new
-   certificate. Refresh after 5–10 minutes.
-
----
-
-## 5. The task list to send to Jörg (copy-paste-friendly)
-
-> Hallo Jörg,
->
-> wir möchten die neue Cleanfix-Website live schalten – die alte
-> WordPress-Seite wird dadurch ersetzt, aber **E-Mail bleibt komplett
-> bei All-Inkl** und funktioniert wie bisher. Es ändern sich nur **zwei
-> DNS-Einträge** für die Website selbst.
->
-> Bitte führe die folgenden Schritte im KAS-Panel
-> (https://kas.all-inkl.com) aus, in dieser Reihenfolge:
->
-> ---
->
-> **0. Backup zur Sicherheit**
->
-> - KAS → *Tools* → *KAS-Backup* → vollständige Sicherung der Domain
->   `cleanfix-mg.de` anlegen (WordPress-Dateien + Datenbank + DNS-Zone).
-> - Außerdem einen Screenshot der aktuellen DNS-Einstellungen machen
->   (KAS → *Domain* → `cleanfix-mg.de` → *DNS-Einstellungen*). Wichtig
->   vor allem die **MX**, **SPF (TXT)**, **DKIM (TXT)** und **DMARC
->   (TXT)** Einträge.
->
-> **1. TTL senken (bitte 1–2 Tage vor dem Umstieg machen)**
->
-> - KAS → *Domain* → `cleanfix-mg.de` → *DNS-Einstellungen*.
-> - Beim A-Record für `@` (oder leer) und beim A- oder CNAME-Record
->   für `www` den **TTL-Wert auf 300 Sekunden** setzen. Sonst nichts
->   ändern.
-> - Speichern.
->
-> **2. Die Website-Einträge umstellen (der eigentliche Umstieg)**
->
-> Am Stichtag, wieder unter KAS → *DNS-Einstellungen* für
-> `cleanfix-mg.de`:
->
-> - Den bestehenden **A-Record für `@`** (Root) ersetzen durch die von
->   Cloudflare vorgegebenen IP-Adresse(n). Die genauen Werte bekommst
->   du von mir – ich sende sie direkt vor der Umstellung.
-> - Den bestehenden Record für **`www`** ersetzen durch den
->   CNAME-Eintrag, den Cloudflare ausgibt (z. B.
->   `www → cleanfix.pages.dev`).
-> - Speichern.
->
-> **3. Bitte NICHT anfassen (sonst bricht die E-Mail!)**
->
-> - Alle **MX-Records** (mail-routing, typ. `mail.cleanfix-mg.de` o. ä.)
-> - Der **SPF-TXT-Record** (beginnt mit `v=spf1 …`)
-> - Der **DKIM-TXT-Record** (heißt meistens `default._domainkey` oder
->   ähnlich)
-> - Der **DMARC-TXT-Record** (`_dmarc.cleanfix-mg.de`)
-> - Einträge wie `mail`, `webmail`, `smtp`, `imap`, `autodiscover`,
->   `_autodiscover._tcp` – die bleiben alle unverändert.
->
-> **4. Nach dem Umstieg**
->
-> - Kurz bestätigen, dass `https://cleanfix-mg.de` im Browser die neue
->   Seite zeigt (dauert ggf. 5–10 Minuten).
-> - Kurz bestätigen, dass eingehende E-Mails an `info@cleanfix-mg.de`
->   weiterhin ankommen (z. B. eine Test-Mail von einer privaten Adresse
->   schicken).
->
-> **5. Später (1–2 Wochen nach dem Umstieg, wenn alles stabil läuft)**
->
-> - Die alte WordPress-Installation und deren Datenbank für
->   `cleanfix-mg.de` in KAS abschalten oder löschen.
-> - E-Mail-Postfächer, MX, SPF etc. wieder **nicht anfassen** – die
->   laufen weiter unverändert.
->
-> Danke! Bei Fragen einfach melden, ich bin während des Umstiegs
-> erreichbar.
-
----
-
-## 6. Optional: move nameservers to Cloudflare later ("Option B")
-
-This is **not** part of the current plan, just mentioned so you know
-it exists. Today All-Inkl is the phone book. Optionally, later, we
-could make **Cloudflare** the phone book instead. Advantages:
-
-- Cloudflare's full feature set on the real domain (Web Analytics,
-  firewall rules, caching controls, bot protection).
-- Faster DNS updates in the future (controllable from the Cloudflare
-  dashboard, without Jörg every time).
-
-Downsides:
-
-- More disruptive: every DNS record – especially **MX, SPF, DKIM,
-  DMARC** – has to be recreated **exactly** in Cloudflare before
-  switching. One typo and email goes down until it's fixed.
-- Bigger trust ask: the Cloudflare account (currently yours/personal)
-  becomes responsible for Cleanfix's email routing.
-
-Recommendation: **do Option A (this guide) first, revisit Option B
-later**, only if there's a concrete feature we need that we can't get
-via All-Inkl DNS.
+| Problem | Likely cause | Fix |
+|---------|-------------|-----|
+| Website broken, email fine | Pages custom domain not attached yet, or DNS not propagated | Wait 10 min; check Pages custom domain status in Cloudflare dashboard |
+| SSL error for a few minutes | Cloudflare issuing the certificate | Normal – refresh after 5–10 min |
+| Email broken | DKIM record wrong/missing in Cloudflare | Verify the DKIM record in Cloudflare DNS matches the selector+value Fabian sent |
+| Email broken (MX) | MX record went missing or got proxied | Check Cloudflare DNS: MX must be DNS-only, pointing to `w0179bc8.kasserver.com` prio 10 |
+| Everything broken | Nameservers not yet propagated | Check `dnschecker.org/#NS/cleanfix-mg.de`; may need more time |
+| Need to roll back fast | Any critical issue | Ask Fabian to restore All-Inkl's original nameservers in KAS – that reverts everything |
 
 ---
 
 ## 7. Glossary
 
-- **DNS** — Domain Name System. The global "phone book" that maps
-  `cleanfix-mg.de` to a specific computer's IP address.
-- **A record** — A DNS entry that points a name to an **IPv4 address**
-  (e.g. `cleanfix-mg.de → 203.0.113.42`).
-- **AAAA record** — Same as A but for **IPv6**.
-- **CNAME record** — A DNS entry that points one name at **another
-  name** (e.g. `www.cleanfix-mg.de → cleanfix.pages.dev`).
-- **MX record** — A DNS entry that says "send mail for this domain to
-  *this* server". Untouched in our plan.
-- **SPF / DKIM / DMARC** — TXT records that prove our outgoing mail is
-  legitimate. Also untouched.
+- **DNS** — Domain Name System. The global "phone book" that maps `cleanfix-mg.de`
+  to a specific computer's IP address.
+- **A record** — A DNS entry that points a name to an **IPv4 address**.
+- **CNAME record** — A DNS entry that points one name to **another name**.
+- **MX record** — "Mail eXchange" – tells the world which server receives email
+  for the domain. Must never be proxied or changed.
+- **TXT record** — Free-text DNS record, used for SPF, DKIM, DMARC, and domain
+  verification tokens.
+- **SPF** — Sender Policy Framework. A TXT record at `@` that lists which mail
+  servers are allowed to send mail as `@cleanfix-mg.de`. Prevents spoofing.
+- **DKIM** — DomainKeys Identified Mail. A TXT record at
+  `<selector>._domainkey.cleanfix-mg.de` containing a public key. All-Inkl signs
+  outgoing mails with the matching private key; recipients verify the signature.
+  If the DKIM record is missing or in the wrong place, mails may land in spam.
+- **DMARC** — Domain-based Message Authentication, Reporting & Conformance.
+  A TXT record at `_dmarc.cleanfix-mg.de` that tells receiving servers what to do
+  with mails that fail SPF/DKIM. `p=none` = log only, `p=quarantine` = spam folder,
+  `p=reject` = block.
+- **Nameserver (NS)** — The server that answers DNS queries for a domain.
+  Today: All-Inkl's nameservers. After migration: Cloudflare's nameservers.
+  The domain *registrar* (All-Inkl) stores which nameservers are in use – that's
+  what Fabian changes in KAS.
+- **Apex / root domain** — `cleanfix-mg.de` without any prefix.
+  Often written as `@` in DNS panels.
+- **Wildcard record (`*`)** — Matches any subdomain not otherwise listed, e.g.
+  `anything.cleanfix-mg.de`. Must be DNS-only to avoid breaking mail clients.
+- **Proxied (orange cloud) vs DNS-only (grey cloud)** — Cloudflare's proxy routes
+  HTTP/HTTPS traffic through Cloudflare's edge (gives DDoS protection, caching,
+  etc.). DNS-only just answers the DNS query and lets the client connect directly.
+  Mail-related records (MX, wildcard `*`, `mail.*`, `imap.*`, `smtp.*`) must all
+  be DNS-only because the proxy only handles HTTP.
 - **TTL** — Time To Live. How long (in seconds) a DNS answer is cached.
-  Lower = faster updates, higher = less load on DNS servers.
-- **Nameserver** — The machine that answers DNS queries for a domain.
-  Today: All-Inkl's nameservers. After this migration: **still
-  All-Inkl's nameservers** – we only change records *within* them.
-- **Apex / root domain** — `cleanfix-mg.de` without any prefix. Often
-  written as `@` in DNS panels.
-- **SSL / TLS certificate** — The thing that puts the lock icon in the
-  browser. Cloudflare issues one for free and renews automatically.
-- **Cloudflare Pages** — Cloudflare's free static-site hosting. Our
-  new site lives here; pushing to GitHub re-deploys it automatically.
-- **KAS** — All-Inkl's customer admin panel
-  (https://kas.all-inkl.com).
+  Irrelevant here since we're swapping nameservers (which have their own
+  propagation time of 24–48 h), but good to know.
+- **CNAME-flattening** — Cloudflare's trick that lets an apex domain (`@`) use
+  a CNAME-like record even though standard DNS doesn't allow it. This is why
+  Option B works cleanly: Cloudflare can map `cleanfix-mg.de` directly to the
+  Pages hostname without needing raw IP addresses.
+- **KAS** — Kunden-Administrations-System. All-Inkl's customer admin panel
+  at `https://kas.all-inkl.com`. Fabian uses this to manage DNS and email.
+- **Cloudflare Pages** — Cloudflare's free static-site hosting. The new site
+  lives here; pushing to GitHub re-deploys it automatically.
 
 ---
 
 ## 8. Related docs
 
-- `Cleanfix/MIGRATION-NOTES.md` – higher-level migration overview and
-  history
-- `CONTACT-FORM-SETUP.md` – SMTP / email-sending details (unchanged
-  by this migration)
-- `README.md` – general project overview; the "Live URL" column in the
-  top table needs a one-line update after Phase E
+- `Cleanfix/MIGRATION-NOTES.md` – higher-level migration overview and history
+- `CONTACT-FORM-SETUP.md` – SMTP / email-sending details (unchanged by this migration)
+- `MESSAGE-TO-FABIAN.md` – ready-to-send German message to Fabian with the info request
+- `README.md` – general project overview; the "Live URL" column needs updating after Phase E
