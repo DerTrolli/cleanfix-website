@@ -114,28 +114,58 @@ body, .site-header, .service-card, .branch-card, .bonus-card,
   transition: background var(--transition), border-color var(--transition), color var(--transition), box-shadow var(--transition);
 }
 
-/* ── DARK MODE TOGGLE BUTTON ─────────────────────────────────── */
-.dark-toggle {
+/* ── THEME TOGGLE (Dunkel-/Hellmodus) ────────────────────────── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.75);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background var(--transition), border-color var(--transition), color var(--transition), transform var(--transition), box-shadow var(--transition);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.theme-toggle .theme-toggle-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.6);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background var(--transition), color var(--transition), transform var(--transition);
-  flex-shrink: 0;
+  font-size: 0.92rem;
+  line-height: 1;
+  transition: background var(--transition), transform var(--transition);
 }
-.dark-toggle:hover {
-  background: rgba(255,255,255,0.15);
+.theme-toggle .theme-toggle-label { white-space: nowrap; }
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.28);
   color: var(--white);
-  transform: rotate(15deg);
 }
-.dark-toggle:active { transform: rotate(15deg) scale(0.92); }
+.theme-toggle:hover .theme-toggle-icon {
+  background: var(--gradient);
+  transform: rotate(-12deg);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 2px;
+}
+.theme-toggle:active { transform: scale(0.97); }
+
+/* Dark mode: accent the toggle subtly when already dark */
+[data-theme="dark"] .theme-toggle {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.12);
+}
 
 /* ── RESET & BASE ────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1132,8 +1162,15 @@ address { font-style: normal; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
 }
 .footer-bottom p { font-size: 0.82rem; color: rgba(255,255,255,0.35); }
+
+@media (max-width: 640px) {
+  .footer-bottom { padding: 20px 0; }
+  .footer-bottom-inner { justify-content: center; text-align: center; row-gap: 14px; }
+  .footer-bottom p { flex: 1 1 100%; }
+}
 
 /* ── LEGAL PAGES ─────────────────────────────────────────────── */
 .legal-page { padding: 80px 0; }
@@ -1508,134 +1545,6 @@ address { font-style: normal; }
   font-weight: 500;
   color: var(--neutral-500);
   margin-bottom: 2px;
-}
-
-/* ── NEXT GEN MOTION TOGGLE BUTTON ──────────────────────────── */
-.motion-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.6);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background var(--transition), color var(--transition), transform var(--transition), box-shadow var(--transition);
-  flex-shrink: 0;
-}
-.motion-toggle:hover {
-  background: rgba(255,255,255,0.15);
-  color: var(--white);
-  transform: scale(1.15);
-}
-.motion-toggle:active { transform: scale(0.92); }
-
-/* Active state: glows with brand gradient */
-[data-motion="on"] .motion-toggle {
-  background: var(--gradient);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 0 16px rgba(245,8,184,0.55), 0 0 6px rgba(8,48,221,0.4);
-}
-[data-motion="on"] .motion-toggle:hover {
-  transform: scale(1.15);
-  box-shadow: 0 0 24px rgba(245,8,184,0.7), 0 0 10px rgba(8,48,221,0.5);
-}
-
-/* ── NEXT GEN: HERO SHAPES PARALLAX ─────────────────────────── */
-/* Shapes get an eased transition so mouse+scroll parallax feels fluid */
-[data-motion="on"] .shape {
-  transition: transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform;
-}
-
-/* ── NEXT GEN: HERO TEXT STAGGER ENTRANCE ────────────────────── */
-@keyframes ngFadeUp {
-  from { opacity: 0; transform: translateY(32px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes ngFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-[data-motion="on"] .hero-badge {
-  opacity: 0;
-  animation: ngFadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.05s forwards;
-}
-[data-motion="on"] .hero-title {
-  opacity: 0;
-  animation: ngFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.18s forwards;
-}
-[data-motion="on"] .hero-sub {
-  opacity: 0;
-  animation: ngFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.32s forwards;
-}
-[data-motion="on"] .hero-actions {
-  opacity: 0;
-  animation: ngFadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.46s forwards;
-}
-[data-motion="on"] .hero-stats {
-  opacity: 0;
-  animation: ngFadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.58s forwards;
-}
-
-/* ── NEXT GEN: PROMO BANNER ANIMATED GRADIENT ────────────────── */
-@keyframes ngGradientShift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-[data-motion="on"] .promo-banner {
-  background: linear-gradient(270deg, var(--blue), var(--pink), var(--blue-dark), var(--pink-dark));
-  background-size: 300% 300%;
-  animation: ngGradientShift 14s ease infinite;
-}
-
-/* ── NEXT GEN: SCROLL REVEAL BASE STATE ──────────────────────── */
-/* JS adds .ng-reveal class; initial hidden state set here */
-.ng-reveal-target {
-  opacity: 0;
-  transform: translateY(28px);
-  filter: blur(4px);
-  transition:
-    opacity 0.65s cubic-bezier(0.22,1,0.36,1),
-    transform 0.65s cubic-bezier(0.22,1,0.36,1),
-    filter 0.65s cubic-bezier(0.22,1,0.36,1);
-  will-change: opacity, transform, filter;
-}
-/* Each card in a grid gets a stagger delay via inline style set by JS */
-.ng-reveal-target.ng-visible {
-  opacity: 1;
-  transform: translateY(0);
-  filter: blur(0px);
-}
-
-/* ── NEXT GEN: SECTION TITLE SLIDE-IN ────────────────────────── */
-.ng-title-target {
-  opacity: 0;
-  transform: translateX(-20px);
-  transition:
-    opacity 0.55s cubic-bezier(0.22,1,0.36,1),
-    transform 0.55s cubic-bezier(0.22,1,0.36,1);
-}
-.ng-title-target.ng-visible {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-/* ── NEXT GEN: STAT COUNTER SCALE POP ───────────────────────── */
-@keyframes ngStatPop {
-  0%   { transform: scale(0.7); opacity: 0; }
-  70%  { transform: scale(1.1); }
-  100% { transform: scale(1);   opacity: 1; }
-}
-.ng-stat-pop {
-  animation: ngStatPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
-  opacity: 0;
 }
 
 /* ── REDUCED MOTION ──────────────────────────────────────────── */
