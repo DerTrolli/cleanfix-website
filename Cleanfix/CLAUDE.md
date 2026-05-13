@@ -316,7 +316,7 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 ## German Legal Requirements
 - Impressum references **§5 DDG** (not TMG — law changed in 2024)
 - No cookie banner needed (no analytics/tracking used)
-- Newsletter requires double opt-in (UWG) — not yet implemented in backend
+- Newsletter requires double opt-in (UWG) — handled automatically by CleverReach
 - GDPR supervisory authority: NRW Landesbeauftragte
 
 ---
@@ -330,7 +330,7 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 - **Price group headers**: Use `<tr class="price-group-header"><td colspan="N">Label</td></tr>` — styled as a subtle section divider inside tables.
 - **Tabs**: The price tab system uses `hidden` attribute on inactive panels and `aria-selected` on buttons — both must be updated together in JS when switching tabs. The search tab (`#tab-suche`, `#btn-suche`) is the first tab but not the default active one.
 - **Contact form**: Posts JSON to `API_BASE + '/contact-form'` (n8n webhook). Fields: `name` (required), `email` (required), `kundentyp` (required, `'privat'` or `'gewerblich'` — mandatory `<select>` dropdown), `subject` (optional), `message` (required). The n8n workflow (`n8n-workflows/contact-form.json`) sends email from `noreply@cleanfix-mg.de` to `info@cleanfix-mg.de` with the visitor's address as `Reply-To`. ✅ Fully operational — SMTP via All-Inkl / KAS (`w0179bc8.kasserver.com`), n8n workflow active. See `CONTACT-FORM-SETUP.md` at the repo root for details.
-- **Newsletter form**: Client-side only, not yet wired to a backend. UWG requires double opt-in — see Future Work in `README.md`.
+- **Newsletter form**: Posts JSON to `API_BASE + '/newsletter-sub'` (n8n webhook). n8n forwards the signup to CleverReach, which handles double opt-in automatically (UWG-compliant).
 - **Next Gen mode**: When toggling off, the IIFE cleans up by calling `obs.disconnect()` on all observers in `activeObservers[]` and running all `cleanupFunctions[]` (scroll/mouse listeners). Always push new observers/listeners into these arrays when adding motion effects.
 - **`esc()` vs `escHtml()`**: `admin.html` uses `esc()` (defined at top of its IIFE). `main.js` uses `escHtml()` (defined as a global before the schedule IIFE). They are identical in implementation — do not confuse them.
 - **Saving a new entry always creates a new schedule entry** — it never overwrites an existing one. To update an existing entry, use inline edit in the schedule list, or load it as a template via the "load existing" dropdown. Dated entries expire naturally.
