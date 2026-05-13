@@ -26,7 +26,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $('Webhook').first().json;\nconst body = data.body || data;\nconst email = (body.email || '').trim().toLowerCase();\n\nif (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n  return [{ json: { valid: false, error: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' } }];\n}\n\n// Pass along request metadata for GDPR audit trail\nconst headers = data.headers || {};\nreturn [{ json: {\n  valid: true,\n  email: email,\n  user_ip: headers['x-forwarded-for'] || headers['x-real-ip'] || 'unknown',\n  user_agent: headers['user-agent'] || 'unknown',\n  referer: headers.referer || 'cleanfix.thetrolli.com'\n} }];"
+        "jsCode": "const data = $('Webhook').first().json;\nconst body = data.body || data;\nconst email = (body.email || '').trim().toLowerCase();\n\nif (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n  return [{ json: { valid: false, error: 'Bitte geben Sie eine gültige E-Mail-Adresse ein.' } }];\n}\n\n// Pass along request metadata for GDPR audit trail\nconst headers = data.headers || {};\nreturn [{ json: {\n  valid: true,\n  email: email,\n  user_ip: headers['x-forwarded-for'] || headers['x-real-ip'] || 'unknown',\n  user_agent: headers['user-agent'] || 'unknown',\n  referer: headers.referer || 'cleanfix-mg.de'\n} }];"
       },
       "id": "validate-email",
       "name": "Validate Email",

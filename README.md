@@ -6,9 +6,11 @@ The repo contains three independently-deployed pieces:
 
 | Piece | Path | Live URL | Stack |
 |------|------|---------|-------|
-| Public marketing site | `Cleanfix/public-site/` | https://cleanfix.thetrolli.com | Vanilla HTML/CSS/JS, no build |
+| Public marketing site | `Cleanfix/public-site/` | https://cleanfix-mg.de | Vanilla HTML/CSS/JS, no build |
 | Admin management panel | `Cleanfix/admin-site/` | (separate Cloudflare Pages project) | Vanilla HTML/CSS/JS, password-protected |
 | n8n automation workflows | `n8n-workflows/` | https://cleanfix-api.thetrolli.com/webhook/* | n8n self-hosted, behind Cloudflare Tunnel |
+
+> **Note:** The Cloudflare Web Analytics token is currently a placeholder (`SITE_TOKEN`) in all three public HTML files. Replace it with the real token from Cloudflare Dashboard → Web Analytics once the domain is connected. See `ROLLOUT.md` for the full go-live checklist.
 
 There is **no build step, no package.json, no framework, no dependencies** other than two CDN scripts (SheetJS for Excel I/O in admin, and Inter font from Google Fonts). Open the HTML files directly in a browser to develop, or use any static file server. Changes go live on push via Cloudflare Pages auto-deploy.
 
@@ -29,7 +31,7 @@ There is **no build step, no package.json, no framework, no dependencies** other
 │   ├── MIGRATION-NOTES.md         ← notes from the v1 → v2 migration
 │   ├── Preise.xlsx                ← source-of-truth for prices (must be updated alongside the JSON / HTML)
 │   ├── Monatsangebot.txt          ← legacy fallback for the monthly offer card
-│   ├── public-site/               ← what visitors see at cleanfix.thetrolli.com
+│   ├── public-site/               ← what visitors see at cleanfix-mg.de
 │   │   ├── index.html             ← single-page marketing site
 │   │   ├── style.css              ← all styles, including dark-mode tokens
 │   │   ├── main.js                ← all interactivity (vanilla JS, no modules)
@@ -63,7 +65,7 @@ There is **no build step, no package.json, no framework, no dependencies** other
 ┌─────────────┐                   ┌──────────────────┐
 │  Visitor    │ ── HTTPS ───────► │  Cloudflare      │
 │  (browser)  │                   │  Pages           │ ◄── git push (auto-deploy)
-└─────────────┘                   │  cleanfix.*      │
+└─────────────┘                   │  cleanfix-mg.de  │
        │                          └─────────┬────────┘
        │ contact-form POST                  │
        │                                    │ reads /data/*.json
@@ -181,7 +183,7 @@ To restore one of these workflows on a fresh n8n instance, do the reverse: **Wor
 |----------|---------|---------|--------|
 | `save-schedule.json` | `POST /webhook/save-schedule` | Receives the unified schedule array from admin, commits it to `Cleanfix/public-site/data/schedule.json` via GitHub API | ✅ live |
 | `save-preise.json` | `POST /webhook/save-preise` | Receives one of the three price tabs, commits the matching `preise-*.json` | ✅ live |
-| `newsletter-sub.json` | `POST /webhook/newsletter-sub` | Newsletter double opt-in handler | ⚠️ workflow exists, not wired into UI |
+| `newsletter-sub.json` | `POST /webhook/newsletter-sub` | Newsletter signup → CleverReach (double opt-in handled by CleverReach) | ✅ live |
 | `contact-form.json` | `POST /webhook/contact-form` | Contact form → email | ✅ Active — sends from `noreply@cleanfix-mg.de` to `info@cleanfix-mg.de` |
 
 The GitHub PAT used by the save-* workflows lives only in n8n credentials, never in this repo. If it leaks or expires, rotate it in GitHub → **Settings** → **Developer settings** → **Personal access tokens**, then update the n8n credential.
@@ -237,9 +239,9 @@ visitor's email address.
 4. Update the n8n workflow to verify the token server-side and bail silently if the honeypot is filled
 5. Add Turnstile disclosure to `datenschutz.html`
 
-### 3. Newsletter double opt-in
+### ~~3. Newsletter double opt-in~~ ✅ Done
 
-UWG requires double opt-in for newsletters. The frontend form and n8n webhook stub are done. The existing newsletter provider is **CleverReach** (used by the current WordPress site). Integration uses the CleverReach REST API v3 (no iframe) — see **`NEWSLETTER-SETUP.md`** at the repo root for the full step-by-step guide including OAuth setup, required IDs, and n8n workflow configuration.
+Newsletter signup is live. The frontend form posts to the n8n `/newsletter-sub` webhook, which forwards signups to CleverReach. Double opt-in is handled automatically by CleverReach (UWG-compliant). The subscriber list was migrated from the old WordPress/CleverReach account. See **`NEWSLETTER-SETUP.md`** for integration details.
 
 ### 4. Server-side validation for all admin save endpoints
 
