@@ -145,7 +145,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"content\": {\n    \"type\": \"html/text\",\n    \"html\": {{ JSON.stringify($json.html) }},\n    \"text\": {{ JSON.stringify('Bitte aktivieren Sie die HTML-Anzeige in Ihrem E-Mail-Client, um diesen Newsletter zu lesen.\\n\\nCleanfix Reinigen und Waschen\\nhttps://cleanfix.thetrolli.com') }}\n  }\n}",
+        "jsonBody": "={\n  \"content\": {\n    \"type\": \"html/text\",\n    \"html\": {{ JSON.stringify($json.html) }},\n    \"text\": {{ JSON.stringify('Bitte aktivieren Sie die HTML-Anzeige in Ihrem E-Mail-Client, um diesen Newsletter zu lesen.\\n\\nCleanfix Reinigen und Waschen\\nhttps://cleanfix-mg.de') }}\n  }\n}",
         "options": {}
       },
       "id": "cr-set-content",
