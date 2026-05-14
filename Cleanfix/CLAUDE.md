@@ -42,9 +42,10 @@ These paths are relative to `Cleanfix/` (the project root inside the repo). The 
 - `index.html` — Legacy copy of the public site (not deployed to production)
 - `Monatsangebot.txt` — Legacy fallback monthly offer data file; read at runtime by JS only when no schedule entry exists
 - `Preise.xlsx` — Source of truth for all prices; update this file when prices change, then reflect changes in the HTML price tables and admin.html DEFAULTS object
-- `logos/Logo Cleanfix JH.png` — Logo used in nav/footer (must stay PNG — transparency required). Also present as `public-site/logos/Logo Cleanfix JH.png` and `admin-site/logos/Logo Cleanfix JH.png` for serving.
-- `logos/Troll-IT/` — Troll-IT brand assets. `trollit-horizontal.png` is deployed to `public-site/logos/` (footer credit); `trollit-full.png` and `trollit-horizontal.png` to `admin-site/logos/` (login card).
-- `favicon.png` — Browser tab icon
+- `logos/Cleanfix.svg` — Cleanfix wordmark (SVG). Deployed as `public-site/logos/cleanfix.svg` and `admin-site/logos/cleanfix.svg`.
+- `logos/Rose.svg` — Cleanfix rose icon (SVG, also used as favicon). Deployed as `public-site/logos/rose.svg`, `admin-site/logos/rose.svg`.
+- `logos/Troll-IT/` — Troll-IT brand assets (all SVG). `Horizontal version.svg` → `public-site/logos/trollit-horizontal.svg` (footer credit); `Full Logo.svg` → `admin-site/logos/trollit-full.svg` (login card).
+- `favicon.svg` — Browser tab icon (SVG, the Rose). Deployed as `public-site/favicon.svg` and `admin-site/favicon.svg`.
 
 ## Architecture
 
@@ -324,7 +325,7 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 
 ## Key Conventions
 
-- **Logo**: Always use `logos/Logo Cleanfix JH.png` (relative to each site's root — `public-site/logos/` or `admin-site/logos/`). PNG required for transparency. Never switch to JPG for the transparent variant.
+- **Logo**: Always use `logos/cleanfix.svg` (relative to each site's root — `public-site/logos/` or `admin-site/logos/`). SVG is now canonical. For newsletter emails use the CleverReach-hosted PNG (`s3.eu-west-1.amazonaws.com/files.crsend.com/...`) since SVG has poor email client support.
 - **Prices**: German decimal format with comma (`37,50 €`), not period.
 - **Language**: All user-facing text is German.
 - **Bonus cards**: Each card has a `.bonus-shirt-grid` with individual `<span class="shirt-cross">` elements — one per shirt. Update count manually when changing shirt numbers.
