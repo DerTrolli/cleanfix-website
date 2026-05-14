@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <!-- SheetJS for Excel import/export of price lists -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <!-- Link main stylesheet for CSS tokens + preview rendering -->
@@ -1262,7 +1262,7 @@
 ═══════════════════════════════════════════════ -->
 <div id="login-screen">
   <div class="login-card">
-    <img src="logos/Logo Cleanfix JH.png" alt="Cleanfix" class="login-logo" />
+    <img src="logos/cleanfix.svg" alt="Cleanfix" class="login-logo" />
     <p class="login-title">Management Panel</p>
     <label class="login-label" for="admin-password">Passwort</label>
     <input type="password" id="admin-password" class="login-input" placeholder="Passwort eingeben" autocomplete="current-password" />
@@ -1270,7 +1270,7 @@
     <p class="login-error" id="login-error">Falsches Passwort. Bitte erneut versuchen.</p>
     <div class="login-credit">
       <span>Erstellung &amp; Umsetzung</span>
-      <img src="logos/trollit-full.png" alt="Troll-IT" class="login-credit-logo" />
+      <img src="logos/trollit-full.svg" alt="Troll-IT" class="login-credit-logo" />
     </div>
   </div>
 </div>
@@ -1284,7 +1284,7 @@
   <header class="admin-header">
     <div class="admin-header-inner">
       <div class="admin-header-left">
-        <img src="logos/Logo Cleanfix JH.png" alt="Cleanfix" class="admin-header-logo" />
+        <img src="logos/cleanfix.svg" alt="Cleanfix" class="admin-header-logo" />
         <div class="admin-header-divider"></div>
         <span class="admin-header-title">Management Panel</span>
       </div>
@@ -3325,12 +3325,17 @@
         // Body — user-written content
         '<div style="padding:28px 32px;font-size:14px;line-height:1.7;color:#374151;">' +
         body +
-        // CTA button
+        // CTA button — wrapped in setup_v2 marker so CleverReach preserves the block
+        '<!--#button#-->' +
         '<div style="text-align:center;margin:28px 0 8px;">' +
         '<a href="' + ctaUrl + '" style="display:inline-block;background:linear-gradient(135deg,#0830DD,#F508B8);color:#ffffff;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:50px;">' + ctaLabel + '</a>' +
         '</div>' +
+        '<!--#/button#-->' +
         '</div>' +
-        // Footer — simple structure so CleverReach does not strip it
+        // Footer — wrapped in setup_v2 unsubscribe marker so CleverReach injects the
+        // account-configured unsubscribe link rather than stripping the entire block.
+        // Content inside <!--#unsubscribe#--> is overwritten by the account default.
+        '<!--#unsubscribe#-->' +
         '<p style="text-align:center;font-size:11px;color:#9CA3AF;padding:16px 32px 24px;margin:0;line-height:1.8;">' +
         'Cleanfix Reinigen und Waschen &middot; Mönchengladbach<br>' +
         '<a href="https://cleanfix-mg.de/impressum.html" style="color:#9CA3AF;text-decoration:none;">Impressum</a> &nbsp;&middot;&nbsp; ' +
@@ -3338,6 +3343,7 @@
         '<a href="{UNSUBSCRIBE}" style="color:#9CA3AF;text-decoration:none;">Abmelden</a><br>' +
         '<span style="font-size:10px;">Sie erhalten diese E-Mail, weil Sie sich für den Cleanfix-Newsletter angemeldet haben.</span>' +
         '</p>' +
+        '<!--#/unsubscribe#-->' +
         '</div></body></html>';
     }
 
