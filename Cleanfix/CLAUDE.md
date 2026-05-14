@@ -42,7 +42,8 @@ These paths are relative to `Cleanfix/` (the project root inside the repo). The 
 - `index.html` — Legacy copy of the public site (not deployed to production)
 - `Monatsangebot.txt` — Legacy fallback monthly offer data file; read at runtime by JS only when no schedule entry exists
 - `Preise.xlsx` — Source of truth for all prices; update this file when prices change, then reflect changes in the HTML price tables and admin.html DEFAULTS object
-- `Logo Cleanfix JH.png` — Logo used in nav/footer (must stay PNG — transparency required)
+- `logos/Logo Cleanfix JH.png` — Logo used in nav/footer (must stay PNG — transparency required). Also present as `public-site/logos/Logo Cleanfix JH.png` and `admin-site/logos/Logo Cleanfix JH.png` for serving.
+- `logos/Troll-IT/` — Troll-IT brand assets. `trollit-horizontal.png` is deployed to `public-site/logos/` (footer credit); `trollit-full.png` and `trollit-horizontal.png` to `admin-site/logos/` (login card).
 - `favicon.png` — Browser tab icon
 
 ## Architecture
@@ -323,7 +324,7 @@ Currently Expressservice uses both `--highlight` and `--wide`. The Expressservic
 
 ## Key Conventions
 
-- **Logo**: Always use `Logo Cleanfix JH.png` (PNG required for transparency). Never switch to JPG for the transparent variant.
+- **Logo**: Always use `logos/Logo Cleanfix JH.png` (relative to each site's root — `public-site/logos/` or `admin-site/logos/`). PNG required for transparency. Never switch to JPG for the transparent variant.
 - **Prices**: German decimal format with comma (`37,50 €`), not period.
 - **Language**: All user-facing text is German.
 - **Bonus cards**: Each card has a `.bonus-shirt-grid` with individual `<span class="shirt-cross">` elements — one per shirt. Update count manually when changing shirt numbers.
