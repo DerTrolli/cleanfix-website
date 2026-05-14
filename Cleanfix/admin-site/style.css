@@ -1166,10 +1166,26 @@ address { font-style: normal; }
 }
 .footer-bottom p { font-size: 0.82rem; color: rgba(255,255,255,0.35); }
 
+.footer-trollit-credit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.35);
+}
+.trollit-credit-logo {
+  height: 29px;
+  width: auto;
+  opacity: 0.85;
+  transition: opacity var(--transition);
+}
+.footer-trollit-credit:hover .trollit-credit-logo { opacity: 1; }
+
 @media (max-width: 640px) {
   .footer-bottom { padding: 20px 0; }
   .footer-bottom-inner { justify-content: center; text-align: center; row-gap: 14px; }
   .footer-bottom p { flex: 1 1 100%; }
+  .footer-trollit-credit { justify-content: center; }
 }
 
 /* ── LEGAL PAGES ─────────────────────────────────────────────── */
