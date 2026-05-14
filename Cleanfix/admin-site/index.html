@@ -3316,7 +3316,7 @@
         '<div style="background:linear-gradient(135deg,#0830DD,#F508B8);padding:32px;text-align:center;">' +
         '<a href="https://cleanfix-mg.de" style="text-decoration:none;">' +
         '<div style="display:inline-block;background:#fff;border-radius:12px;padding:10px 20px;margin-bottom:10px;">' +
-        '<img src="https://raw.githubusercontent.com/DerTrolli/cleanfix-website/main/Cleanfix/public-site/logos/Logo%20Cleanfix%20JH.png" alt="Cleanfix" style="height:40px;display:block;">' +
+        '<img src="https://s3.eu-west-1.amazonaws.com/files.crsend.com/448000/448387/images/Logo+Cleanfix+JH.png" alt="Cleanfix" style="height:40px;display:block;">' +
         '</div></a>' +
         '<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);">Newsletter</div>' +
         '</div>' +
@@ -3327,18 +3327,17 @@
         body +
         // CTA button
         '<div style="text-align:center;margin:28px 0 8px;">' +
-        '<a href="' + ctaUrl + '" style="display:inline-block;background:linear-gradient(135deg,#0830DD,#F508B8);color:#fff!important;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:50px;">' + ctaLabel + '</a>' +
+        '<a href="' + ctaUrl + '" style="display:inline-block;background:linear-gradient(135deg,#0830DD,#F508B8);color:#ffffff;font-family:Inter,system-ui,sans-serif;font-size:14px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:50px;">' + ctaLabel + '</a>' +
         '</div>' +
         '</div>' +
-        // Footer
-        '<div style="background:#0F1117;padding:22px 32px;text-align:center;">' +
-        '<p style="font-size:11px;color:#9CA3AF;margin:0 0 4px;line-height:1.6;">Cleanfix Reinigen und Waschen &middot; M\u00F6nchengladbach</p>' +
-        '<p style="font-size:11px;color:#9CA3AF;margin:0 0 4px;line-height:1.6;">' +
-        '<a href="https://cleanfix-mg.de/impressum.html" style="color:#A3B4FF;text-decoration:none;">Impressum</a> &nbsp;&middot;&nbsp; ' +
-        '<a href="https://cleanfix-mg.de/datenschutz.html" style="color:#A3B4FF;text-decoration:none;">Datenschutz</a> &nbsp;&middot;&nbsp; ' +
-        '<a href="{UNSUBSCRIBE}" style="color:#A3B4FF;text-decoration:none;">Abmelden</a></p>' +
-        '<p style="font-size:10px;color:#9CA3AF;margin:8px 0 0;line-height:1.6;">Sie erhalten diese E-Mail, weil Sie sich f\u00FCr den Cleanfix-Newsletter angemeldet haben.</p>' +
-        '</div>' +
+        // Footer — simple structure so CleverReach does not strip it
+        '<p style="text-align:center;font-size:11px;color:#9CA3AF;padding:16px 32px 24px;margin:0;line-height:1.8;">' +
+        'Cleanfix Reinigen und Waschen &middot; Mönchengladbach<br>' +
+        '<a href="https://cleanfix-mg.de/impressum.html" style="color:#9CA3AF;text-decoration:none;">Impressum</a> &nbsp;&middot;&nbsp; ' +
+        '<a href="https://cleanfix-mg.de/datenschutz.html" style="color:#9CA3AF;text-decoration:none;">Datenschutz</a> &nbsp;&middot;&nbsp; ' +
+        '<a href="{UNSUBSCRIBE}" style="color:#9CA3AF;text-decoration:none;">Abmelden</a><br>' +
+        '<span style="font-size:10px;">Sie erhalten diese E-Mail, weil Sie sich für den Cleanfix-Newsletter angemeldet haben.</span>' +
+        '</p>' +
         '</div></body></html>';
     }
 
