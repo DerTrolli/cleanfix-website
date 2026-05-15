@@ -2,12 +2,12 @@
   {
     "id": "axsc4q9btrfm",
     "type": "monatsangebot",
-    "startDate": "2026-04-01",
-    "endDate": "2026-04-30",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-31",
     "data": {
-      "monat": "April",
+      "monat": "Mai",
       "titel": "20% auf Jacken und Mäntel",
-      "text": "Nur diesen Monat! 20% Rabat auf alle Jacken und Mäntel, außer Leder und Pelz Produkte.",
+      "text": "Nur diesen Monat! 20% Rabat auf alle Jacken und Mäntel, außer Leder und Pelz Produkte!",
       "angebot": "20%",
       "auf": "Jacken und Mäntel"
     }
@@ -15,12 +15,27 @@
   {
     "id": "wgfqk84s1ho3",
     "type": "banner",
-    "startDate": "2026-04-01",
-    "endDate": "2026-04-30",
+    "startDate": "2026-05-01",
+    "endDate": "2026-05-31",
     "data": {
       "icon": "📣",
-      "title": "20% auf Jacken und Mäntel",
+      "title": "20% auf Jacken und Mäntel!",
       "desc": "Nur für diesen Monat!"
+    }
+  },
+  {
+    "id": "xee62odu2mjb",
+    "type": "deal",
+    "startDate": "",
+    "endDate": "",
+    "data": {
+      "badge": "Jeden Donnerstag!",
+      "icon": "👖",
+      "title": "HOSE RUNTER",
+      "price": "4,99€",
+      "priceUnit": "pro Hose",
+      "desc": "",
+      "highlight": true
     }
   }
 ]
