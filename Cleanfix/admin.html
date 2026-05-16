@@ -10,6 +10,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <!-- Link main stylesheet for CSS tokens + preview rendering -->
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" />
   <style>
     /* ── ADMIN CHROME ──────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -318,6 +319,34 @@
       font-size: 0.78rem;
       color: var(--neutral-400);
     }
+
+    /* ── Flatpickr overrides – match admin style ── */
+    .flatpickr-calendar {
+      font-family: var(--font);
+      border: 1.5px solid var(--neutral-200);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+    .flatpickr-day:hover {
+      background: rgba(8,48,221,0.08);
+    }
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-weekdays,
+    span.flatpickr-weekday {
+      background: var(--white);
+      color: var(--neutral-900);
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year {
+      font-family: var(--font);
+      font-weight: 600;
+    }
+    .numInputWrapper:hover { background: transparent; }
     .admin-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -2455,6 +2484,45 @@
   }
 
 })();
+</script>
+
+<!-- ── German date pickers ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/de.min.js"></script>
+<script>
+  flatpickr.localize(flatpickr.l10ns.de);
+
+  var fpConfig = {
+    dateFormat: 'Y-m-d',   // intern: YYYY-MM-DD (was das JS liest)
+    altInput: true,
+    altFormat: 'd.m.Y',    // angezeigt: dd.mm.yyyy
+    altInputClass: 'admin-input',
+    allowInput: true,
+  };
+
+  function initFP(el) {
+    if (!el || el._flatpickr) return;
+    flatpickr(el, fpConfig);
+  }
+
+  function initAllFP() {
+    document.querySelectorAll('input[type="date"]').forEach(initFP);
+  }
+
+  // Statische Inputs initialisieren
+  initAllFP();
+
+  // Dynamisch erzeugte Inputs (Zeitplan-Einträge etc.) abfangen
+  var fpObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(m) {
+      m.addedNodes.forEach(function(node) {
+        if (node.nodeType !== 1) return;
+        if (node.matches('input[type="date"]')) { initFP(node); return; }
+        node.querySelectorAll('input[type="date"]').forEach(initFP);
+      });
+    });
+  });
+  fpObserver.observe(document.body, { childList: true, subtree: true });
 </script>
 </body>
 </html>
